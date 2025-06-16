@@ -10,23 +10,17 @@ import SwiftData
 
 @main
 struct ChordLabApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+    let dataManager = DataManager()
+    let theoryEngine = TheoryEngine()
+    let audioEngine = AudioEngine()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(dataManager)
+                .environment(theoryEngine)
+                .environment(audioEngine)
+                .modelContainer(dataManager.container)
         }
-        .modelContainer(sharedModelContainer)
     }
 }

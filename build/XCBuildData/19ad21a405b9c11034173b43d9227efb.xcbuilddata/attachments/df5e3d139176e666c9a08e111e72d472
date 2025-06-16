@@ -1,0 +1,100 @@
+{
+  "" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLab-master.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLab-master.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLab-master.dia",
+    "emit-module-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLab-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLab-master-emit-module.dia",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLab-master.swiftdeps"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/ChordLabApp.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLabApp.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLabApp.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordLabApp.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/ContentView.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Extensions/Color+Theme.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Color+Theme.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Color+Theme.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Color+Theme.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Extensions/Tonic+Extensions.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Tonic+Extensions.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Tonic+Extensions.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Tonic+Extensions.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Extensions/View+Modifiers.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/View+Modifiers.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/View+Modifiers.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/View+Modifiers.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/Achievement.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Achievement.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Achievement.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/Achievement.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/ChordHistory.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordHistory.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordHistory.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordHistory.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/PracticeSession.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/PracticeSession.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/PracticeSession.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/PracticeSession.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/SavedProgression.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/SavedProgression.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/SavedProgression.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/SavedProgression.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/UserData.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/UserData.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/UserData.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/UserData.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Theory/ChordAnalysis.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordAnalysis.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordAnalysis.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordAnalysis.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Theory/ChordFunction.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordFunction.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordFunction.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ChordFunction.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Theory/ProgressionAnalysis.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ProgressionAnalysis.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ProgressionAnalysis.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/ProgressionAnalysis.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Theory/VoiceLeading.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/VoiceLeading.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/VoiceLeading.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/VoiceLeading.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Services/AudioEngine.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/AudioEngine.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/AudioEngine.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/AudioEngine.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Services/DataManager.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/DataManager.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/DataManager.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/DataManager.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Services/TheoryEngine.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/TheoryEngine.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/TheoryEngine.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/TheoryEngine.o"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/ChordLab.build/Release-iphoneos/ChordLab.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}

@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  swift_test:
+    name: Test
+    runs-on: macos-latest
+    steps:
+      - name: Check out Tonic
+        uses: actions/checkout@v4
+      - name: Build Tonic
+        run: swift test -c release
+
+  build_demo:
+    name: Build ${{ matrix.scheme }} (Xcode ${{ matrix.xcode_version }})
+    # NOTE: macos-latest is NOT equivalent to macos-12 as of September 2022.
+    # Source: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+    runs-on: macos-13
+    needs: [swift_test]
+    strategy:
+      # Disabling fail-fast ensures that the job will run all configurations of the matrix, even if one fails.
+      fail-fast: false
+      matrix:
+        scheme:
+          - TonicDemo (iOS)
+          - TonicDemo (macOS)
+    steps:
+      - name: Build Demo
+        uses: AudioKit/ci/.github/actions/build-demo@main
+        with:
+          project: Demo/TonicDemo.xcodeproj
+          scheme: ${{ matrix.scheme }}
+
+  # Send notification to Discord on failure.
+  send_notification:
+    name: Send Notification
+    uses: AudioKit/ci/.github/workflows/send_notification.yml@main
+    needs: [swift_test, build_demo]
+    if: ${{ failure() && github.ref == 'refs/heads/main' }}
+    secrets: inherit

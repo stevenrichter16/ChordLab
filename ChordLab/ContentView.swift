@@ -2,60 +2,74 @@
 //  ContentView.swift
 //  ChordLab
 //
-//  Created by Steven Richter on 6/15/25.
+//  Main tab navigation container
 //
 
 import SwiftUI
 import SwiftData
+import Tonic
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @Environment(DataManager.self) private var dataManager
+    @Environment(TheoryEngine.self) private var theoryEngine
+    @Environment(AudioEngine.self) private var audioEngine
+    
+    @State private var selectedTab = 0
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        TabView(selection: $selectedTab) {
+            // Learn Tab
+            NavigationStack {
+                LearnTabView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            .tabItem {
+                Label("Learn", systemImage: "book.fill")
             }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
+            .tag(0)
+            
+            // Explore Tab
+            NavigationStack {
+                ExploreTabView()
             }
+            .tabItem {
+                Label("Explore", systemImage: "magnifyingglass")
+            }
+            .tag(1)
+            
+            // Build Tab
+            NavigationStack {
+                BuildTabView()
+            }
+            .tabItem {
+                Label("Build", systemImage: "hammer.fill")
+            }
+            .tag(2)
+            
+            // Practice Tab
+            NavigationStack {
+                PracticeTabView()
+            }
+            .tabItem {
+                Label("Practice", systemImage: "music.note.list")
+            }
+            .tag(3)
+            
+            // Profile Tab
+            NavigationStack {
+                ProfileTabView()
+            }
+            .tabItem {
+                Label("Profile", systemImage: "person.fill")
+            }
+            .tag(4)
         }
+        .accentColor(.appPrimary)
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .environment(DataManager(inMemory: true))
+        .environment(TheoryEngine())
+        .environment(AudioEngine())
 }

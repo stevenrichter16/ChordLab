@@ -1,0 +1,18 @@
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Key+Shortcuts.swift":
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.o"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.swiftdeps"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.dia"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.swiftconstvalues"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.d"
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/ChordType.swift":
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.d"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.dia"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.swiftdeps"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.swiftconstvalues"
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Interval.swift":
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.swiftdeps"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.d"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.swiftconstvalues"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.o"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.dia"

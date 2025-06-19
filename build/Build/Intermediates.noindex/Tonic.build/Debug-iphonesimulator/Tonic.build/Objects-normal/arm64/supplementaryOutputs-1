@@ -1,0 +1,18 @@
+"/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/DerivedSources/resource_bundle_accessor.swift":
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.swiftdeps"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.d"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.dia"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.o"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.swiftconstvalues"
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/BitSet.swift":
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.dia"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.swiftconstvalues"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.d"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.swiftdeps"
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Accidental.swift":
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.swiftconstvalues"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.d"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.dia"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.o"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.swiftdeps"

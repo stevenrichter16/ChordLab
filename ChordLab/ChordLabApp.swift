@@ -16,7 +16,7 @@ struct ChordLabApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView() // Temporary test
                 .environment(dataManager)
                 .environment(theoryEngine)
                 .environment(audioEngine)

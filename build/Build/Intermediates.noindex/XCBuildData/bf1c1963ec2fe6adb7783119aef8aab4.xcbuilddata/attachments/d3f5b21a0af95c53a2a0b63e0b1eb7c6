@@ -1,0 +1,228 @@
+{
+  "" : {
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Tonic-master.dia",
+    "emit-module-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Tonic-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Tonic-master-emit-module.dia",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Tonic-master.swiftdeps"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/DerivedSources/resource_bundle_accessor.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/resource_bundle_accessor~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Accidental.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Accidental~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/BitSet.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/BitSet~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Chord+Shortcuts.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord+Shortcuts~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Chord.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Chord~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/ChordTable.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordTable~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/ChordType.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/ChordType~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Interval.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Interval~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Key+Shortcuts.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key+Shortcuts~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Key.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Key~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Letter.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Letter~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Note+MiddleCStandard.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+MiddleCStandard~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Note+Shortcuts.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note+Shortcuts~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Note.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Note~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/NoteClass+Shortcuts.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass+Shortcuts~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/NoteClass.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/NoteSet.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Octave.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Pitch.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Pitch~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/PitchColor.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/PitchColor~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Scale+Shortcuts.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale+Shortcuts~partial.swiftmodule"
+  },
+  "/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Scale.swift" : {
+    "const-values" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.swiftconstvalues",
+    "dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.d",
+    "diagnostics" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.dia",
+    "index-unit-output-path" : "/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.o",
+    "llvm-bc" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.bc",
+    "object" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.o",
+    "swift-dependencies" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale.swiftdeps",
+    "swiftmodule" : "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Scale~partial.swiftmodule"
+  }
+}

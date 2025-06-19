@@ -38,8 +38,8 @@ extension Color {
     
     static let whiteKeyColor = Color.white
     static let blackKeyColor = Color.black
-    static let highlightedKeyColor = Color.blue.opacity(0.7)
-    static let rootNoteColor = Color.red.opacity(0.8)
+    //static let highlightedKeyColor = Color.blue.opacity(0.7)
+    //static let rootNoteColor = Color.red.opacity(0.8)
     
     // MARK: - Achievement Colors
     
@@ -74,7 +74,7 @@ extension Color {
 extension View {
     /// Apply primary app styling to a view
     func primaryStyle() -> some View {
-        self
+        self    
             .foregroundColor(.appPrimary)
             .font(.headline)
     }
@@ -93,5 +93,30 @@ extension View {
         self
             .background(Color.subtleBackground)
             .cornerRadius(8)
+    }
+}
+
+//
+//  Color+PianoKeys.swift
+//  ChordLab
+//
+//  Color extensions for piano key highlighting
+//
+
+import SwiftUI
+
+extension Color {
+    // Piano key specific colors
+    static let highlightedKeyColor = Color.blue.opacity(0.6)
+    static let rootNoteColor = Color.orange
+    
+    // Helper to create darker versions of colors
+    func darker(by percentage: Double = 0.2) -> Color {
+        return self.opacity(1.0 - percentage)
+    }
+    
+    // Helper to create lighter versions of colors
+    func lighter(by percentage: Double = 0.2) -> Color {
+        return self.opacity(1.0 + percentage)
     }
 }

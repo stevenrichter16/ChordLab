@@ -1,0 +1,18 @@
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/NoteSet.swift":
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.o"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.swiftdeps"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.dia"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.swiftconstvalues"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteSet.d"
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/Octave.swift":
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.swiftconstvalues"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.swiftdeps"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.d"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.o"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/Octave.dia"
+"/Users/stevenrichter/Documents/repos/ChordLab/build/SourcePackages/checkouts/Tonic/Sources/Tonic/NoteClass.swift":
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.d"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.swiftconstvalues"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.dia"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.o"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/Tonic.build/Debug-iphonesimulator/Tonic.build/Objects-normal/arm64/NoteClass.swiftdeps"

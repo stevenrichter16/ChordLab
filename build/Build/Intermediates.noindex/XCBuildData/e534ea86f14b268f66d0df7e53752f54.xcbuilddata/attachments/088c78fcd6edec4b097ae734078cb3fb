@@ -1,0 +1,4 @@
+module Tonic {
+header "Tonic-Swift.h"
+export *
+}

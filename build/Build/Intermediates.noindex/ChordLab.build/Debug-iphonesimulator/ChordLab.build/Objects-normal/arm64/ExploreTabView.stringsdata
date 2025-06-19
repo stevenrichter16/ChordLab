@@ -1,0 +1,32 @@
+{
+  "source": "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Features/Explore/Views/ExploreTabView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Explore",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search chords...",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to play",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 126
+        }
+      }
+    ]
+  },
+  "version": 1
+}

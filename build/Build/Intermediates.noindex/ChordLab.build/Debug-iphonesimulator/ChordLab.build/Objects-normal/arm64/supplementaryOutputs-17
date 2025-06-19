@@ -1,0 +1,18 @@
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Services/TheoryEngine.swift":
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/TheoryEngine.o"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/TheoryEngine.dia"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/TheoryEngine.swiftconstvalues"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/TheoryEngine.d"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/TheoryEngine.swiftdeps"
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Services/DataManager.swift":
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/DataManager.swiftdeps"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/DataManager.swiftconstvalues"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/DataManager.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/DataManager.d"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/DataManager.dia"
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Features/Builder/Views/BuildTabView.swift":
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/BuildTabView.d"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/BuildTabView.swiftconstvalues"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/BuildTabView.dia"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/BuildTabView.swiftdeps"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/BuildTabView.o"

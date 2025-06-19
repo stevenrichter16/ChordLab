@@ -58,6 +58,13 @@ final class TheoryEngine {
     
     // MARK: - Key Management
     
+    // Computed property for the current Tonic Key object
+    private var currentTonicKey: Key? {
+        guard let rootNote = NoteClass(currentKey) else { return nil }
+        let scale = getScaleFromType(currentScaleType)
+        return Key(root: rootNote, scale: scale)
+    }
+    
     func setKey(_ key: String, scaleType: String) {
         currentKey = key
         currentScaleType = scaleType
@@ -91,23 +98,40 @@ final class TheoryEngine {
     }
     
     func getCurrentScaleNotes() -> [NoteClass] {
-        guard let rootNote = NoteClass(currentKey) else { return [] }
+        guard let key = currentTonicKey else { return [] }
         
-        // Use Tonic's Key struct for scale generation
-        let scale = getScaleFromType(currentScaleType)
-        let key = Key(root: rootNote, scale: scale)
+        print("in getCurrentScaleNotes - key: \(key.root) \(key.scale)")
         
         // Key.noteSet returns notes in scale order starting from root
         // We need to maintain the order for educational purposes
         let scaleNotes = key.noteSet.array.sorted { note1, note2 in
             // Sort by distance from root to maintain scale order
-            let root = rootNote.canonicalNote
+            let root = key.root.canonicalNote
             let dist1 = (note1.pitch.midiNoteNumber - root.pitch.midiNoteNumber + 12) % 12
             let dist2 = (note2.pitch.midiNoteNumber - root.pitch.midiNoteNumber + 12) % 12
             return dist1 < dist2
         }.map { $0.noteClass }
-        
+        print("scaleNotes: \(scaleNotes.count): \(scaleNotes)")
         return scaleNotes
+    }
+    
+    // New method to determine if current key prefers flats
+    func currentKeyPrefersFlats() -> Bool {
+        guard let key = currentTonicKey else { return false }
+        
+        // Use Tonic's built-in logic for determining accidental preference
+        // Tonic automatically knows which keys traditionally use flats vs sharps
+        // based on the circle of fifths and common music theory conventions
+        return key.preferredAccidental == .flat
+    }
+    
+    // New method to get the preferred accidental for the current key
+    func getPreferredAccidental() -> Accidental {
+        guard let key = currentTonicKey else { return .sharp }
+        
+        // Tonic's Key.preferredAccidental returns the accidental type
+        // that should be used for chromatic notes in this key
+        return key.preferredAccidental
     }
     
     func getScaleDegrees() -> [String] {
@@ -117,11 +141,7 @@ final class TheoryEngine {
     // MARK: - Chord Generation
     
     func getDiatonicChords() -> [Chord] {
-        guard let rootNote = NoteClass(currentKey) else { return [] }
-        
-        // Use Tonic's Key.primaryTriads for diatonic chord generation
-        let scale = getScaleFromType(currentScaleType)
-        let key = Key(root: rootNote, scale: scale)
+        guard let key = currentTonicKey else { return [] }
         
         // Key.primaryTriads returns the diatonic triads in order
         return key.primaryTriads

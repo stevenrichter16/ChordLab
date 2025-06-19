@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		097085B52DFF2210001142AA /* Tonic in Frameworks */ = {isa = PBXBuildFile; productRef = 097085B42DFF2210001142AA /* Tonic */; };
+		09F3716B2E00916000C1069A /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 09F3716A2E00916000C1069A /* ViewInspector */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				09F3716B2E00916000C1069A /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -141,6 +143,7 @@
 			);
 			name = ChordLabTests;
 			packageProductDependencies = (
+				09F3716A2E00916000C1069A /* ViewInspector */,
 			);
 			productName = ChordLabTests;
 			productReference = 097085262DFF15F2001142AA /* ChordLabTests.xctest */;
@@ -203,6 +206,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				097085B32DFF2210001142AA /* XCRemoteSwiftPackageReference "Tonic" */,
+				09F371692E00916000C1069A /* XCRemoteSwiftPackageReference "ViewInspector" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 097085152DFF15F0001142AA /* Products */;
@@ -579,6 +583,14 @@
 				minimumVersion = 2.1.0;
 			};
 		};
+		09F371692E00916000C1069A /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nalexn/ViewInspector";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -586,6 +598,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 097085B32DFF2210001142AA /* XCRemoteSwiftPackageReference "Tonic" */;
 			productName = Tonic;
+		};
+		09F3716A2E00916000C1069A /* ViewInspector */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 09F371692E00916000C1069A /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			productName = ViewInspector;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

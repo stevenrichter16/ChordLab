@@ -1,0 +1,18 @@
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Theory/ChordFunction.swift":
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordFunction.swiftdeps"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordFunction.dia"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordFunction.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordFunction.d"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordFunction.swiftconstvalues"
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/UserData.swift":
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/UserData.dia"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/UserData.swiftconstvalues"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/UserData.swiftdeps"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/UserData.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/UserData.d"
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Theory/ChordAnalysis.swift":
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordAnalysis.swiftdeps"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordAnalysis.dia"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordAnalysis.o"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordAnalysis.swiftconstvalues"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordAnalysis.d"

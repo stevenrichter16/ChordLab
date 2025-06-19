@@ -1,0 +1,18 @@
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/ChordHistory.swift":
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordHistory.d"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordHistory.o"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordHistory.swiftconstvalues"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordHistory.swiftdeps"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/ChordHistory.dia"
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/SavedProgression.swift":
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/SavedProgression.swiftdeps"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/SavedProgression.dia"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/SavedProgression.swiftconstvalues"
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/SavedProgression.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/SavedProgression.d"
+"/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Core/Models/Persistence/PracticeSession.swift":
+  object: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/PracticeSession.o"
+  dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/PracticeSession.d"
+  swift-dependencies: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/PracticeSession.swiftdeps"
+  const-values: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/PracticeSession.swiftconstvalues"
+  diagnostics: "/Users/stevenrichter/Documents/repos/ChordLab/build/Build/Intermediates.noindex/ChordLab.build/Debug-iphonesimulator/ChordLab.build/Objects-normal/arm64/PracticeSession.dia"

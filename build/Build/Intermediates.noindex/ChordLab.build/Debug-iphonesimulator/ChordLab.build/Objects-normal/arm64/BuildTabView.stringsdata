@@ -1,0 +1,64 @@
+{
+  "source": "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/Features/Builder/Views/BuildTabView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Build",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Progression",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add chords",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 33
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tempo: %lld BPM",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 73
+        }
+      },
+      {
+        "comment": "",
+        "key": "Suggestions",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Bar %lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 138
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -14,31 +14,19 @@ struct LearnTabView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Current Key Display
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Current Key")
+                // Key and Scale Selector
+                KeyScaleSelector()
+                    .padding(.vertical, 8)
+                
+                // Scale Piano View
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Scale Visualization")
                         .font(.headline)
-                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
                     
-                    HStack {
-                        Text("\(theoryEngine.currentKey) \(theoryEngine.currentScaleType)")
-                            .font(.largeTitle)
-                            .bold()
-                        
-                        Spacer()
-                        
-                        Button {
-                            // TODO: Show key picker
-                        } label: {
-                            Image(systemName: "chevron.down.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.appPrimary)
-                        }
-                    }
+                    ScalePianoView()
+                        .padding(.horizontal)
                 }
-                .padding()
-                .background(Color.appBackground)
-                .cornerRadius(12)
                 
                 // Today's Focus
                 VStack(alignment: .leading, spacing: 12) {
@@ -58,7 +46,6 @@ struct LearnTabView: View {
                     .buttonStyle(.borderedProminent)
                 }
                 .padding()
-                .background(Color.appSecondaryBackground)
                 .cornerRadius(12)
                 
                 // Quick Actions
@@ -145,6 +132,7 @@ struct QuickActionButton: View {
     NavigationStack {
         LearnTabView()
             .environment(TheoryEngine())
+            .environment(AudioEngine())
             .environment(DataManager(inMemory: true))
     }
 }

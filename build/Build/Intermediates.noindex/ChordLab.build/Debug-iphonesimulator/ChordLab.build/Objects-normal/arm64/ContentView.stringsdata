@@ -1,0 +1,48 @@
+{
+  "source": "/Users/stevenrichter/Documents/repos/ChordLab/ChordLab/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Learn",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Explore",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 35
+        }
+      },
+      {
+        "comment": "",
+        "key": "Build",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "Practice",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "Profile",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 62
+        }
+      }
+    ]
+  },
+  "version": 1
+}

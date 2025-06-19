@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logFormatVersion</key>
+	<integer>11</integer>
+	<key>logs</key>
+	<dict>
+		<key>30B728B5-9D27-4809-AC05-C2A16D4BB1BC</key>
+		<dict>
+			<key>className</key>
+			<string>IDECommandLineBuildLog</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
+			<key>fileName</key>
+			<string>30B728B5-9D27-4809-AC05-C2A16D4BB1BC.xcactivitylog</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+				<key>totalNumberOfAnalyzerIssues</key>
+				<integer>0</integer>
+				<key>totalNumberOfErrors</key>
+				<integer>1</integer>
+				<key>totalNumberOfTestFailures</key>
+				<integer>0</integer>
+				<key>totalNumberOfWarnings</key>
+				<integer>0</integer>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>ChordLab project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>ChordLab</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Building project ChordLab with scheme ChordLab and configuration Debug</string>
+			<key>timeStartedRecording</key>
+			<real>772031163.12465405</real>
+			<key>timeStoppedRecording</key>
+			<real>772031209.64120996</real>
+			<key>title</key>
+			<string>Building project ChordLab with scheme ChordLab and configuration Debug</string>
+			<key>uniqueIdentifier</key>
+			<string>30B728B5-9D27-4809-AC05-C2A16D4BB1BC</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

@@ -81,6 +81,7 @@ final class AudioEngine {
     // MARK: - Note Playback
     
     func playNote(_ note: Note, velocity: UInt8 = 80, duration: Double = 1.0) {
+        print("in audioEngine Play Note: \(note)")
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }

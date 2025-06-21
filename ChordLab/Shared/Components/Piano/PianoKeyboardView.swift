@@ -47,17 +47,21 @@ struct PianoKeyboardView: View {
     
     // Get the enharmonic spelling for a white key if it exists in the current scale
     private func getEnharmonicSpelling(for whiteKeyNote: String) -> String? {
+        print("=========in getEnharmonicSpelling for whiteKeyNote \(whiteKeyNote)")
         let scaleNotes = theoryEngine.getCurrentScaleNotes()
         let whiteKeyNoteClass = noteClassFromString(whiteKeyNote)
+        print("in getEnharmonicSpelling whiteKeyNoteClass \(whiteKeyNoteClass)")
         let whiteKeyPitchClass = whiteKeyNoteClass.canonicalNote.pitch.pitchClass
-        
+        print("in getEnharmonicSpelling whiteKeyPitchClass \(whiteKeyNoteClass)")
         // Check if any scale note has the same pitch class but different spelling
         for scaleNote in scaleNotes {
             let scalePitchClass = scaleNote.canonicalNote.pitch.pitchClass
+            print("in getEnharmonicSpelling scalePitchClass \(scalePitchClass)")
             
             // If pitch classes match but the note names are different, we have an enharmonic
             if scalePitchClass == whiteKeyPitchClass &&
                scaleNote.description != whiteKeyNote {
+                print("in getEnharmonicSpelling scalePitchClass == whiteKeyPitchClass \(scaleNote.description)")
                 return scaleNote.description
             }
         }

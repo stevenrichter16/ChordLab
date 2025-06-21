@@ -100,8 +100,6 @@ final class TheoryEngine {
     func getCurrentScaleNotes() -> [NoteClass] {
         guard let key = currentTonicKey else { return [] }
         
-        print("in getCurrentScaleNotes - key: \(key.root) \(key.scale)")
-        
         // Key.noteSet returns notes in scale order starting from root
         // We need to maintain the order for educational purposes
         let scaleNotes = key.noteSet.array.sorted { note1, note2 in
@@ -111,7 +109,7 @@ final class TheoryEngine {
             let dist2 = (note2.pitch.midiNoteNumber - root.pitch.midiNoteNumber + 12) % 12
             return dist1 < dist2
         }.map { $0.noteClass }
-        print("scaleNotes: \(scaleNotes.count): \(scaleNotes)")
+        print("Scale notes: \(scaleNotes)")
         return scaleNotes
     }
     

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Chord Overlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f2f2f7;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .app-container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1c1c1e;
+        }
+
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .key-slider {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .key-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: #007aff;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .slider {
+            flex: 1;
+            height: 40px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e5e5e7;
+            border-radius: 20px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            background: #007aff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .chord-type-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .type-button {
+            padding: 10px 20px;
+            border: 2px solid #e5e5e7;
+            border-radius: 10px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .type-button.active {
+            background-color: #34c759;
+            color: white;
+            border-color: #34c759;
+        }
+
+        .piano-container {
+            position: relative;
+            overflow-x: auto;
+            background-color: #2c2c2e;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .piano-keys {
+            display: flex;
+            position: relative;
+            height: 200px;
+            min-width: fit-content;
+        }
+
+        .octave-group {
+            display: flex;
+            position: relative;
+        }
+
+        .key {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .white-key {
+            width: 50px;
+            height: 100%;
+            background-color: white;
+            border: 1px solid #d1d1d6;
+            border-radius: 0 0 8px 8px;
+            margin-right: 2px;
+            z-index: 1;
+        }
+
+        .black-key {
+            position: absolute;
+            width: 35px;
+            height: 65%;
+            background-color: #1c1c1e;
+            border-radius: 0 0 6px 6px;
+            z-index: 2;
+            top: 0;
+        }
+
+        /* Black key positions */
+        .black-key[data-note="C#"] { left: 37px; }
+        .black-key[data-note="D#"] { left: 89px; }
+        .black-key[data-note="F#"] { left: 193px; }
+        .black-key[data-note="G#"] { left: 245px; }
+        .black-key[data-note="A#"] { left: 297px; }
+
+        .key.highlighted {
+            animation: glow 0.5s ease;
+        }
+
+        .key.chord-root {
+            background-color: #007aff !important;
+            color: white !important;
+        }
+
+        .key.chord-third {
+            background-color: #34c759 !important;
+            color: white !important;
+        }
+
+        .key.chord-fifth {
+            background-color: #ff9500 !important;
+            color: white !important;
+        }
+
+        .key.chord-seventh {
+            background-color: #af52de !important;
+            color: white !important;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px currentColor; }
+            50% { box-shadow: 0 0 20px currentColor; }
+            100% { box-shadow: 0 0 5px currentColor; }
+        }
+
+        .chord-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .chord-button {
+            padding: 20px;
+            background-color: #f5f5f7;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .chord-button:hover {
+            background-color: #e5e5e7;
+        }
+
+        .chord-button.active {
+            background-color: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+
+        .chord-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .chord-function {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .current-chord-display {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: #1c1c1e;
+            margin: 20px 0;
+        }
+
+        .note-labels {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            font-size: 18px;
+            color: #3a3a3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>Piano Chord Visualizer</h1>
+        
+        <div class="control-panel">
+            <div class="key-slider">
+                <span>Key:</span>
+                <div class="key-display" id="keyDisplay">C</div>
+                <input type="range" class="slider" id="keySlider" min="0" max="11" value="0">
+            </div>
+            
+            <div class="chord-type-selector">
+                <button class="type-button active" onclick="setChordType('triads')">Triads</button>
+                <button class="type-button" onclick="setChordType('sevenths')">7th Chords</button>
+                <button class="type-button" onclick="setChordType('extended')">Extended</button>
+            </div>
+        </div>
+
+        <div class="piano-container">
+            <div class="piano-keys" id="pianoKeys"></div>
+        </div>
+
+        <div class="current-chord-display" id="currentChordDisplay">
+            Select a chord
+        </div>
+        <div class="note-labels" id="noteLabels"></div>
+
+        <div class="chord-list" id="chordList"></div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #007aff;"></div>
+                <span>Root</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #34c759;"></div>
+                <span>Third</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #ff9500;"></div>
+                <span>Fifth</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background-color: #af52de;"></div>
+                <span>Seventh</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentKey = 'C';
+        let currentChordType = 'triads';
+        let activeChord = null;
+        
+        const keys = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        const chordDefinitions = {
+            triads: [
+                { name: 'I', function: 'Tonic', intervals: [0, 4, 7] },
+                { name: 'ii', function: 'Supertonic', intervals: [2, 5, 9] },
+                { name: 'iii', function: 'Mediant', intervals: [4, 7, 11] },
+                { name: 'IV', function: 'Subdominant', intervals: [5, 9, 12] },
+                { name: 'V', function: 'Dominant', intervals: [7, 11, 14] },
+                { name: 'vi', function: 'Submediant', intervals: [9, 12, 16] },
+                { name: 'vii°', function: 'Leading Tone', intervals: [11, 14, 17] }
+            ],
+            sevenths: [
+                { name: 'Imaj7', function: 'Tonic', intervals: [0, 4, 7, 11] },
+                { name: 'ii7', function: 'Supertonic', intervals: [2, 5, 9, 12] },
+                { name: 'iii7', function: 'Mediant', intervals: [4, 7, 11, 14] },
+                { name: 'IVmaj7', function: 'Subdominant', intervals: [5, 9, 12, 16] },
+                { name: 'V7', function: 'Dominant', intervals: [7, 11, 14, 17] },
+                { name: 'vi7', function: 'Submediant', intervals: [9, 12, 16, 19] },
+                { name: 'viiø7', function: 'Half-Dim', intervals: [11, 14, 17, 20] }
+            ],
+            extended: [
+                { name: 'Iadd9', function: 'Tonic', intervals: [0, 4, 7, 14] },
+                { name: 'IVadd9', function: 'Subdominant', intervals: [5, 9, 12, 19] },
+                { name: 'V9', function: 'Dominant 9', intervals: [7, 11, 14, 17, 21] },
+                { name: 'vi11', function: 'Minor 11', intervals: [9, 12, 16, 19, 23, 26] },
+                { name: 'IImaj7', function: 'Borrowed', intervals: [2, 6, 9, 13] }
+            ]
+        };
+
+        function initializePiano() {
+            const pianoContainer = document.getElementById('pianoKeys');
+            pianoContainer.innerHTML = '';
+            
+            // Create 2 octaves
+            for (let octave = 3; octave <= 4; octave++) {
+                const octaveGroup = document.createElement('div');
+                octaveGroup.className = 'octave-group';
+                
+                // White keys
+                ['C', 'D', 'E', 'F', 'G', 'A', 'B'].forEach(note => {
+                    const key = document.createElement('div');
+                    key.className = 'key white-key';
+                    key.dataset.note = note;
+                    key.dataset.octave = octave;
+                    key.textContent = note + octave;
+                    octaveGroup.appendChild(key);
+                });
+                
+                // Black keys
+                ['C#', 'D#', 'F#', 'G#', 'A#'].forEach(note => {
+                    const key = document.createElement('div');
+                    key.className = 'key black-key';
+                    key.dataset.note = note;
+                    key.dataset.octave = octave;
+                    octaveGroup.appendChild(key);
+                });
+                
+                pianoContainer.appendChild(octaveGroup);
+            }
+        }
+
+        function updateKeyDisplay() {
+            document.getElementById('keyDisplay').textContent = currentKey;
+            renderChords();
+        }
+
+        function renderChords() {
+            const chordList = document.getElementById('chordList');
+            chordList.innerHTML = '';
+            
+            const chords = chordDefinitions[currentChordType];
+            chords.forEach(chord => {
+                const button = createChordButton(chord);
+                chordList.appendChild(button);
+            });
+        }
+
+        function createChordButton(chordDef) {
+            const button = document.createElement('div');
+            button.className = 'chord-button';
+            
+            const chordNotes = getChordNotes(chordDef.intervals);
+            const chordSymbol = generateChordSymbol(chordNotes[0], chordDef);
+            
+            const name = document.createElement('div');
+            name.className = 'chord-name';
+            name.textContent = chordSymbol;
+            
+            const func = document.createElement('div');
+            func.className = 'chord-function';
+            func.textContent = chordDef.function;
+            
+            button.appendChild(name);
+            button.appendChild(func);
+            
+            button.onclick = () => selectChord(chordDef, button, chordNotes, chordSymbol);
+            
+            return button;
+        }
+
+        function getChordNotes(intervals) {
+            const rootIndex = noteNames.indexOf(currentKey.replace('b', '#').replace('F#', 'F#').replace('C#', 'Db') === 'Db' ? 'C#' : currentKey);
+            return intervals.map(interval => noteNames[(rootIndex + interval) % 12]);
+        }
+
+        function generateChordSymbol(root, chordDef) {
+            let symbol = root;
+            if (chordDef.name.includes('ii') || chordDef.name.includes('iii') || chordDef.name.includes('vi')) {
+                symbol += 'm';
+            } else if (chordDef.name.includes('°')) {
+                symbol += '°';
+            } else if (chordDef.name.includes('ø')) {
+                symbol += 'ø';
+            }
+            
+            if (chordDef.name.includes('maj7')) {
+                symbol += 'maj7';
+            } else if (chordDef.name.includes('7')) {
+                symbol += '7';
+            } else if (chordDef.name.includes('add9')) {
+                symbol += 'add9';
+            } else if (chordDef.name.includes('9')) {
+                symbol += '9';
+            } else if (chordDef.name.includes('11')) {
+                symbol += '11';
+            }
+            
+            return symbol;
+        }
+
+        function selectChord(chordDef, button, notes, symbol) {
+            // Clear previous selections
+            document.querySelectorAll('.chord-button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.key').forEach(k => k.className = k.className.replace(/ chord-\w+/g, ''));
+            
+            button.classList.add('active');
+            activeChord = chordDef;
+            
+            // Highlight piano keys
+            notes.forEach((note, index) => {
+                const keys = document.querySelectorAll(`[data-note="${note}"]`);
+                keys.forEach(key => {
+                    key.classList.add('highlighted');
+                    if (index === 0) key.classList.add('chord-root');
+                    else if (index === 1) key.classList.add('chord-third');
+                    else if (index === 2) key.classList.add('chord-fifth');
+                    else if (index === 3) key.classList.add('chord-seventh');
+                });
+            });
+            
+            // Update display
+            document.getElementById('currentChordDisplay').textContent = symbol;
+            document.getElementById('noteLabels').textContent = notes.join(' - ');
+        }
+
+        function setChordType(type) {
+            currentChordType = type;
+            document.querySelectorAll('.type-button').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(type));
+            });
+            renderChords();
+        }
+
+        // Slider handling
+        document.getElementById('keySlider').addEventListener('input', (e) => {
+            currentKey = keys[e.target.value];
+            updateKeyDisplay();
+        });
+
+        // Initialize
+        initializePiano();
+        renderChords();
+    </script>
+</body>
+</html>

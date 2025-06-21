@@ -780,3 +780,84 @@ The following tests require more advanced implementations and have been prefixed
 - 🔧 6 tests disabled pending feature implementation
 
 Each disabled test includes a TODO comment explaining what needs to be implemented.
+
+## Technical Discoveries and Implementation Details (December 2024)
+
+### Tonic Library Deep Dive
+
+#### ChordTable Validation Logic
+The Tonic library validates chords in `ChordTable.generateChords()` by comparing:
+```swift
+if chord.noteClasses.count <= chord.type.intervals.count {
+    // chord is not valid
+    continue
+}
+```
+
+**Understanding the Check:**
+- `chord.type.intervals`: Array of intervals from root (e.g., Major = [.M3, .P5])
+- `chord.noteClasses`: Actual notes including root (e.g., C Major = [C, E, G])
+- Valid chords must have `noteClasses.count > intervals.count`
+- This prevents chords requiring triple sharps/flats (e.g., B# Major would need D## and F##)
+
+### Performance Optimizations
+
+#### ScrollablePianoView Performance Fix
+**Problem**: 60+ redundant calculations when switching keys
+**Solution**: Implemented caching strategy
+```swift
+@State private var cachedScaleNotes: [NoteClass] = []
+@State private var cachedRootNoteClass: NoteClass? = nil
+
+private func updateCachedNotes() {
+    cachedScaleNotes = theoryEngine.getCurrentScaleNotes()
+    cachedRootNoteClass = NoteClass(theoryEngine.currentKey)
+}
+```
+**Result**: Reduced calculations from 60+ to 2 per key change
+
+### SwiftUI Rendering Behavior
+
+#### Key Discovery: onChange and Rerendering
+When a key change occurs:
+1. User taps key → `theoryEngine.currentKey` changes
+2. SwiftUI immediately rerenders views observing this property
+3. `onChange` modifier fires and runs async updates
+4. State changes from async updates trigger secondary rerender
+
+**Implication**: Views may render twice - once with stale data, once with updated cache
+
+### UI/UX Improvements
+
+#### Piano Keyboard Enhancements
+1. **Root Note Start**: PianoKeyboardView now starts from the current key's root note
+   - Added `startFromRootNote` parameter
+   - Reorders white keys array dynamically
+   
+2. **Octave Root Visualization**: Shows next octave's root with lighter opacity
+   - Added `isOctaveRoot` parameter to PianoKeyView
+   - Helps visualize scale boundaries
+
+3. **Enharmonic Spelling Fix**: 
+   - F Major now correctly shows Bb (not A#)
+   - Uses `theoryEngine.currentKeyPrefersFlats()` 
+   - Leverages Tonic's `key.preferredAccidental` property
+
+### Architecture Patterns
+
+#### @Observable vs ObservableObject
+- Using iOS 17's @Observable macro
+- Use `@State` for Observable objects (not @StateObject)
+- Cannot access @Environment in init(), must use onAppear
+
+#### Scroll Target Behavior
+- `.scrollTargetLayout()` must be on container, not individual items
+- Enables precise scrolling control in horizontal lists
+
+### Best Practices Discovered
+
+1. **Avoid Redundant Calculations**: Cache expensive operations in @State
+2. **Enharmonic Preferences**: Always use Tonic's built-in logic, not custom algorithms
+3. **Piano Layouts**: GeometryReader for responsive design, ZStack for black key positioning
+4. **Performance**: Remove console logging from frequently called methods
+5. **UI Feedback**: Inline selectors often provide better UX than modal sheets

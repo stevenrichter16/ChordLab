@@ -270,8 +270,30 @@ This document outlines a comprehensive, incremental implementation plan for the 
 - Persistence to DataManager
 - Clean, modern UI design
 
-### Phase 4: Explore Tab (3-4 days)
+### Phase 4: Explore Tab (3-4 days) 🚧 IN PROGRESS
 **Goal**: Build the chord explorer with search, filtering, and detailed analysis.
+
+#### Current Session Progress (December 2024):
+1. **Technical Discoveries**
+   - Investigated Tonic's ChordTable validation logic
+   - Understood chord.noteClasses vs chord.type.intervals relationship
+   - Discovered why some chords are invalid (triple sharps/flats)
+   
+2. **Performance Optimizations**
+   - Fixed ScrollablePianoView performance issues
+   - Implemented caching for scale notes
+   - Reduced redundant calculations from 60+ to 2 per key change
+   
+3. **UI/UX Improvements**
+   - Extended PianoKeyboardView to show octave root with lighter opacity
+   - Fixed piano to start from root note instead of always C
+   - Implemented ScrollablePianoView with 5 octaves (C2-C6)
+   - Fixed enharmonic spelling for scales (F Major shows Bb not A#)
+
+4. **SwiftUI Rendering Insights**
+   - Views rerender immediately on @Observable property changes
+   - Async updates in onChange trigger secondary rerenders
+   - Caching strategy prevents performance bottlenecks
 
 #### Tasks:
 1. **Explore Views**
@@ -292,11 +314,12 @@ This document outlines a comprehensive, incremental implementation plan for the 
    └── TheoryNotesSection.swift
    ```
 
-3. **Piano Component**
+3. **Piano Component** ✅ PARTIALLY COMPLETED
    ```
    Shared/Components/Piano/
-   ├── PianoKeyboardView.swift
-   ├── PianoKeyView.swift
+   ├── PianoKeyboardView.swift ✅ (Enhanced with root note start)
+   ├── PianoKeyView.swift ✅ (Already exists)
+   ├── ScrollablePianoView.swift ✅ (New addition)
    └── PianoHighlight.swift
    ```
 
@@ -308,8 +331,8 @@ This document outlines a comprehensive, incremental implementation plan for the 
 **Testable Output**:
 - Can search and filter chords
 - Chord details show all analysis
-- Piano visualization works
-- Audio playback for each chord
+- Piano visualization works ✅ (Multiple implementations available)
+- Audio playback for each chord ✅ (Working in piano views)
 - Chord history updates
 
 ### Phase 5: Builder Tab (3-4 days)

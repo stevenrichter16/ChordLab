@@ -119,6 +119,7 @@ struct KeyScaleSelector: View {
     private func selectScale(_ scaleType: String) {
         // Update engine
         print("in select scale: \(scaleType)")
+        print("in select sclae current key: \(theoryEngine.currentKey)")
         theoryEngine.setKey(theoryEngine.currentKey, scaleType: scaleType)
         
         // Persist change

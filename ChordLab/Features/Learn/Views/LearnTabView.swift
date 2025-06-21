@@ -10,6 +10,7 @@ import SwiftUI
 struct LearnTabView: View {
     @Environment(TheoryEngine.self) private var theoryEngine
     @Environment(DataManager.self) private var dataManager
+    @State private var useScrollablePiano = false
     
     var body: some View {
         ScrollView {
@@ -20,12 +21,18 @@ struct LearnTabView: View {
                 
                 // Scale Piano View
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Scale Visualization")
-                        .font(.headline)
-                        .padding(.horizontal)
+                    HStack {
+                        Text("Scale Visualization")
+                            .font(.headline)
+                        
+                        Spacer()
+
+                    }
+                    .padding(.horizontal)
                     
-                    ScalePianoView()
-                        .padding(.horizontal)
+                        ScrollablePianoView()
+                            .padding(.horizontal)
+
                 }
                 
                 // Today's Focus

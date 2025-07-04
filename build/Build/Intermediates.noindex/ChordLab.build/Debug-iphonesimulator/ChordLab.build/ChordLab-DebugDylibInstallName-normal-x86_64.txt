@@ -1,1 +1,0 @@
-@rpath/ChordLab.debug.dylib

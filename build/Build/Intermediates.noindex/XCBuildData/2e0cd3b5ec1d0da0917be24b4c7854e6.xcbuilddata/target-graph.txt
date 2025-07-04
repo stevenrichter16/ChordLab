@@ -1,9 +1,0 @@
-Target dependency graph (4 targets)
-Target 'ChordLab' in project 'ChordLab'
-➜ Explicit dependency on target 'Tonic' in project 'Tonic'
-Target 'Tonic' in project 'Tonic'
-➜ Explicit dependency on target 'Tonic' in project 'Tonic'
-➜ Explicit dependency on target 'Tonic_Tonic' in project 'Tonic'
-Target 'Tonic' in project 'Tonic'
-➜ Explicit dependency on target 'Tonic_Tonic' in project 'Tonic'
-Target 'Tonic_Tonic' in project 'Tonic' (no dependencies)

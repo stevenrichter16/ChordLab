@@ -26,6 +26,10 @@ extension Color {
     static let appSecondaryBackground = Color(.secondarySystemGroupedBackground)
     static let appTertiaryBackground = Color(.tertiarySystemGroupedBackground)
     
+    // MARK: - Border Colors
+    
+    static let appBorder = Color(.separator)
+    
     // MARK: - Music Theory Colors
     
     static let tonicColor = Color.green

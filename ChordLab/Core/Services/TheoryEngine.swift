@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Tonic
+import SwiftData
 
 @Observable
 final class TheoryEngine {
@@ -17,9 +18,13 @@ final class TheoryEngine {
     var selectedChord: Chord?
     var chordHistory: [Chord] = []
     
+    // Chord visualization state
+    var visualizedChord: Chord? = nil  // Chord to highlight on piano
+    
     // Progression building
-    var currentProgression: [ProgressionChord] = []
-    var savedProgressions: [SavedProgression] = []
+    var currentProgression: [PlaybackChord] = []
+    var savedProgressions: [LegacyProgression] = []
+    var currentProgressionTempo: Int = 120  // BPM for current progression
     
     // Analysis settings
     var showRomanNumerals = true
@@ -28,7 +33,7 @@ final class TheoryEngine {
     
     // MARK: - Types
     
-    struct ProgressionChord: Identifiable {
+    struct PlaybackChord: Identifiable {
         let id = UUID()
         let chord: Chord
         let duration: Double
@@ -41,7 +46,7 @@ final class TheoryEngine {
         }
     }
     
-    struct SavedProgression: Identifiable, Codable {
+    struct LegacyProgression: Identifiable, Codable {
         var id = UUID()
         let name: String
         let key: String
@@ -70,6 +75,12 @@ final class TheoryEngine {
         currentScaleType = scaleType
         selectedChord = nil
     }
+    
+//    func currentKeyPrefersFlats() -> Bool {
+//        // Keys that typically use flats: F, Bb, Eb, Ab, Db, Gb
+//        let flatKeys = ["F", "Bb", "B♭", "Eb", "E♭", "Ab", "A♭", "Db", "D♭", "Gb", "G♭"]
+//        return flatKeys.contains(currentKey)
+//    }
     
     // Helper method to convert scale type string to Tonic Scale
     private func getScaleFromType(_ scaleType: String) -> Scale {
@@ -109,7 +120,7 @@ final class TheoryEngine {
             let dist2 = (note2.pitch.midiNoteNumber - root.pitch.midiNoteNumber + 12) % 12
             return dist1 < dist2
         }.map { $0.noteClass }
-        print("Scale notes: \(scaleNotes)")
+        //print("Scale notes: \(scaleNotes)")
         return scaleNotes
     }
     
@@ -256,7 +267,7 @@ final class TheoryEngine {
         }
     }
     
-    private func determineFunction(romanNumeral: String) -> ChordFunction {
+    public func determineFunction(romanNumeral: String) -> ChordFunction {
         switch romanNumeral.uppercased() {
         case "I", "IMAJ7":
             return .tonic
@@ -424,10 +435,251 @@ final class TheoryEngine {
         return sharpNoteClasses[index % 12]
     }
     
+    // MARK: - Piano Chord Visualizer Support
+    
+    /// Returns the scale degree name for a given index (0-6)
+    func getScaleDegreeName(for index: Int) -> String {
+        let names = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
+        guard index >= 0 && index < names.count else { return "Unknown" }
+        return names[index]
+    }
+    
+    // MARK: - Precalculated Chord Data
+    
+    /// Precalculated diatonic triads for all major keys
+    /// Structure: [key: [(chordType, notes)]] where notes are NoteClass values
+    private let precalculatedTriads: [String: [(type: ChordType, notes: [NoteClass])]] = [
+        "C": [
+            (.major, [.C, .E, .G]),        // I - C Major
+            (.minor, [.D, .F, .A]),        // ii - D minor
+            (.minor, [.E, .G, .B]),        // iii - E minor
+            (.major, [.F, .A, .C]),        // IV - F Major
+            (.major, [.G, .B, .D]),        // V - G Major
+            (.minor, [.A, .C, .E]),        // vi - A minor
+            (.dim, [.B, .D, .F])           // vii° - B diminished
+        ],
+        "D": [
+            (.major, [.D, .Fs, .A]),       // I - D Major
+            (.minor, [.E, .G, .B]),        // ii - E minor
+            (.minor, [.Fs, .A, .Cs]),      // iii - F# minor
+            (.major, [.G, .B, .D]),        // IV - G Major
+            (.major, [.A, .Cs, .E]),       // V - A Major
+            (.minor, [.B, .D, .Fs]),       // vi - B minor
+            (.dim, [.Cs, .E, .G])          // vii° - C# diminished
+        ],
+        "E": [
+            (.major, [.E, .Gs, .B]),       // I - E Major
+            (.minor, [.Fs, .A, .Cs]),      // ii - F# minor
+            (.minor, [.Gs, .B, .Ds]),      // iii - G# minor
+            (.major, [.A, .Cs, .E]),       // IV - A Major
+            (.major, [.B, .Ds, .Fs]),      // V - B Major
+            (.minor, [.Cs, .E, .Gs]),      // vi - C# minor
+            (.dim, [.Ds, .Fs, .A])         // vii° - D# diminished
+        ],
+        "F": [
+            (.major, [.F, .A, .C]),        // I - F Major
+            (.minor, [.G, .Bb, .D]),       // ii - G minor
+            (.minor, [.A, .C, .E]),        // iii - A minor
+            (.major, [.Bb, .D, .F]),       // IV - Bb Major
+            (.major, [.C, .E, .G]),        // V - C Major
+            (.minor, [.D, .F, .A]),        // vi - D minor
+            (.dim, [.E, .G, .Bb])          // vii° - E diminished
+        ],
+        "G": [
+            (.major, [.G, .B, .D]),        // I - G Major
+            (.minor, [.A, .C, .E]),        // ii - A minor
+            (.minor, [.B, .D, .Fs]),       // iii - B minor
+            (.major, [.C, .E, .G]),        // IV - C Major
+            (.major, [.D, .Fs, .A]),       // V - D Major
+            (.minor, [.E, .G, .B]),        // vi - E minor
+            (.dim, [.Fs, .A, .C])          // vii° - F# diminished
+        ],
+        "A": [
+            (.major, [.A, .Cs, .E]),       // I - A Major
+            (.minor, [.B, .D, .Fs]),       // ii - B minor
+            (.minor, [.Cs, .E, .Gs]),      // iii - C# minor
+            (.major, [.D, .Fs, .A]),       // IV - D Major
+            (.major, [.E, .Gs, .B]),       // V - E Major
+            (.minor, [.Fs, .A, .Cs]),      // vi - F# minor
+            (.dim, [.Gs, .B, .D])          // vii° - G# diminished
+        ],
+        "B": [
+            (.major, [.B, .Ds, .Fs]),      // I - B Major
+            (.minor, [.Cs, .E, .Gs]),      // ii - C# minor
+            (.minor, [.Ds, .Fs, .As]),     // iii - D# minor
+            (.major, [.E, .Gs, .B]),       // IV - E Major
+            (.major, [.Fs, .As, .Cs]),     // V - F# Major
+            (.minor, [.Gs, .B, .Ds]),      // vi - G# minor
+            (.dim, [.As, .Cs, .E])         // vii° - A# diminished
+        ]
+    ]
+    
+    /// Precalculated diatonic seventh chords for all major keys
+    private let precalculatedSevenths: [String: [(type: ChordType, notes: [NoteClass])]] = [
+        "C": [
+            (.maj7, [.C, .E, .G, .B]),     // Imaj7 - C Major 7
+            (.min7, [.D, .F, .A, .C]),     // ii7 - D minor 7
+            (.min7, [.E, .G, .B, .D]),     // iii7 - E minor 7
+            (.maj7, [.F, .A, .C, .E]),     // IVmaj7 - F Major 7
+            (.dom7, [.G, .B, .D, .F]),     // V7 - G7
+            (.min7, [.A, .C, .E, .G]),     // vi7 - A minor 7
+            (.halfDim7, [.B, .D, .F, .A])  // vii°7 - B half-dim 7
+        ],
+        "D": [
+            (.maj7, [.D, .Fs, .A, .Cs]),   // Imaj7 - D Major 7
+            (.min7, [.E, .G, .B, .D]),     // ii7 - E minor 7
+            (.min7, [.Fs, .A, .Cs, .E]),   // iii7 - F# minor 7
+            (.maj7, [.G, .B, .D, .Fs]),    // IVmaj7 - G Major 7
+            (.dom7, [.A, .Cs, .E, .G]),    // V7 - A7
+            (.min7, [.B, .D, .Fs, .A]),    // vi7 - B minor 7
+            (.halfDim7, [.Cs, .E, .G, .B]) // vii°7 - C# half-dim 7
+        ],
+        "E": [
+            (.maj7, [.E, .Gs, .B, .Ds]),   // Imaj7 - E Major 7
+            (.min7, [.Fs, .A, .Cs, .E]),   // ii7 - F# minor 7
+            (.min7, [.Gs, .B, .Ds, .Fs]),  // iii7 - G# minor 7
+            (.maj7, [.A, .Cs, .E, .Gs]),   // IVmaj7 - A Major 7
+            (.dom7, [.B, .Ds, .Fs, .A]),   // V7 - B7
+            (.min7, [.Cs, .E, .Gs, .B]),   // vi7 - C# minor 7
+            (.halfDim7, [.Ds, .Fs, .A, .Cs]) // vii°7 - D# half-dim 7
+        ],
+        "F": [
+            (.maj7, [.F, .A, .C, .E]),     // Imaj7 - F Major 7
+            (.min7, [.G, .Bb, .D, .F]),    // ii7 - G minor 7
+            (.min7, [.A, .C, .E, .G]),     // iii7 - A minor 7
+            (.maj7, [.Bb, .D, .F, .A]),    // IVmaj7 - Bb Major 7
+            (.dom7, [.C, .E, .G, .Bb]),    // V7 - C7
+            (.min7, [.D, .F, .A, .C]),     // vi7 - D minor 7
+            (.halfDim7, [.E, .G, .Bb, .D]) // vii°7 - E half-dim 7
+        ],
+        "G": [
+            (.maj7, [.G, .B, .D, .Fs]),    // Imaj7 - G Major 7
+            (.min7, [.A, .C, .E, .G]),     // ii7 - A minor 7
+            (.min7, [.B, .D, .Fs, .A]),    // iii7 - B minor 7
+            (.maj7, [.C, .E, .G, .B]),     // IVmaj7 - C Major 7
+            (.dom7, [.D, .Fs, .A, .C]),    // V7 - D7
+            (.min7, [.E, .G, .B, .D]),     // vi7 - E minor 7
+            (.halfDim7, [.Fs, .A, .C, .E]) // vii°7 - F# half-dim 7
+        ],
+        "A": [
+            (.maj7, [.A, .Cs, .E, .Gs]),   // Imaj7 - A Major 7
+            (.min7, [.B, .D, .Fs, .A]),    // ii7 - B minor 7
+            (.min7, [.Cs, .E, .Gs, .B]),   // iii7 - C# minor 7
+            (.maj7, [.D, .Fs, .A, .Cs]),   // IVmaj7 - D Major 7
+            (.dom7, [.E, .Gs, .B, .D]),    // V7 - E7
+            (.min7, [.Fs, .A, .Cs, .E]),   // vi7 - F# minor 7
+            (.halfDim7, [.Gs, .B, .D, .Fs]) // vii°7 - G# half-dim 7
+        ],
+        "B": [
+            (.maj7, [.B, .Ds, .Fs, .As]),  // Imaj7 - B Major 7
+            (.min7, [.Cs, .E, .Gs, .B]),   // ii7 - C# minor 7
+            (.min7, [.Ds, .Fs, .As, .Cs]), // iii7 - D# minor 7
+            (.maj7, [.E, .Gs, .B, .Ds]),   // IVmaj7 - E Major 7
+            (.dom7, [.Fs, .As, .Cs, .E]),  // V7 - F#7
+            (.min7, [.Gs, .B, .Ds, .Fs]),  // vi7 - G# minor 7
+            (.halfDim7, [.As, .Cs, .E, .Gs]) // vii°7 - A# half-dim 7
+        ]
+    ]
+    
+    /// Returns chord tone roles for visualization (root, third, fifth, and seventh if present)
+    func getChordToneRoles(for chord: Chord) -> [(note: NoteClass, role: String)] {
+        let notes = chord.noteClasses
+        guard notes.count >= 3 else { return [] }
+        
+        var roles = [
+            (notes[0], "Root"),
+            (notes[1], "Third"),
+            (notes[2], "Fifth")
+        ]
+        
+        // Add seventh if present
+        if notes.count >= 4 {
+            roles.append((notes[3], "Seventh"))
+        }
+        
+        return roles
+    }
+    
+    /// Returns all diatonic triads with complete visualization data - FAST version using precalculated data
+    func getDiatonicChordsWithAnalysis() -> [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] {
+        // Use precalculated chords if available
+        if let precalcData = precalculatedTriads[currentKey] {
+            let romanNumerals = ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+            let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
+            let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
+            
+            return precalcData.enumerated().map { index, chordData in
+                // Create chord directly from precalculated notes
+                let root = chordData.notes[0]
+                let chord = Chord(root, type: chordData.type)
+                return (chord, romanNumerals[index], functions[index], degreeNames[index])
+            }
+        }
+        
+        // Fallback to calculation if key not in precalculated data
+        let chords = getDiatonicChords()
+        let romanNumerals = ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+        let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
+        let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
+        
+        return chords.enumerated().map { index, chord in
+            (chord, romanNumerals[index], functions[index], degreeNames[index])
+        }
+    }
+    
+    /// Returns all diatonic seventh chords with complete visualization data - FAST version using precalculated data
+    func getSeventhChordsWithAnalysis() -> [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] {
+        // Use precalculated chords if available
+        if let precalcData = precalculatedSevenths[currentKey] {
+            let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "vii°7"]
+            let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
+            let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
+            
+            return precalcData.enumerated().map { index, chordData in
+                // Create chord directly from precalculated notes
+                let root = chordData.notes[0]
+                let chord = Chord(root, type: chordData.type)
+                return (chord, romanNumerals[index], functions[index], degreeNames[index])
+            }
+        }
+        
+        // Fallback to calculation if key not in precalculated data
+        let chords = getSeventhChords()
+        let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "vii°7"]
+        let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
+        let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
+        
+        return chords.enumerated().map { index, chord in
+            (chord, romanNumerals[index], functions[index], degreeNames[index])
+        }
+    }
+    
+    /// Helper method for proper Roman numeral formatting with 7th chord symbols
+    private func getRomanNumeralForSeventhChord(chord: Chord, index: Int) -> String {
+        let baseRomanNumerals = ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+        guard index < baseRomanNumerals.count else { return "" }
+        
+        let base = baseRomanNumerals[index]
+        
+        // Add appropriate 7th chord suffix
+        switch chord.type {
+        case .maj7:
+            return index == 0 || index == 3 ? base + "maj7" : base + "7"
+        case .min7:
+            return base + "7"
+        case .dom7:
+            return base + "7"
+        case .halfDim7:
+            return base + "7"  // vii°7 or viiø7
+        default:
+            return base
+        }
+    }
+    
     // MARK: - Progression Building
     
     func addChordToProgression(_ chord: Chord, duration: Double = 1.0) {
-        let progressionChord = ProgressionChord(chord: chord, duration: duration)
+        let progressionChord = PlaybackChord(chord: chord, duration: duration)
         currentProgression.append(progressionChord)
         addToHistory(chord)
     }
@@ -439,6 +691,17 @@ final class TheoryEngine {
     
     func clearProgression() {
         currentProgression.removeAll()
+        currentProgressionTempo = 120  // Reset to default
+    }
+    
+    func reorderProgression(from sourceIndex: Int, to destinationIndex: Int) {
+        guard sourceIndex < currentProgression.count,
+              destinationIndex <= currentProgression.count,
+              sourceIndex != destinationIndex else { return }
+        
+        let chord = currentProgression.remove(at: sourceIndex)
+        let adjustedDestination = destinationIndex > sourceIndex ? destinationIndex - 1 : destinationIndex
+        currentProgression.insert(chord, at: adjustedDestination)
     }
     
     // MARK: - History
@@ -454,6 +717,34 @@ final class TheoryEngine {
 // MARK: - Extensions for missing Tonic functionality
 
 extension Chord {
+    /// Generate a properly formatted chord symbol
+    var formattedSymbol: String {
+        let rootName = root.description
+        
+        switch type {
+        case .major:
+            return rootName
+        case .minor:
+            return rootName + "m"
+        case .dim:
+            return rootName + "°"
+        case .dim7:
+            return rootName + "°7"
+        case .halfDim7:
+            return rootName + "ø7"
+        case .aug:
+            return rootName + "+"
+        case .dom7:
+            return rootName + "7"
+        case .maj7:
+            return rootName + "maj7"
+        case .min7:
+            return rootName + "m7"
+        default:
+            return description // Fallback to Tonic's description
+        }
+    }
+    
     /// Parse a chord from a string symbol
     static func parse(_ symbol: String) -> Chord? {
         // Simple chord parsing - in real app would be more sophisticated
@@ -480,29 +771,39 @@ extension Chord {
         
         // Determine chord type from suffix
         let chordType: ChordType
-        switch typeString.lowercased() {
-        case "", "maj":
-            chordType = .major
-        case "m", "min":
-            chordType = .minor
-        case "dim":
-            chordType = .dim
+        
+        // Check exact matches first (for symbols that don't change with case)
+        switch typeString {
+        case "°7":
+            chordType = .dim7
         case "°":
             chordType = .dim
-        case "°7", "dim7":
-            chordType = .dim7
-        case "aug", "+":
-            chordType = .aug
-        case "7", "dom7":
-            chordType = .dom7
-        case "maj7", "M7":
-            chordType = .maj7
-        case "m7", "min7":
-            chordType = .min7
-        case "dim7", "°7":
-            chordType = .dim7
+        case "ø7", "ø":
+            chordType = .halfDim7
         default:
-            chordType = .major
+            // Now check case-insensitive matches
+            switch typeString.lowercased() {
+            case "", "maj":
+                chordType = .major
+            case "m", "min":
+                chordType = .minor
+            case "dim":
+                chordType = .dim
+            case "dim7":
+                chordType = .dim7
+            case "aug", "+":
+                chordType = .aug
+            case "7", "dom7":
+                chordType = .dom7
+            case "maj7":
+                chordType = .maj7
+            case "m7", "min7":
+                chordType = .min7
+            case "hdim7", "m7b5":
+                chordType = .halfDim7
+            default:
+                chordType = .major
+            }
         }
         
         return Chord(root, type: chordType)

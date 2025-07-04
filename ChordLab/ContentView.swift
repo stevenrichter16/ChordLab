@@ -13,57 +13,60 @@ struct ContentView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(TheoryEngine.self) private var theoryEngine
     @Environment(AudioEngine.self) private var audioEngine
-    
-    @State private var selectedTab = 0
+    @Environment(AppState.self) private var appState
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Learn Tab
-            NavigationStack {
-                LearnTabView()
+        @Bindable var appState = appState
+        
+        ZStack {
+            // Main content
+            Group {
+                switch appState.selectedTab {
+                case 0:
+                    NavigationStack {
+                        LearnTabView()
+                    }
+                case 1:
+                    NavigationStack {
+                        ExploreTabView()
+                    }
+                case 2:
+                    NavigationStack {
+                        LibraryTabView()
+                    }
+                case 3:
+                    NavigationStack {
+                        PracticeTabView()
+                    }
+                case 4:
+                    NavigationStack {
+                        ProfileTabView()
+                    }
+                default:
+                    NavigationStack {
+                        LearnTabView()
+                    }
+                }
             }
-            .tabItem {
-                Label("Learn", systemImage: "book.fill")
-            }
-            .tag(0)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             
-            // Explore Tab
-            NavigationStack {
-                ExploreTabView()
+            // Custom tab bar overlay
+            VStack {
+                Spacer()
+                
+                switch appState.tabBarStyle {
+                case .compact:
+                    CompactTabBar(selectedTab: $appState.selectedTab)
+                case .ultraCompact:
+                    UltraCompactTabBar(selectedTab: $appState.selectedTab)
+                case .floating:
+                    FloatingTabBar(selectedTab: $appState.selectedTab)
+                }
             }
-            .tabItem {
-                Label("Explore", systemImage: "magnifyingglass")
-            }
-            .tag(1)
-            
-            // Build Tab
-            NavigationStack {
-                BuildTabView()
-            }
-            .tabItem {
-                Label("Build", systemImage: "hammer.fill")
-            }
-            .tag(2)
-            
-            // Practice Tab
-            NavigationStack {
-                PracticeTabView()
-            }
-            .tabItem {
-                Label("Practice", systemImage: "music.note.list")
-            }
-            .tag(3)
-            
-            // Profile Tab
-            NavigationStack {
-                ProfileTabView()
-            }
-            .tabItem {
-                Label("Profile", systemImage: "person.fill")
-            }
-            .tag(4)
+            .ignoresSafeArea(.keyboard)
+            .ignoresSafeArea(edges: .bottom)
         }
-        .accentColor(.appPrimary)
+        .background(Color.appBackground)
     }
 }
 
@@ -72,4 +75,5 @@ struct ContentView: View {
         .environment(DataManager(inMemory: true))
         .environment(TheoryEngine())
         .environment(AudioEngine())
+        .environment(AppState())
 }

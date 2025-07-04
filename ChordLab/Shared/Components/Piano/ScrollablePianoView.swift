@@ -265,23 +265,15 @@ struct ScrollablePianoKeyView: View {
     
     private func playNote() {
         // Add playing animation
-        print("====== in playNote - noteIdentifier: \(noteIdentifier) ======")
-        print("in ScrollablePianoKeyView - Note: \(note)")
-        print("in ScrollablePianoKeyView - ScaleNotes: \(scaleNotes)")
         playingNotes.insert(noteIdentifier)
         
         // Play the note
         let noteClass = noteClassFromString(note)
-        print("in playNote - noteClass: \(noteClass)")
-        print("in playNote - canonicalNote: \(noteClass.canonicalNote)")
-        print("in playNote - accidental: \(noteClass.canonicalNote.accidental)")
-        print("in playNote - octave: \(octave)")
         let tonicNote = Note(
             noteClass.canonicalNote.letter,
             accidental: noteClass.canonicalNote.accidental,
             octave: octave
         )
-        print("in playNote - tonicNote: \(tonicNote)")
         audioEngine.playNote(tonicNote)
         
         // Remove playing state after animation

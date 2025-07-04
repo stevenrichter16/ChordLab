@@ -125,14 +125,14 @@ final class DataManager {
     
     func getAllProgressions() throws -> [SavedProgression] {
         let descriptor = FetchDescriptor<SavedProgression>(
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            sortBy: [SortDescriptor(\.dateCreated, order: .reverse)]
         )
         return try context.fetch(descriptor)
     }
     
     func updateProgression(_ progression: SavedProgression, update: (SavedProgression) -> Void) throws {
         update(progression)
-        progression.modifiedAt = Date()
+        progression.dateModified = Date()
         try context.save()
     }
     

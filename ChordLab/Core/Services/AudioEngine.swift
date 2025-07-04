@@ -37,9 +37,9 @@ final class AudioEngine {
         engine.attach(samplerNode)
         engine.attach(reverb)
         
-        // Setup reverb
-        reverb.loadFactoryPreset(.mediumHall)
-        reverb.wetDryMix = 20
+        // Setup reverb - more subtle for cleaner sound
+        reverb.loadFactoryPreset(.smallRoom)
+        reverb.wetDryMix = 10
         
         // Connect nodes
         engine.connect(samplerNode, to: reverb, format: nil)
@@ -100,7 +100,7 @@ final class AudioEngine {
     
     // MARK: - Chord Playback
     
-    func playChord(_ chord: Chord, velocity: UInt8 = 80, duration: Double = 2.0) {
+    func playChord(_ chord: Chord, velocity: UInt8 = 80, duration: Double = 0.5) {
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }
@@ -131,9 +131,28 @@ final class AudioEngine {
             return Note(canonicalNote.letter, accidental: canonicalNote.accidental, octave: octave)
         }
         
-        // Play all notes
-        for note in notes {
-            playNote(note, velocity: velocity, duration: 0)
+        // Play all notes with slight timing offset and adjusted velocities
+        for (index, note) in notes.enumerated() {
+            // More aggressive velocity reduction for cleaner sound
+            let noteCount = notes.count
+            let adjustedVelocity: UInt8
+            
+            if noteCount <= 3 {
+                // Triads: 50% velocity for cleaner sound
+                let calculated = Int(velocity) * 50 / 100
+                adjustedVelocity = UInt8(min(calculated, 127))
+            } else {
+                // 7th chords: 40% velocity to prevent muddiness
+                let calculated = Int(velocity) * 40 / 100
+                adjustedVelocity = UInt8(min(calculated, 127))
+            }
+            
+            // Add micro-delay between notes (like guitar strumming)
+            let delay = Double(index) * 0.015  // 15ms between each note for more separation
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                self?.playNote(note, velocity: adjustedVelocity, duration: 0)
+            }
         }
         
         // Schedule note off
@@ -198,7 +217,7 @@ final class AudioEngine {
     
     // MARK: - Progression Playback
     
-    func playProgression(_ progression: [TheoryEngine.ProgressionChord], loop: Bool = false) {
+    func playProgression(_ progression: [TheoryEngine.PlaybackChord], loop: Bool = false) {
         stopPlayback()
         
         sequencer = AudioSequencer(
@@ -233,7 +252,7 @@ final class AudioEngine {
 // MARK: - Audio Sequencer
 
 class AudioSequencer {
-    let progression: [TheoryEngine.ProgressionChord]
+    let progression: [TheoryEngine.PlaybackChord]
     var tempo: Double
     weak var audioEngine: AudioEngine?
     
@@ -241,7 +260,7 @@ class AudioSequencer {
     private var currentIndex = 0
     private var isLooping = false
     
-    init(progression: [TheoryEngine.ProgressionChord], tempo: Double, audioEngine: AudioEngine) {
+    init(progression: [TheoryEngine.PlaybackChord], tempo: Double, audioEngine: AudioEngine) {
         self.progression = progression
         self.tempo = tempo
         self.audioEngine = audioEngine

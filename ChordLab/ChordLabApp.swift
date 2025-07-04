@@ -13,13 +13,15 @@ struct ChordLabApp: App {
     let dataManager = DataManager()
     let theoryEngine = TheoryEngine()
     let audioEngine = AudioEngine()
+    let appState = AppState()
     
     var body: some Scene {
         WindowGroup {
-            ContentView() // Temporary test
+            ContentView()
                 .environment(dataManager)
                 .environment(theoryEngine)
                 .environment(audioEngine)
+                .environment(appState)
                 .modelContainer(dataManager.container)
         }
     }

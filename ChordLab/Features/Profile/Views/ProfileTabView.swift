@@ -13,6 +13,7 @@ struct ProfileTabView: View {
     @State private var totalPracticeSessions = 0
     @State private var favoriteKey = "C major"
     @State private var achievementCount = 0
+    @State private var showingSettings = false
     
     var body: some View {
         ScrollView {
@@ -113,7 +114,7 @@ struct ProfileTabView: View {
                 
                 // Settings Button
                 Button {
-                    // TODO: Navigate to settings
+                    showingSettings = true
                 } label: {
                     Label("Settings", systemImage: "gearshape.fill")
                         .frame(maxWidth: .infinity)
@@ -126,6 +127,9 @@ struct ProfileTabView: View {
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
             loadProfileData()
+        }
+        .sheet(isPresented: $showingSettings) {
+            SettingsView()
         }
     }
     

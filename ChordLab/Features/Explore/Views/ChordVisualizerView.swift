@@ -14,10 +14,10 @@ struct ChordVisualizerView: View {
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(DataManager.self) private var dataManager
     
-    @State private var selectedKey = "C"
-    @State private var selectedChord: Chord?
-    @State private var selectedChordIndex: Int?
-    @State private var selectedChordType: ChordTypeSelector.ChordType = .triads
+    @State public var selectedKey = "C"
+    @State public var selectedChord: Chord?
+    @State public var selectedChordIndex: Int?
+    @State public var selectedChordType: ChordTypeSelector.ChordType = .triads
     @State private var diatonicTriads: [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] = []
     @State private var diatonicSevenths: [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] = []
     @State private var cachedChordToneRoles: [NoteClass: ChordToneRole] = [:]

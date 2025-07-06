@@ -178,7 +178,7 @@ final class SwiftDataIntegrationTests: XCTestCase {
         
         // Fetch sorted by creation date
         let descriptor = FetchDescriptor<SavedProgression>(
-            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            sortBy: [SortDescriptor(\.dateCreated, order: .reverse)]
         )
         let sorted = try context.fetch(descriptor)
         

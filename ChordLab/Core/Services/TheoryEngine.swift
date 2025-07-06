@@ -695,7 +695,9 @@ final class TheoryEngine {
     }
     
     func reorderProgression(from sourceIndex: Int, to destinationIndex: Int) {
-        guard sourceIndex < currentProgression.count,
+        guard sourceIndex >= 0,
+              sourceIndex < currentProgression.count,
+              destinationIndex >= 0,
               destinationIndex <= currentProgression.count,
               sourceIndex != destinationIndex else { return }
         

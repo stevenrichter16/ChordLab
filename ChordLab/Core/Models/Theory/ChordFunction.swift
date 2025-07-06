@@ -66,4 +66,32 @@ enum ChordFunction: String, CaseIterable {
             return "Non-diatonic chord for color or voice leading"
         }
     }
+    
+    /// Roman numeral for triads in major keys
+    var romanNumeralMajor: String {
+        switch self {
+        case .tonic: return "I"
+        case .supertonic: return "ii"
+        case .mediant: return "iii"
+        case .subdominant: return "IV"
+        case .dominant: return "V"
+        case .submediant: return "vi"
+        case .leadingTone: return "vii°"
+        default: return ""
+        }
+    }
+    
+    /// Roman numeral for seventh chords in major keys
+    var romanNumeralMajor7: String {
+        switch self {
+        case .tonic: return "Imaj7"
+        case .supertonic: return "ii7"
+        case .mediant: return "iii7"
+        case .subdominant: return "IVmaj7"
+        case .dominant: return "V7"
+        case .submediant: return "vi7"
+        case .leadingTone: return "vii°7"
+        default: return ""
+        }
+    }
 }

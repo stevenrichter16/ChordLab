@@ -275,7 +275,7 @@ final class TheoryEngineTests: XCTestCase {
         ]
         
         for test in progressionTests {
-            let analysis = theoryEngine.analyzeProgression(test.chords)
+            let analysis = theoryEngine.analyzeProgression(test.chords as [String])
             
             XCTAssertEqual(analysis.pattern, test.pattern,
                           "Progression \(test.chords) should be pattern \(test.pattern) but was \(analysis.pattern)")
@@ -290,7 +290,7 @@ final class TheoryEngineTests: XCTestCase {
     func testProgressionRomanNumeralAnalysis() {
         theoryEngine.setKey("G", scaleType: "major")
         let progression = ["G", "Em", "C", "D"]
-        let analysis = theoryEngine.analyzeProgression(progression)
+        let analysis = theoryEngine.analyzeProgression(progression as [String])
         
         XCTAssertEqual(analysis.romanNumerals, ["I", "vi", "IV", "V"])
         XCTAssertEqual(analysis.chords.count, 4)
@@ -359,7 +359,7 @@ final class TheoryEngineTests: XCTestCase {
     }
     
     func testEmptyProgressionAnalysis() {
-        let emptyAnalysis = theoryEngine.analyzeProgression([])
+        let emptyAnalysis = theoryEngine.analyzeProgression([] as [String])
         
         XCTAssertEqual(emptyAnalysis.chords.count, 0)
         XCTAssertEqual(emptyAnalysis.romanNumerals.count, 0)

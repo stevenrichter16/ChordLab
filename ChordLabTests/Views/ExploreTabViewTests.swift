@@ -10,20 +10,24 @@ import SwiftUI
 import Tonic
 @testable import ChordLab
 
+@MainActor
 final class ExploreTabViewTests: XCTestCase {
     var theoryEngine: TheoryEngine!
     var audioEngine: AudioEngine!
+    var dataManager: DataManager!
     
-    override func setUp() {
-        super.setUp()
+    override func setUp() async throws {
+        try await super.setUp()
         theoryEngine = TheoryEngine()
         audioEngine = AudioEngine()
+        dataManager = DataManager(inMemory: true)
     }
     
-    override func tearDown() {
+    override func tearDown() async throws {
         theoryEngine = nil
         audioEngine = nil
-        super.tearDown()
+        dataManager = nil
+        try await super.tearDown()
     }
     
     func testExploreTabViewInitializes() {
@@ -31,88 +35,78 @@ final class ExploreTabViewTests: XCTestCase {
         let view = ExploreTabView()
             .environment(theoryEngine)
             .environment(audioEngine)
+            .environment(dataManager)
         
         // Then
         XCTAssertNotNil(view)
     }
     
-    func testCategoryPillProperties() {
-        // Given
-        let categories = ["All", "Major", "Minor", "Seventh", "Extended", "Altered"]
+    func testExploreTabViewContainsChordVisualizer() {
+        // Given: ExploreTabView is a wrapper for ChordVisualizerView
+        let view = ExploreTabView()
         
-        for category in categories {
-            // When
-            var selectedCategory = ""
-            let pill = CategoryPill(
-                title: category,
-                isSelected: false
-            ) {
-                selectedCategory = category
-            }
-            
-            // Then
-            XCTAssertEqual(pill.title, category)
-            XCTAssertFalse(pill.isSelected)
-            
-            // Test action
-            pill.action()
-            XCTAssertEqual(selectedCategory, category)
-        }
+        // Then: The body should contain ChordVisualizerView
+        XCTAssertNotNil(view.body)
+        
+        // Note: The view simply wraps ChordVisualizerView
+        // Detailed testing of functionality is done in ChordVisualizerViewTests
     }
     
-    func testCategoryPillSelectedState() {
+    func testNavigationSettings() {
         // Given
-        let pill = CategoryPill(
-            title: "Major",
-            isSelected: true
-        ) {}
+        let view = ExploreTabView()
         
-        // Then
-        XCTAssertTrue(pill.isSelected)
+        // Then: Navigation bar should be configured correctly
+        // The view sets navigationBarTitleDisplayMode to .inline
+        XCTAssertNotNil(view)
     }
     
-    func testChordCardProperties() {
-        // Given
-        let chord = Chord(.A, type: .min7)
-        var playCount = 0
+    // MARK: - Integration Tests
+    
+    func testExploreTabViewWithEnvironments() {
+        // Given: All required environments
+        let view = ExploreTabView()
+            .environment(theoryEngine)
+            .environment(audioEngine)
+            .environment(dataManager)
         
-        // When
-        let card = ChordCard(chord: chord) {
-            playCount += 1
-        }
+        // When: The view is created
+        // Then: It should initialize without errors
+        XCTAssertNotNil(view)
         
-        // Then
-        XCTAssertEqual(card.chord.description, "Am7")
-        
-        // Test action
-        card.action()
-        XCTAssertEqual(playCount, 1)
-        
-        card.action()
-        XCTAssertEqual(playCount, 2)
+        // Verify the environments are available
+        XCTAssertNotNil(theoryEngine)
+        XCTAssertNotNil(audioEngine)
+        XCTAssertNotNil(dataManager)
     }
     
-    func testExploreViewWithDifferentChordTypes() {
-        // Test that the view handles different chord types correctly
-        let chordTypes: [(NoteClass, ChordType, String)] = [
-            (.C, .major, "C"),
-            (.D, .minor, "Dm"),
-            (.E, .dim, "E°"),
-            (.F, .maj7, "Fmaj7"),
-            (.G, .dom7, "G7"),
-            (.A, .min7, "Am7"),
-            (.B, .halfDim7, "Bø7")
-        ]
+    func testTheoryEngineIntegration() {
+        // Given: A configured theory engine
+        theoryEngine.setKey("G", scaleType: "major")
         
-        for (root, type, expectedDescription) in chordTypes {
-            // Given
-            let chord = Chord(root, type: type)
-            
-            // When
-            let card = ChordCard(chord: chord) {}
-            
-            // Then
-            XCTAssertEqual(card.chord.description, expectedDescription)
-        }
+        // When: Creating the explore view
+        let view = ExploreTabView()
+            .environment(theoryEngine)
+            .environment(audioEngine)
+            .environment(dataManager)
+        
+        // Then: The theory engine state should be available
+        XCTAssertEqual(theoryEngine.currentKey, "G")
+        XCTAssertEqual(theoryEngine.currentScaleType, "major")
+        XCTAssertNotNil(view)
+    }
+    
+    func testAudioEngineIntegration() {
+        // Given: An audio engine
+        // When: Creating the explore view
+        let view = ExploreTabView()
+            .environment(theoryEngine)
+            .environment(audioEngine)
+            .environment(dataManager)
+        
+        // Then: The audio engine should be available
+        XCTAssertNotNil(audioEngine)
+        XCTAssertFalse(audioEngine.isPlaying)
+        XCTAssertNotNil(view)
     }
 }

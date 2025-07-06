@@ -6,7 +6,9 @@
       "Bash(find:*)",
       "Bash(swift build:*)",
       "Bash(grep:*)",
-      "Bash(swift test:*)"
+      "Bash(swift test:*)",
+      "Bash(rg:*)",
+      "Bash(xcrun simctl list:*)"
     ],
     "deny": []
   }

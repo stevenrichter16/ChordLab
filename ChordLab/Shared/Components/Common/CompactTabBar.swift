@@ -42,6 +42,7 @@ struct CompactTabBar: View {
                             }
                         }
                     )
+                    .accessibilityIdentifier("tab-\(tabs[index].label)")
                 }
             }
             .padding(.horizontal, 16)
@@ -128,6 +129,7 @@ struct UltraCompactTabBar: View {
                             }
                         }
                     )
+                    .accessibilityIdentifier("tab-\(tabs[index].label)")
                 }
             }
             .padding(.horizontal, 24)
@@ -213,6 +215,7 @@ struct FloatingTabBar: View {
                             }
                         }
                     )
+                    .accessibilityIdentifier("tab-\(tabs[index].label)")
                 }
             }
             .padding(.horizontal, 4)
@@ -273,7 +276,7 @@ struct FloatingTabItem: View {
 #Preview("Compact Tab Bar") {
     @State var selectedTab = 0
     
-    return VStack {
+    VStack {
         Spacer()
         CompactTabBar(selectedTab: $selectedTab)
     }
@@ -284,7 +287,7 @@ struct FloatingTabItem: View {
 #Preview("Ultra Compact Tab Bar") {
     @State var selectedTab = 0
     
-    return VStack {
+    VStack {
         Spacer()
         UltraCompactTabBar(selectedTab: $selectedTab)
     }
@@ -295,10 +298,11 @@ struct FloatingTabItem: View {
 #Preview("Floating Tab Bar") {
     @State var selectedTab = 0
     
-    return VStack {
+    VStack {
         Spacer()
         FloatingTabBar(selectedTab: $selectedTab)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(Color.appBackground)
 }
+

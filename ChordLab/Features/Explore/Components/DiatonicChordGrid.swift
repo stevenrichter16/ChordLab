@@ -104,6 +104,13 @@ struct DiatonicChordButton: View {
         )
         .foregroundColor(isSelected ? .white : .primary)
         .scaleEffect(isPressed ? 0.95 : 1.0)
+        
+        .accessibilityLabel("\(chord.description)")
+        .accessibilityElement(children: .contain)  // Keep children accessible but group them
+        .accessibilityIdentifier("chord-button-\(chord.description)")
+        .accessibilityHint("Tap to play, long press to add to progression")
+        .accessibilityAddTraits(.isButton)
+        
         .onTapGesture {
             action()
         }

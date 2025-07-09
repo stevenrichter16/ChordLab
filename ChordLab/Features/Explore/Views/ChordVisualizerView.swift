@@ -47,20 +47,17 @@ struct ChordVisualizerView: View {
 //                    .fontWeight(.bold)
 //                    .padding(.top)
                 
-                // Key selector with chord type toggle
-                HStack(alignment: .bottom) {
-                    KeySelector(selectedKey: $selectedKey)
+                // Key selector
+                KeySelector(selectedKey: $selectedKey)
+                    .padding(.horizontal)
+                
+                // Chord type selector with color legend
+                VStack(spacing: 12) {
+                    // Standard segmented picker for chord types
+                    ChordTypeSegmentedPicker(selectedChordType: $selectedChordType)
                     
-                    Spacer()
-                    
-                    // Minimalist chord type toggle
-                    VStack(alignment: .trailing, spacing: 8) {
-                        Text("Type")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        MinimalistChordToggle(selectedChordType: $selectedChordType)
-                    }
+                    // Compact color legend
+                    CompactColorLegend(showSeventh: selectedChordType == .sevenths)
                 }
                 .padding(.horizontal)
                 
@@ -158,11 +155,7 @@ struct ChordVisualizerView: View {
                     }
                 )
                 .padding(.horizontal)
-                
-                // Color legend
-                ColorLegend(showSeventh: selectedChordType == .sevenths)
-                    .padding()
-                    .padding(.bottom)
+                .padding(.bottom)
             }
         }
         .background(Color.appBackground)
@@ -328,44 +321,6 @@ struct ChordVisualizerView: View {
         // Haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
-    }
-}
-
-// MARK: - Color Legend
-
-struct ColorLegend: View {
-    let showSeventh: Bool
-    
-    var body: some View {
-        HStack(spacing: 24) {
-            LegendItem(color: .blue, label: "Root")
-            LegendItem(color: .green, label: "Third")
-            LegendItem(color: .orange, label: "Fifth")
-            if showSeventh {
-                LegendItem(color: .purple, label: "Seventh")
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(Color.appSecondaryBackground.opacity(0.5))
-        .cornerRadius(12)
-    }
-}
-
-struct LegendItem: View {
-    let color: Color
-    let label: String
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(color)
-                .frame(width: 16, height: 16)
-            
-            Text(label)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
     }
 }
 

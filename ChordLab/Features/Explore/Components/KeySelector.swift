@@ -30,6 +30,7 @@ struct KeySelector: View {
                                 selectedKey = key
                             }
                         )
+                        .accessibilityIdentifier("key-\(key)")
                     }
                 }
                 .padding(.horizontal, 4)
@@ -48,7 +49,7 @@ struct PianoKeyButton: View {
             Text(key)
                 .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
                 .foregroundColor(isSelected ? .white : .primary)
-                .frame(width: 50, height: 50)
+                .frame(width: 44, height: 44)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(isSelected ? Color.appPrimary : Color.appSecondaryBackground)
@@ -67,12 +68,41 @@ struct PianoKeyButton: View {
 
 // MARK: - Preview
 
-//#Preview {
-//    VStack {
-//        KeySelector(selectedKey: .constant("C"))
-//            .padding()
-//        
-//        KeySelector(selectedKey: .constant("G"))
-//            .padding()
-//    }
-//    .background(Color.appBac
+#Preview {
+    VStack(spacing: 30) {
+        Text("KeySelector Preview")
+            .font(.title2)
+            .fontWeight(.bold)
+        
+        VStack(alignment: .leading, spacing: 20) {
+            // Default size
+            VStack(alignment: .leading) {
+                Text("Default Size (50x50)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                KeySelector(selectedKey: .constant("C"))
+            }
+            
+            // Selected different key
+            VStack(alignment: .leading) {
+                Text("Selected: G")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                KeySelector(selectedKey: .constant("G"))
+            }
+            
+            // Selected B (end of scroll)
+            VStack(alignment: .leading) {
+                Text("Selected: B (should be fully visible)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                KeySelector(selectedKey: .constant("B"))
+            }
+        }
+        .padding()
+        
+        Spacer()
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.appBackground)
+}

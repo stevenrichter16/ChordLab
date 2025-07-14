@@ -257,6 +257,35 @@ struct ChordDetailRow: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                
+                // Key information
+                if chord.selectedFromKey != nil || !chord.keysContaining.isEmpty {
+                    HStack(spacing: 6) {
+                        // Selected from key (filled icon)
+                        if let selectedKey = chord.selectedFromKey {
+                            HStack(spacing: 2) {
+                                Image(systemName: "key.fill")
+                                    .font(.caption2)
+                                    .foregroundColor(.appPrimary)
+                                Text(selectedKey)
+                                    .font(.caption2)
+                                    .foregroundColor(.appPrimary)
+                            }
+                        }
+                        
+                        // Other keys (outlined icons)
+                        ForEach(chord.keysContaining.filter { $0 != chord.selectedFromKey }, id: \.self) { key in
+                            HStack(spacing: 2) {
+                                Image(systemName: "key")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text(key)
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
             }
             
             Spacer()

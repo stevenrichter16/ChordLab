@@ -16,7 +16,7 @@ struct ChordVisualizerHeaderPreview: View {
             // Header section with key and chord type selection
             VStack(spacing: 12) {
                 // Key selector on its own line
-                KeySelector(selectedKey: $selectedKey)
+                KeySelector(selectedKey: $selectedKey, keysContainingChord: [])
                 
                 // Chord type picker and color legend on same line
                 HStack {
@@ -126,4 +126,5 @@ struct CompactChordVisualizerHeader: View {
 #Preview("Single Line Compact") {
     CompactChordVisualizerHeader()
         .frame(maxHeight: 400)
+    
 }

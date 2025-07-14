@@ -38,11 +38,15 @@ final class TheoryEngine {
         let chord: Chord
         let duration: Double
         let velocity: Int
+        let selectedFromKey: NoteClass?  // The key the chord was selected from
+        let keysContaining: Set<NoteClass>  // All keys that contain this chord
         
-        init(chord: Chord, duration: Double = 1.0, velocity: Int = 80) {
+        init(chord: Chord, duration: Double = 1.0, velocity: Int = 80, selectedFromKey: NoteClass? = nil, keysContaining: Set<NoteClass> = []) {
             self.chord = chord
             self.duration = duration
             self.velocity = velocity
+            self.selectedFromKey = selectedFromKey
+            self.keysContaining = keysContaining
         }
     }
     
@@ -59,6 +63,39 @@ final class TheoryEngine {
         let id = UUID()
         let name: String
         let chords: [Chord]
+    }
+    
+    // MARK: - Initialization
+    
+    init() {
+        // Build reverse lookup dictionary from precalculated chord data
+        var lookup: [String: Set<NoteClass>] = [:]
+        
+        // Process triads
+        for (keyName, chords) in precalculatedTriads {
+            guard let keyRoot = NoteClass(keyName) else { continue }
+            
+            for chordData in chords {
+                let chordRoot = chordData.notes[0]
+                // Create normalized chord key (e.g., "Cmajor", "Dminor")
+                let chordKey = "\(chordRoot.description)\(chordData.type)"
+                lookup[chordKey, default: []].insert(keyRoot)
+            }
+        }
+        
+        // Process seventh chords
+        for (keyName, chords) in precalculatedSevenths {
+            guard let keyRoot = NoteClass(keyName) else { continue }
+            
+            for chordData in chords {
+                let chordRoot = chordData.notes[0]
+                // Create normalized chord key (e.g., "Cmaj7", "Dmin7")
+                let chordKey = "\(chordRoot.description)\(chordData.type)"
+                lookup[chordKey, default: []].insert(keyRoot)
+            }
+        }
+        
+        self.chordToKeysLookup = lookup
     }
     
     // MARK: - Key Management
@@ -145,6 +182,16 @@ final class TheoryEngine {
     
     func getScaleDegrees() -> [String] {
         return ["1", "2", "3", "4", "5", "6", "7"]
+    }
+    
+    // MARK: - Chord Analysis
+    
+    /// Returns all major keys that contain the given chord as a diatonic chord
+    /// Uses O(1) lookup for optimal performance
+    func getKeysContainingChord(_ chord: Chord) -> Set<NoteClass> {
+        // Create normalized chord key matching the format used in initialization
+        let chordKey = "\(chord.root.description)\(chord.type)"
+        return chordToKeysLookup[chordKey] ?? []
     }
     
     // MARK: - Chord Generation
@@ -446,6 +493,9 @@ final class TheoryEngine {
     
     // MARK: - Precalculated Chord Data
     
+    /// Reverse lookup dictionary for finding keys containing a specific chord
+    private let chordToKeysLookup: [String: Set<NoteClass>]
+    
     /// Precalculated diatonic triads for all major keys
     /// Structure: [key: [(chordType, notes)]] where notes are NoteClass values
     private let precalculatedTriads: [String: [(type: ChordType, notes: [NoteClass])]] = [
@@ -679,7 +729,18 @@ final class TheoryEngine {
     // MARK: - Progression Building
     
     func addChordToProgression(_ chord: Chord, duration: Double = 1.0) {
-        let progressionChord = PlaybackChord(chord: chord, duration: duration)
+        // Get the current key as NoteClass
+        let currentKeyNote = NoteClass(currentKey)
+        
+        // Get all keys containing this chord
+        let keysContaining = getKeysContainingChord(chord)
+        
+        let progressionChord = PlaybackChord(
+            chord: chord, 
+            duration: duration,
+            selectedFromKey: currentKeyNote,
+            keysContaining: keysContaining
+        )
         currentProgression.append(progressionChord)
         addToHistory(chord)
     }

@@ -48,18 +48,15 @@ struct ChordVisualizerView: View {
 //                    .padding(.top)
                 
                 // Key selector
-                KeySelector(selectedKey: $selectedKey)
+                KeySelector(
+                    selectedKey: $selectedKey,
+                    keysContainingChord: selectedChord != nil ? theoryEngine.getKeysContainingChord(selectedChord!) : []
+                )
                     .padding(.horizontal)
                 
-                // Chord type selector with color legend
-                VStack(spacing: 12) {
-                    // Standard segmented picker for chord types
-                    ChordTypeSegmentedPicker(selectedChordType: $selectedChordType)
-                    
-                    // Compact color legend
-                    CompactColorLegend(showSeventh: selectedChordType == .sevenths)
-                }
-                .padding(.horizontal)
+                // Compact color legend (removed segmented picker)
+                CompactColorLegend(showSeventh: selectedChordType == .sevenths)
+                    .padding(.horizontal)
                 
                 // Piano visualization with overlay option
                 ZStack(alignment: .topTrailing) {
@@ -84,74 +81,64 @@ struct ChordVisualizerView: View {
                 }
                 .padding(.horizontal)
                 
-                // Current chord display
+                // Current chord display - condensed single line
                 if let chord = selectedChord {
                     HStack(spacing: 12) {
-                        Text(chord.formattedSymbol)
-                            .font(.system(size: 18, weight: .bold))
+                        // Chord info group
+                        HStack(spacing: 8) {
+                            Text(chord.abbreviatedSymbol)
+                                .font(.system(size: 18, weight: .bold))
+                            
+                            // Roman numeral and function in smaller text
+                            if let index = selectedChordIndex, index < currentDiatonicChords.count {
+                                Text("\(currentDiatonicChords[index].romanNumeral.abbreviatedRomanNumeral) • \(currentDiatonicChords[index].degreeName.abbreviatedDegreeName)")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                            } else {
+                                let romanNumeral = theoryEngine.getRomanNumeral(for: chord.description)
+                                let function = theoryEngine.determineFunction(romanNumeral: romanNumeral.abbreviatedRomanNumeral)
+                                Text("\(romanNumeral) • \(function.rawValue)")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                         
-                        // Only show roman numeral and degree name if we have a selected index
-                        if let index = selectedChordIndex, index < currentDiatonicChords.count {
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(currentDiatonicChords[index].romanNumeral)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.secondary)
-                            
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(currentDiatonicChords[index].degreeName)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.appPrimary)
-                        } else {
-                            // For chords selected from timeline, determine roman numeral and function
-                            let romanNumeral = theoryEngine.getRomanNumeral(for: chord.description)
-                            let function = theoryEngine.determineFunction(romanNumeral: romanNumeral)
-                            
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(romanNumeral)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.secondary)
-                            
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(function.rawValue)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.appPrimary)
+                        Spacer()
+                        
+                        // Chord note buttons - smaller size
+                        HStack(spacing: 6) {
+                            ForEach(chord.noteClasses, id: \.self) { note in
+                                CompactChordNoteButton(
+                                    note: note,
+                                    role: cachedChordToneRoles[note]
+                                )
+                            }
                         }
                     }
-                    
-                    // Chord notes
-                    HStack(spacing: 8) {
-                        ForEach(chord.noteClasses, id: \.self) { note in
-                            ChordNoteButton(
-                                note: note,
-                                role: cachedChordToneRoles[note]
-                            )
-                        }
-                    }
+                    .padding(.horizontal)
                 } else {
                     Text("Select a chord")
-                        .font(.title2)
+                        .font(.headline)
                         .foregroundColor(.secondary)
-                        .padding(.vertical, 3)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
                 }
                 
-                // Diatonic chord grid
+                // Diatonic chord grid with swipe gesture
                 DiatonicChordGrid(
                     chords: currentDiatonicChords,
                     selectedChord: $selectedChord,
                     selectedChordIndex: $selectedChordIndex,
+                    selectedChordType: $selectedChordType,
                     onChordPlay: { chord in
                         playChordOnPiano(chord)
                     },
                     onChordHold: { chord in
                         addChordToProgression(chord)
+                    },
+                    onChordTypeChange: { newType in
+                        // Handle chord type change from swipe
+                        handleChordTypeChange(newType)
                     }
                 )
                 .padding(.horizontal)
@@ -321,6 +308,20 @@ struct ChordVisualizerView: View {
         // Haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
+    }
+    
+    private func handleChordTypeChange(_ newType: ChordTypeSelector.ChordType) {
+        // Clear selection when switching between triads and 7ths
+        selectedChord = nil
+        selectedChordIndex = nil
+        cachedChordToneRoles = [:]
+        
+        // Load the other chord type if not already loaded
+        if newType == .sevenths && diatonicSevenths.isEmpty {
+            diatonicSevenths = theoryEngine.getSeventhChordsWithAnalysis()
+        } else if newType == .triads && diatonicTriads.isEmpty {
+            diatonicTriads = theoryEngine.getDiatonicChordsWithAnalysis()
+        }
     }
 }
 

@@ -27,30 +27,12 @@ struct RoundedCorner: Shape {
     }
 }
 
-enum PlayerViewState: String, CaseIterable {
-    case minimized = "Minimized"
-    case intermediate = "Simple"
-    case expanded = "Full"
-    
-    var icon: String {
-        switch self {
-        case .minimized: return "square.stack"
-        case .intermediate: return "square.stack.fill"
-        case .expanded: return "square.stack.3d.up.fill"
-        }
-    }
-}
-
 struct FloatingProgressionPlayer: View {
-    @State private var viewState: PlayerViewState = .minimized
     @State private var isPlaying = false
     @State private var currentPlayIndex: Int? = nil
     @State private var playbackTimer: Timer? = nil
     @State private var isLooping = false
-    @State private var dragOffset = CGSize.zero
-    @State private var position = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 200)
     @State private var showingSaveSheet = false
-    @State private var showingViewMenu = false
     
     // Tap-hold reorder state
     @State private var selectedChordIndex: Int? = nil
@@ -73,139 +55,198 @@ struct FloatingProgressionPlayer: View {
     }
     
     var body: some View {
-        Group {
-            switch viewState {
-            case .minimized:
-                minimizedView
-            case .intermediate:
-                intermediateView
-            case .expanded:
-                expandedView
-            }
+        VStack {
+            Spacer()
+            intermediateView
+                .padding(.horizontal, 10)
+                .padding(.bottom, 60) // Small padding above tab bar
         }
-        .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewState)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: dragOffset)
         .onDisappear {
             arrowDismissTimer?.invalidate()
         }
     }
     
-    // MARK: - Minimized View
+    // MARK: - Main View
     
-    private var minimizedView: some View {
-        HStack(spacing: 8) {
-            Button(action: togglePlayback) {
-                Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white)
-            }
-            .frame(width: 36, height: 36)
-            .background(isPlaying ? Color.red : Color.appPrimary)
-            .clipShape(Circle())
-            
-            if !progression.isEmpty {
-                Text(progressionString)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .frame(maxWidth: .infinity)
-            } else {
-                Text("No progression")
-                    .font(.system(size: 14))
+    @ViewBuilder
+    private var playButton: some View {
+        Button(action: togglePlayback) {
+            Image(systemName: isPlaying ? "stop.fill" : "play.fill")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 44)
+                .frame(maxHeight: .infinity)
+        }
+        .background(isPlaying ? Color.red : Color.appPrimary)
+        .cornerRadius(16, corners: [.topLeft, .bottomLeft])
+    }
+    
+    @ViewBuilder
+    private var timelineContent: some View {
+        HStack(spacing: 0) {
+            if progression.isEmpty {
+                Text("Hold chord buttons to build progression")
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
-            }
-            
-            // Ellipsis menu
-            Menu {
-                ForEach(PlayerViewState.allCases, id: \.self) { state in
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            viewState = state
+                    .padding(.horizontal, 40)
+                    .frame(minWidth: 200)
+                    .frame(maxHeight: .infinity)
+            } else {
+                ForEach(Array(progression.enumerated()), id: \.offset) { index, chord in
+                    MinimalChordTimelineItem(
+                        chord: chord,
+                        index: index,
+                        isPlaying: currentPlayIndex == index,
+                        isSelected: selectedChordIndex == index,
+                        onRemove: { removeChord(at: index) },
+                        onLongPress: {
+                            selectedChordIndex = index
+                            showArrows = true
+                            startArrowDismissTimer()
                         }
-                    }) {
-                        Label(state.rawValue, systemImage: state.icon)
-                    }
+                    )
+                    .id(index)
                 }
-            } label: {
-                Image(systemName: "ellipsis.circle.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(.appPrimary)
+                
+                // Spacer to ensure last chord is visible
+                Color.clear
+                    .frame(width: 44, height: 1)
             }
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.appSecondaryBackground)
-                .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-        )
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    dragOffset = value.translation
-                }
-                .onEnded { value in
-                    position.x += value.translation.width
-                    position.y += value.translation.height
-                    dragOffset = .zero
-                }
-        )
+        .frame(maxHeight: .infinity)
     }
     
-    // MARK: - Intermediate View
+    @ViewBuilder
+    private var ellipsisMenu: some View {
+        Menu {
+            // BPM Toggle
+            Button(action: {
+                if showBPMSlider {
+                    theoryEngine.currentProgressionTempo = Int(sliderBPM)
+                } else {
+                    sliderBPM = Double(tempo)
+                }
+                showBPMSlider.toggle()
+            }) {
+                Label("BPM: \(showBPMSlider ? Int(sliderBPM) : tempo)", systemImage: "metronome")
+            }
+            
+            // Loop Toggle
+            Button(action: { isLooping.toggle() }) {
+                Label(isLooping ? "Loop: On" : "Loop: Off", systemImage: "repeat")
+            }
+            
+            Divider()
+            
+            Button(action: { showingSaveSheet = true }) {
+                Label("Save Progression", systemImage: "square.and.arrow.down")
+            }
+            
+            Divider()
+            
+            Button(role: .destructive, action: clearProgression) {
+                Label("Clear Progression", systemImage: "trash")
+            }
+        } label: {
+            ZStack {
+                Rectangle()
+                    .fill(Color.appTertiaryBackground)
+                    .frame(width: 44)
+                
+                Rectangle()
+                    .fill(Color.appTertiaryBackground)
+                    .frame(width: 44)
+                    .cornerRadius(16, corners: [.topRight, .bottomRight])
+                
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.white)
+            }
+            .frame(width: 44)
+            .frame(maxHeight: .infinity)
+        }
+    }
+    
+    @ViewBuilder
+    private var arrowsOverlay: some View {
+        Group {
+            if let selectedIndex = selectedChordIndex, showArrows, selectedIndex < progression.count {
+                if progression.count == 1 {
+                    ChordDeleteButton(onDelete: { removeChord(at: selectedIndex) })
+                        .offset(y: -60)
+                        .transition(.scale.combined(with: .opacity))
+                } else {
+                    ChordMoveArrows(
+                        canMoveLeft: selectedIndex > 0,
+                        canMoveRight: selectedIndex < progression.count - 1,
+                        onMoveLeft: { moveChord(from: selectedIndex, direction: .left) },
+                        onMoveRight: { moveChord(from: selectedIndex, direction: .right) },
+                        onDelete: { removeChord(at: selectedIndex) }
+                    )
+                    .offset(y: -60)
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var bpmSliderContent: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("BPM")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Slider(value: $sliderBPM, in: 60...200, step: 5) {
+                    Text("BPM")
+                } minimumValueLabel: {
+                    Text("60")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                } maximumValueLabel: {
+                    Text("200")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .accentColor(.appPrimary)
+                
+                Text("\(Int(sliderBPM))")
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .foregroundColor(.primary)
+                    .frame(width: 40)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.appSecondaryBackground)
+                    .shadow(color: .black.opacity(0.2), radius: 8, y: 4)
+            )
+        }
+        .animation(.spring(response: 0.3), value: showBPMSlider)
+        .onChange(of: sliderBPM) { _, newValue in
+            theoryEngine.currentProgressionTempo = Int(newValue)
+        }
+        .onTapGesture {
+            // Tap outside slider to dismiss
+            withAnimation {
+                showBPMSlider = false
+            }
+        }
+    }
     
     private var intermediateView: some View {
-        HStack(spacing: 0) {
-                // Play button - vertical rectangle
-                Button(action: togglePlayback) {
-                    Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                        .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.white)
-                        .frame(width: 44)
-                        .frame(maxHeight: .infinity)
-                }
-                .background(isPlaying ? Color.red : Color.appPrimary)
-                .cornerRadius(16, corners: [.topLeft, .bottomLeft])
+        ZStack {
+            // Main player content
+            HStack(spacing: 0) {
+                playButton
                 
                 // Timeline
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 0) {  // No spacing for seamless minimal design
-                            if progression.isEmpty {
-                                Text("Hold chord buttons to build progression")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 40)
-                                    .frame(minWidth: 200)
-                                    .frame(maxHeight: .infinity)
-                            } else {
-                                ForEach(Array(progression.enumerated()), id: \.offset) { index, chord in
-                                    MinimalChordTimelineItem(
-                                        chord: chord,
-                                        index: index,
-                                        isPlaying: currentPlayIndex == index,
-                                        isSelected: selectedChordIndex == index,
-                                        onRemove: { removeChord(at: index) },
-                                        onLongPress: {
-                                            // Only show arrows if reordering is possible
-                                            if progression.count > 1 {
-                                                selectedChordIndex = index
-                                                showArrows = true
-                                                startArrowDismissTimer()
-                                            }
-                                        }
-                                    )
-                                    .id(index)
-                                }
-                                
-                                // Spacer to ensure last chord is visible
-                                Color.clear
-                                    .frame(width: 44, height: 1)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .frame(maxHeight: .infinity)
+                        timelineContent
                     }
                     .background(Color.appTertiaryBackground.opacity(0.3))
                     .onChange(of: selectedChordIndex) { _, newIndex in
@@ -215,317 +256,34 @@ struct FloatingProgressionPlayer: View {
                             }
                         }
                     }
-                } // Close ScrollViewReader
-            } // Close HStack
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.appSecondaryBackground)
-                .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
-        )
-        .overlay(
-            // Ellipsis menu on the right side
-            HStack {
-                Spacer()
-                Menu {
-                    ForEach(PlayerViewState.allCases, id: \.self) { state in
-                        Button(action: {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                viewState = state
-                            }
-                        }) {
-                            Label(state.rawValue, systemImage: state.icon)
-                        }
-                    }
-                } label: {
-                    ZStack {
-                        // Full opaque background to cover corners
-                        Rectangle()
-                            .fill(Color.appTertiaryBackground)
-                            .frame(width: 44)
-                        
-                        // Rounded corner overlay
-                        Rectangle()
-                            .fill(Color.appTertiaryBackground)
-                            .frame(width: 44)
-                            .cornerRadius(16, corners: [.topRight, .bottomRight])
-                        
-                        // Ellipsis icon
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.white)
-                    }
-                    .frame(width: 44)
-                    .frame(maxHeight: .infinity)
                 }
+                
+                // Ellipsis menu
+                ellipsisMenu
             }
-        )
-        .overlay(
-            // Arrows overlay for intermediate view
-            Group {
-                if let selectedIndex = selectedChordIndex, showArrows, selectedIndex < progression.count {
-                    ChordMoveArrows(
-                        canMoveLeft: selectedIndex > 0,
-                        canMoveRight: selectedIndex < progression.count - 1,
-                        onMoveLeft: { moveChord(from: selectedIndex, direction: .left) },
-                        onMoveRight: { moveChord(from: selectedIndex, direction: .right) }
-                    )
-                    .offset(y: 60)
-                    .transition(.scale.combined(with: .opacity))
-                }
-            }
-        )
-        .frame(maxWidth: UIScreen.main.bounds.width - 20) // Use UIScreen instead of GeometryReader
-        .frame(height: 56) // Reduced height for intermediate view
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    dragOffset = value.translation
-                }
-                .onEnded { value in
-                    var newX = position.x + value.translation.width
-                    var newY = position.y + value.translation.height
-                    
-                    let screenWidth = UIScreen.main.bounds.width
-                    let screenHeight = UIScreen.main.bounds.height
-                    
-                    // Calculate view width (limited by screen width)
-                    let viewWidth = min(screenWidth - 20, 350)
-                    let halfWidth = viewWidth / 2
-                    
-                    // Ensure the view stays within screen bounds with bounce back
-                    newX = max(halfWidth + 10, min(screenWidth - halfWidth - 10, newX))
-                    newY = max(50, min(screenHeight - 50, newY))
-                    
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        position.x = newX
-                        position.y = newY
-                        dragOffset = .zero
-                    }
-                }
-        )
-    }
-    
-    // MARK: - Expanded View
-    
-    @ViewBuilder
-    private var expandedView: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                // Compact header with drag handle and ellipsis menu
-                HStack {
-                    Capsule()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 40, height: 5)
-                    
-                    Spacer()
-                    
-                    // Ellipsis menu
-                    Menu {
-                        ForEach(PlayerViewState.allCases, id: \.self) { state in
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    viewState = state
-                                }
-                            }) {
-                                Label(state.rawValue, systemImage: state.icon)
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle.fill")
-                            .font(.system(size: 18))
-                            .foregroundColor(.appPrimary)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .contentShape(Rectangle()) // Make entire header area draggable
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            dragOffset = value.translation
-                        }
-                        .onEnded { value in
-                            position.x += value.translation.width
-                            position.y += value.translation.height
-                            dragOffset = .zero
-                        }
-                )
-                
-                // Condensed controls
-                HStack(spacing: 12) {
-                    // Play button
-                    Button(action: togglePlayback) {
-                        Image(systemName: isPlaying ? "stop.fill" : "play.fill")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white)
-                    }
-                    .frame(width: 36, height: 36)
-                    .background(isPlaying ? Color.red : Color.appPrimary)
-                    .clipShape(Circle())
-                    
-                    // Loop toggle
-                    Button(action: { isLooping.toggle() }) {
-                        Image(systemName: "repeat")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(isLooping ? .white : .secondary)
-                    }
-                    .frame(width: 30, height: 30)
-                    .background(isLooping ? Color.appPrimary : Color.appTertiaryBackground)
-                    .clipShape(Circle())
-                    
-                    Spacer()
-                    
-                    // BPM Button
-                    Button(action: {
-                        if showBPMSlider {
-                            // Save the BPM when closing
-                            theoryEngine.currentProgressionTempo = Int(sliderBPM)
-                        } else {
-                            // Initialize slider with current BPM
-                            sliderBPM = Double(tempo)
-                        }
-                        showBPMSlider.toggle()
-                    }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "speaker.wave.3.fill")
-                                .font(.system(size: 12))
-                            Text("\(showBPMSlider ? Int(sliderBPM) : tempo)")
-                                .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        }
-                        .foregroundColor(showBPMSlider ? .white : .primary)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 15)
-                            .fill(showBPMSlider ? Color.appPrimary : Color.appTertiaryBackground)
-                    )
-                    
-                    // Save button
-                    Button(action: { showingSaveSheet = true }) {
-                        Image(systemName: "square.and.arrow.down")
-                            .font(.system(size: 14))
-                            .foregroundColor(.appPrimary)
-                    }
-                    .frame(width: 30, height: 30)
-                    .background(Color.appPrimary.opacity(0.1))
-                    .clipShape(Circle())
-                    .disabled(progression.isEmpty)
-                    
-                    // Clear button
-                    Button(action: clearProgression) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 14))
-                            .foregroundColor(.red)
-                    }
-                    .frame(width: 30, height: 30)
-                    .background(Color.red.opacity(0.1))
-                    .clipShape(Circle())
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                
-                // BPM Slider (appears when BPM button is tapped)
-                if showBPMSlider {
-                    Slider(value: $sliderBPM, in: 60...200, step: 10)
-                        .accentColor(.appPrimary)
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 8)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .top).combined(with: .opacity),
-                            removal: .move(edge: .top).combined(with: .opacity)
-                        ))
-                }
-                
-                // Timeline
-                ScrollViewReader { proxy in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            if progression.isEmpty {
-                                Text("Hold chord buttons to build progression")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal, 40)
-                                    .padding(.vertical, 20)
-                            } else {
-                                ForEach(Array(progression.enumerated()), id: \.offset) { index, chord in
-                                    ChordTimelineItem(
-                                        chord: chord,
-                                        index: index,
-                                        isPlaying: currentPlayIndex == index,
-                                        isSelected: selectedChordIndex == index,
-                                        onRemove: { removeChord(at: index) },
-                                        onLongPress: {
-                                            // Only show arrows if reordering is possible
-                                            if progression.count > 1 {
-                                                selectedChordIndex = index
-                                                showArrows = true
-                                                startArrowDismissTimer()
-                                            }
-                                        }
-                                    )
-                                    .id(index)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.vertical, 12)
-                    }
-                    .frame(height: 84)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.appTertiaryBackground.opacity(0.5))
-                            .onTapGesture {
-                                // Only handle tap if arrows are showing
-                                if showArrows {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        selectedChordIndex = nil
-                                        showArrows = false
-                                        arrowDismissTimer?.invalidate()
-                                    }
-                                }
-                            }
-                    )
-                    .contentShape(Rectangle())
-                    .onChange(of: selectedChordIndex) { _, newIndex in
-                        if let index = newIndex {
-                            withAnimation {
-                                proxy.scrollTo(index, anchor: .center)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
-                
-//                // Hint for reordering
-//                if progression.count > 1 && selectedChordIndex == nil {
-//                    Text("Hold to reorder")
-//                        .font(.caption2)
-//                        .foregroundColor(.secondary)
-//                        .padding(.bottom, 8)
-//                }
-            } // End VStack
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.appSecondaryBackground)
+                    .shadow(color: .black.opacity(0.2), radius: 10, y: 5)
+            )
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
             
-            // Arrows overlay - positioned above everything
-            if let selectedIndex = selectedChordIndex, showArrows, selectedIndex < progression.count {
-                ChordMoveArrows(
-                    canMoveLeft: selectedIndex > 0,
-                    canMoveRight: selectedIndex < progression.count - 1,
-                    onMoveLeft: { moveChord(from: selectedIndex, direction: .left) },
-                    onMoveRight: { moveChord(from: selectedIndex, direction: .right) }
-                )
-                .offset(y: 105) // Position it above the timeline
-                .transition(.scale.combined(with: .opacity))
-                .zIndex(1000) // Ensure it's on top
+            // Arrows overlay
+            arrowsOverlay
+            
+            // BPM slider (only when visible)
+            if showBPMSlider {
+                bpmSliderContent
+                    .offset(y: -70)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
+                    .allowsHitTesting(true)
+                    .zIndex(1)
             }
-        } // End ZStack
-        .frame(width: 350)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.appSecondaryBackground)
-                .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
-        )
+        }
         .sheet(isPresented: $showingSaveSheet) {
             SaveProgressionSheet(
                 chords: progression,
@@ -533,15 +291,6 @@ struct FloatingProgressionPlayer: View {
                 tempo: tempo
             )
         }
-    }
-    
-    // MARK: - Helper Views
-    
-    private var progressionString: String {
-        let chordSymbols = progression.compactMap { chord in
-            chord.formattedSymbol
-        }
-        return chordSymbols.joined(separator: " - ")
     }
     
     // MARK: - Actions
@@ -675,6 +424,27 @@ struct FloatingProgressionPlayer: View {
     
 }
 
+// MARK: - Chord Delete Button (for single chord)
+
+struct ChordDeleteButton: View {
+    let onDelete: () -> Void
+    
+    var body: some View {
+        Button(action: onDelete) {
+            Image(systemName: "xmark.circle.fill")
+                .font(.system(size: 28))
+                .foregroundColor(.red)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.black.opacity(0.9))
+                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+        )
+    }
+}
+
 // MARK: - Chord Move Arrows
 
 struct ChordMoveArrows: View {
@@ -682,6 +452,7 @@ struct ChordMoveArrows: View {
     let canMoveRight: Bool
     let onMoveLeft: () -> Void
     let onMoveRight: () -> Void
+    let onDelete: () -> Void
     
     var body: some View {
         HStack(spacing: 12) {
@@ -702,6 +473,13 @@ struct ChordMoveArrows: View {
                     .opacity(canMoveRight ? 1.0 : 0.5)
             }
             .disabled(!canMoveRight)
+            
+            // Delete button
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(.red)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -759,17 +537,6 @@ struct MinimalChordTimelineItem: View {
             
             // Content
             VStack(spacing: 4) {
-                // X button
-                HStack {
-                    Spacer()
-                    Button(action: onRemove) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 12))
-                            .foregroundColor(isPlaying ? .white.opacity(0.8) : .secondary.opacity(0.6))
-                    }
-                }
-                .padding(.horizontal, 4)
-                .padding(.top, 4)
                 
                 Spacer()
                 

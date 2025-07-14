@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import Tonic
 
 struct KeySelector: View {
     @Binding var selectedKey: String
+    let keysContainingChord: Set<NoteClass>
     
     // White keys only for initial implementation
     private let keys = ["C", "D", "E", "F", "G", "A", "B"]
@@ -26,6 +28,7 @@ struct KeySelector: View {
                         PianoKeyButton(
                             key: key,
                             isSelected: selectedKey == key,
+                            isHighlighted: keysContainingChord.contains(NoteClass(key) ?? .C),
                             action: {
                                 selectedKey = key
                             }
@@ -42,6 +45,7 @@ struct KeySelector: View {
 struct PianoKeyButton: View {
     let key: String
     let isSelected: Bool
+    let isHighlighted: Bool
     let action: () -> Void
     
     var body: some View {
@@ -57,12 +61,13 @@ struct PianoKeyButton: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
                         .strokeBorder(
-                            isSelected ? Color.clear : Color.gray.opacity(0.3),
-                            lineWidth: 1
+                            isHighlighted ? Color.blue : (isSelected ? Color.clear : Color.gray.opacity(0.3)),
+                            lineWidth: isHighlighted ? 2 : 1
                         )
                 )
         }
         .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: isHighlighted)
     }
 }
 
@@ -80,7 +85,7 @@ struct PianoKeyButton: View {
                 Text("Default Size (50x50)")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                KeySelector(selectedKey: .constant("C"))
+                KeySelector(selectedKey: .constant("C"), keysContainingChord: [])
             }
             
             // Selected different key
@@ -88,15 +93,15 @@ struct PianoKeyButton: View {
                 Text("Selected: G")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                KeySelector(selectedKey: .constant("G"))
+                KeySelector(selectedKey: .constant("G"), keysContainingChord: [])
             }
             
-            // Selected B (end of scroll)
+            // With highlighted keys (C major chord appears in C, F, G)
             VStack(alignment: .leading) {
-                Text("Selected: B (should be fully visible)")
+                Text("C major chord - Keys highlighted: C, F, G")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                KeySelector(selectedKey: .constant("B"))
+                KeySelector(selectedKey: .constant("C"), keysContainingChord: [.C, .F, .G])
             }
         }
         .padding()

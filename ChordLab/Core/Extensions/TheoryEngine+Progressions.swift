@@ -19,16 +19,23 @@ extension TheoryEngine {
         name: String,
         tempo: Int
     ) -> SavedProgression {
-        // Convert Tonic Chords to our ProgressionChord format
-        let progressionChords = chords.map { chord in
+        // Convert PlaybackChords from currentProgression to ProgressionChord format
+        let progressionChords = currentProgression.map { playbackChord in
+            let chord = playbackChord.chord
             let chordSymbol = chord.formattedSymbol
             let romanNumeral = getRomanNumeral(for: chordSymbol)
+            
+            // Convert NoteClass Set to String array for keysContaining
+            let keysContainingStrings = playbackChord.keysContaining.map { $0.description }
+            
             return ProgressionChord(
                 chordSymbol: chordSymbol,
                 romanNumeral: romanNumeral,
                 noteNames: chord.noteClasses.map { $0.description },
                 function: determineFunction(romanNumeral: romanNumeral).rawValue,
-                duration: 1.0 // Default duration
+                duration: playbackChord.duration,
+                selectedFromKey: playbackChord.selectedFromKey?.description,
+                keysContaining: keysContainingStrings
             )
         }
         
@@ -54,14 +61,21 @@ extension TheoryEngine {
         // Update tempo
         currentProgressionTempo = progression.tempo
         
-        // Convert ProgressionChord array back to Tonic Chords
-        let chords = progression.progressionChords.compactMap { progressionChord in
-            Chord.parse(progressionChord.chordSymbol)
-        }
-        
-        // Update current progression
-        currentProgression = chords.map { chord in
-            PlaybackChord(chord: chord, duration: 1.0, velocity: 80)
+        // Convert ProgressionChord array back to PlaybackChords with key information
+        currentProgression = progression.progressionChords.compactMap { progressionChord in
+            guard let chord = Chord.parse(progressionChord.chordSymbol) else { return nil }
+            
+            // Convert string keys back to NoteClass
+            let selectedFromKey = progressionChord.selectedFromKey.flatMap { NoteClass($0) }
+            let keysContaining = Set(progressionChord.keysContaining.compactMap { NoteClass($0) })
+            
+            return PlaybackChord(
+                chord: chord, 
+                duration: progressionChord.duration, 
+                velocity: 80,
+                selectedFromKey: selectedFromKey,
+                keysContaining: keysContaining
+            )
         }
     }
     

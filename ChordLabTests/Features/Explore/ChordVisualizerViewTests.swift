@@ -20,8 +20,8 @@ extension MinimalistChordToggle: Inspectable { }
 extension ChordPianoView: Inspectable { }
 extension ChordNoteButton: Inspectable { }
 extension DiatonicChordGrid: Inspectable { }
-extension ColorLegend: Inspectable { }
-extension LegendItem: Inspectable { }
+extension CompactColorLegend: Inspectable { }
+extension LegendDot: Inspectable { }
 extension FloatingProgressionPlayer: Inspectable { }
 
 @MainActor
@@ -194,13 +194,13 @@ final class ChordVisualizerViewTests: XCTestCase {
         // Given: A ChordVisualizerView (default is triads)
         let view = makeInspectableView()
         
-        // When: We inspect the ColorLegend
+        // When: We inspect the CompactColorLegend
         let legend = try view.inspect()
-            .find(ColorLegend.self)
+            .find(CompactColorLegend.self)
         
         // Then: It should exist and be configured for triads
         XCTAssertNotNil(legend)
-        // Note: Further inspection of legend items would be done in ColorLegend-specific tests
+        // Note: Further inspection of legend items would be done in CompactColorLegend-specific tests
     }
     
     // MARK: - Accessibility Tests

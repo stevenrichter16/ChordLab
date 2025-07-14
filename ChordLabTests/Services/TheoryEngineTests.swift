@@ -376,4 +376,75 @@ final class TheoryEngineTests: XCTestCase {
         theoryEngine.setKey("G", scaleType: "major")
         XCTAssertNil(theoryEngine.selectedChord, "Changing key should clear selected chord")
     }
+    
+    // MARK: - Chord to Keys Reverse Lookup Tests
+    
+    func testGetKeysContainingChord_CMajor() {
+        // C major appears as I in C, IV in G, and V in F
+        let chord = Chord(.C, type: .major)
+        let keys = theoryEngine.getKeysContainingChord(chord)
+        
+        XCTAssertEqual(keys.count, 3, "C major should appear in 3 keys")
+        XCTAssertTrue(keys.contains(.C), "C major is I in C major")
+        XCTAssertTrue(keys.contains(.G), "C major is IV in G major")
+        XCTAssertTrue(keys.contains(.F), "C major is V in F major")
+    }
+    
+    func testGetKeysContainingChord_DMinor() {
+        // D minor appears as ii in C, vi in F, and iii in Bb
+        let chord = Chord(.D, type: .minor)
+        let keys = theoryEngine.getKeysContainingChord(chord)
+        
+        XCTAssertEqual(keys.count, 3, "D minor should appear in 3 keys")
+        XCTAssertTrue(keys.contains(.C), "D minor is ii in C major")
+        XCTAssertTrue(keys.contains(.F), "D minor is vi in F major")
+        XCTAssertTrue(keys.contains(.Bb), "D minor is iii in Bb major")
+    }
+    
+    func testGetKeysContainingChord_BDiminished() {
+        // B diminished appears as vii° in C major
+        let chord = Chord(.B, type: .dim)
+        let keys = theoryEngine.getKeysContainingChord(chord)
+        
+        XCTAssertEqual(keys.count, 1, "B diminished should appear in 1 key")
+        XCTAssertTrue(keys.contains(.C), "B diminished is vii° in C major")
+    }
+    
+    func testGetKeysContainingChord_SeventhChords() {
+        // Test with seventh chords
+        let cmaj7 = Chord(.C, type: .maj7)
+        let keysWithCmaj7 = theoryEngine.getKeysContainingChord(cmaj7)
+        
+        XCTAssertTrue(keysWithCmaj7.contains(.C), "Cmaj7 is Imaj7 in C major")
+        XCTAssertTrue(keysWithCmaj7.contains(.G), "Cmaj7 is IVmaj7 in G major")
+        
+        let g7 = Chord(.G, type: .dom7)
+        let keysWithG7 = theoryEngine.getKeysContainingChord(g7)
+        
+        XCTAssertTrue(keysWithG7.contains(.C), "G7 is V7 in C major")
+    }
+    
+    func testGetKeysContainingChord_NonDiatonicChord() {
+        // Test with a chord that doesn't appear in any major key diatonically
+        let cSharpMajor = Chord(.Cs, type: .major)
+        let keys = theoryEngine.getKeysContainingChord(cSharpMajor)
+        
+        // C# major appears as:
+        // - I in C# major (not in our precalculated data)
+        // - III in A major
+        // - V in F# major (not in our precalculated data)
+        // Since we only have C, D, E, F, G, A, B in precalculated data:
+        XCTAssertTrue(keys.contains(.A), "C# major is III in A major")
+    }
+    
+    func testGetKeysContainingChord_Performance() {
+        // Test that the lookup is fast (should be O(1))
+        let chord = Chord(.E, type: .minor)
+        
+        measure {
+            for _ in 0..<1000 {
+                _ = theoryEngine.getKeysContainingChord(chord)
+            }
+        }
+    }
 }

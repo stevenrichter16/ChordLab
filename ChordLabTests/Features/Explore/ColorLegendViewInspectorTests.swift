@@ -2,7 +2,7 @@
 //  ColorLegendViewInspectorTests.swift
 //  ChordLabTests
 //
-//  ViewInspector tests for ColorLegend component
+//  ViewInspector tests for CompactColorLegend component
 //  This is a simpler example to verify ViewInspector setup
 //
 
@@ -13,7 +13,7 @@ import ViewInspector
 
 // MARK: - ViewInspector Conformance
 // These extensions enable ViewInspector to inspect our custom views
-// Note: ColorLegend and LegendItem are already made Inspectable in ChordVisualizerViewTests.swift
+// Note: CompactColorLegend and LegendDot are already made Inspectable in ChordVisualizerViewTests.swift
 
 @MainActor
 final class ColorLegendViewInspectorTests: XCTestCase {
@@ -21,8 +21,8 @@ final class ColorLegendViewInspectorTests: XCTestCase {
     // MARK: - Basic Component Tests
     
     func testColorLegendWithTriads() throws {
-        // Given: A ColorLegend configured for triads (no seventh)
-        let legend = ColorLegend(showSeventh: false)
+        // Given: A CompactColorLegend configured for triads (no seventh)
+        let legend = CompactColorLegend(showSeventh: false)
         
         // When: We inspect the view
         let inspected = try legend.inspect()
@@ -38,7 +38,7 @@ final class ColorLegendViewInspectorTests: XCTestCase {
         // ViewInspector pattern: iterate through views by index
         var itemCount = 0
         for index in 0..<10 { // Check up to 10 items
-            if let _ = try? hStack.view(LegendItem.self, index) {
+            if let _ = try? hStack.view(LegendDot.self, index) {
                 itemCount += 1
             } else {
                 break
@@ -48,8 +48,8 @@ final class ColorLegendViewInspectorTests: XCTestCase {
     }
     
     func testColorLegendWithSevenths() throws {
-        // Given: A ColorLegend configured for seventh chords
-        let legend = ColorLegend(showSeventh: true)
+        // Given: A CompactColorLegend configured for seventh chords
+        let legend = CompactColorLegend(showSeventh: true)
         
         // When: We inspect the view
         let inspected = try legend.inspect()
@@ -58,7 +58,7 @@ final class ColorLegendViewInspectorTests: XCTestCase {
         // Then: Count the legend items (should be 4 for sevenths)
         var itemCount = 0
         for index in 0..<10 { // Check up to 10 items
-            if let _ = try? hStack.view(LegendItem.self, index) {
+            if let _ = try? hStack.view(LegendDot.self, index) {
                 itemCount += 1
             } else {
                 break
@@ -68,8 +68,8 @@ final class ColorLegendViewInspectorTests: XCTestCase {
     }
     
     func testLegendItemContent() throws {
-        // Given: A single LegendItem
-        let item = LegendItem(color: .blue, label: "Root")
+        // Given: A single LegendDot
+        let item = LegendDot(color: .blue, label: "Root")
         
         // When: We inspect the view
         let inspected = try item.inspect()
@@ -82,12 +82,12 @@ final class ColorLegendViewInspectorTests: XCTestCase {
         // Check the label text
         let text = try hStack.text(1)
         XCTAssertEqual(try text.string(), "Root")
-        XCTAssertEqual(try text.attributes().font(), .subheadline)
+        XCTAssertEqual(try text.attributes().font(), .system(size: 11, weight: .medium))
     }
     
     func testColorLegendLabels() throws {
-        // Given: A ColorLegend for triads
-        let legend = ColorLegend(showSeventh: false)
+        // Given: A CompactColorLegend for triads
+        let legend = CompactColorLegend(showSeventh: false)
         
         // When: We collect all labels
         var labels: [String] = []
@@ -95,7 +95,7 @@ final class ColorLegendViewInspectorTests: XCTestCase {
         
         // ViewInspector pattern: iterate through views by index
         for index in 0..<10 { // Check up to 10 items
-            if let item = try? hStack.view(LegendItem.self, index) {
+            if let item = try? hStack.view(LegendDot.self, index) {
                 let itemHStack = try item.find(ViewType.HStack.self)
                 let text = try itemHStack.text(1)
                 labels.append(try text.string())
@@ -105,25 +105,25 @@ final class ColorLegendViewInspectorTests: XCTestCase {
         }
         
         // Then: Labels should match expected values
-        XCTAssertEqual(labels, ["Root", "Third", "Fifth"])
+        XCTAssertEqual(labels, ["Root", "3rd", "5th"])
     }
     
     func testColorLegendColors() throws {
         // Given: Expected color mapping
         let expectedColors: [(String, Color)] = [
             ("Root", .blue),
-            ("Third", .green),
-            ("Fifth", .orange),
-            ("Seventh", .purple)
+            ("3rd", .green),
+            ("5th", .orange),
+            ("7th", .purple)
         ]
         
         // When: We inspect a seventh chord legend
-        let legend = ColorLegend(showSeventh: true)
+        let legend = CompactColorLegend(showSeventh: true)
         let hStack = try legend.inspect().find(ViewType.HStack.self)
         
         // Then: Verify each item has correct color
         for index in 0..<expectedColors.count {
-            if let item = try? hStack.view(LegendItem.self, index) {
+            if let item = try? hStack.view(LegendDot.self, index) {
                 let itemHStack = try item.find(ViewType.HStack.self)
                 let label = try itemHStack.text(1).string()
                 let expectedLabel = expectedColors[index].0
@@ -139,8 +139,8 @@ final class ColorLegendViewInspectorTests: XCTestCase {
     // MARK: - Style Tests
     
     func testColorLegendBackground() throws {
-        // Given: A ColorLegend
-        let legend = ColorLegend(showSeventh: false)
+        // Given: A CompactColorLegend
+        let legend = CompactColorLegend(showSeventh: false)
         
         // When: We inspect the background
         let view = try legend.inspect()
@@ -151,8 +151,8 @@ final class ColorLegendViewInspectorTests: XCTestCase {
     }
     
     func testLegendItemSpacing() throws {
-        // Given: A LegendItem
-        let item = LegendItem(color: .blue, label: "Root")
+        // Given: A LegendDot
+        let item = LegendDot(color: .blue, label: "Root")
         
         // When: We inspect the HStack
         let hStack = try item.inspect().find(ViewType.HStack.self)
@@ -165,8 +165,8 @@ final class ColorLegendViewInspectorTests: XCTestCase {
     // MARK: - Accessibility Tests
     
     func testLegendItemAccessibility() throws {
-        // Given: A LegendItem
-        let item = LegendItem(color: .blue, label: "Root")
+        // Given: A LegendDot
+        let item = LegendDot(color: .blue, label: "Root")
         
         // When: We inspect for accessibility
         let view = try item.inspect()
@@ -182,11 +182,11 @@ final class ColorLegendViewInspectorTests: XCTestCase {
         measure {
             // Create and inspect multiple legends
             for showSeventh in [true, false] {
-                let legend = ColorLegend(showSeventh: showSeventh)
+                let legend = CompactColorLegend(showSeventh: showSeventh)
                 do {
                     _ = try legend.inspect()
                 } catch {
-                    XCTFail("Failed to inspect ColorLegend: \(error)")
+                    XCTFail("Failed to inspect CompactColorLegend: \(error)")
                 }
             }
         }

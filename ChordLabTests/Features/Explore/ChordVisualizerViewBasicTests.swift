@@ -89,7 +89,7 @@ final class ChordVisualizerViewBasicTests: XCTestCase {
         XCTAssertNoThrow(try view.inspect().find(MinimalistChordToggle.self))
         XCTAssertNoThrow(try view.inspect().find(ChordPianoView.self))
         XCTAssertNoThrow(try view.inspect().find(DiatonicChordGrid.self))
-        XCTAssertNoThrow(try view.inspect().find(ColorLegend.self))
+        XCTAssertNoThrow(try view.inspect().find(CompactColorLegend.self))
     }
     
     func testDefaultPlaceholderText() throws {
@@ -223,18 +223,18 @@ final class ChordVisualizerViewBasicTests: XCTestCase {
             .environment(dataManager)
         
         // When: Finding and inspecting the color legend
-        let colorLegend = try view.inspect().find(ColorLegend.self)
+        let colorLegend = try view.inspect().find(CompactColorLegend.self)
         
         // Then: Verify structure
         XCTAssertNotNil(colorLegend)
         
-        // Find the HStack within ColorLegend
+        // Find the HStack within CompactColorLegend
         let legendHStack = try colorLegend.find(ViewType.HStack.self)
         
-        // Count legend items (should be 3 for triads: Root, Third, Fifth)
+        // Count legend items (should be 3 for triads: Root, 3rd, 5th)
         var legendItemCount = 0
         for index in 0..<10 {
-            if let _ = try? legendHStack.view(LegendItem.self, index) {
+            if let _ = try? legendHStack.view(LegendDot.self, index) {
                 legendItemCount += 1
             } else {
                 break
@@ -243,7 +243,7 @@ final class ChordVisualizerViewBasicTests: XCTestCase {
         XCTAssertEqual(legendItemCount, 3, "Triads should show 3 legend items")
         
         // Verify first legend item
-        if let firstItem = try? legendHStack.view(LegendItem.self, 0) {
+        if let firstItem = try? legendHStack.view(LegendDot.self, 0) {
             let itemHStack = try firstItem.find(ViewType.HStack.self)
             let label = try itemHStack.text(1)
             XCTAssertEqual(try label.string(), "Root")

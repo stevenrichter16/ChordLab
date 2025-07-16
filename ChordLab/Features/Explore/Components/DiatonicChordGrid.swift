@@ -248,18 +248,18 @@ struct DiatonicChordButton: View {
         VStack(spacing: 0) {
             // Chord symbol
             HStack {
-                Text(chord.abbreviatedSymbol)
+                Text(abbreviatedChordName)
                     .font(.title3)
                     .fontWeight(.bold)
                 
                 // Roman numeral
-                Text("(\(romanNumeral.abbreviatedRomanNumeral))")
+                Text("(\(abbreviatedRomanNumeral))")
                     .font(.headline)
                     .foregroundColor(isSelected ? .white.opacity(0.9) : .secondary)
             }
             
             // Scale degree name
-            Text(degreeName.abbreviatedDegreeName)
+            Text(abbreviatedDegreeName)
                 .font(.caption)
                 .fontWeight(.bold)
                 .foregroundColor(isSelected ? .white.opacity(0.7) : .secondary.opacity(0.8))

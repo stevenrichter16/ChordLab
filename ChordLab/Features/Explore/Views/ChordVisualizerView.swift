@@ -86,17 +86,17 @@ struct ChordVisualizerView: View {
                     HStack(spacing: 12) {
                         // Chord info group
                         HStack(spacing: 8) {
-                            Text(chord.abbreviatedSymbol)
+                            Text(chord.formattedSymbol)
                                 .font(.system(size: 18, weight: .bold))
                             
                             // Roman numeral and function in smaller text
                             if let index = selectedChordIndex, index < currentDiatonicChords.count {
-                                Text("\(currentDiatonicChords[index].romanNumeral.abbreviatedRomanNumeral) • \(currentDiatonicChords[index].degreeName.abbreviatedDegreeName)")
+                                Text("\(currentDiatonicChords[index].romanNumeral) • \(currentDiatonicChords[index].degreeName)")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.secondary)
                             } else {
                                 let romanNumeral = theoryEngine.getRomanNumeral(for: chord.description)
-                                let function = theoryEngine.determineFunction(romanNumeral: romanNumeral.abbreviatedRomanNumeral)
+                                let function = theoryEngine.determineFunction(romanNumeral: romanNumeral)
                                 Text("\(romanNumeral) • \(function.rawValue)")
                                     .font(.system(size: 14, weight: .medium))
                                     .foregroundColor(.secondary)

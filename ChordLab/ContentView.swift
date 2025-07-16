@@ -36,9 +36,13 @@ struct ContentView: View {
                     }
                 case 3:
                     NavigationStack {
-                        PracticeTabView()
+                        StudioTabView()
                     }
                 case 4:
+                    NavigationStack {
+                        PracticeTabView()
+                    }
+                case 5:
                     NavigationStack {
                         ProfileTabView()
                     }

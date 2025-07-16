@@ -18,6 +18,7 @@ struct CompactTabBar: View {
         ("book.fill", "Learn"),
         ("magnifyingglass", "Explore"), 
         ("books.vertical.fill", "Library"),
+        ("waveform", "Studio"),
         ("music.note.list", "Practice"),
         ("person.fill", "Profile")
     ]
@@ -108,6 +109,7 @@ struct UltraCompactTabBar: View {
         ("book.fill", "Learn"),
         ("magnifyingglass", "Explore"),
         ("books.vertical.fill", "Library"),
+        ("waveform", "Studio"),
         ("music.note.list", "Practice"),
         ("person.fill", "Profile")
     ]
@@ -191,6 +193,7 @@ struct FloatingTabBar: View {
         ("book.fill", "Learn"),
         ("magnifyingglass", "Explore"),
         ("books.vertical.fill", "Library"),
+        ("waveform", "Studio"),
         ("music.note.list", "Practice"),
         ("person.fill", "Profile")
     ]

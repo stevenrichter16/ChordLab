@@ -8,7 +8,9 @@
       "Bash(grep:*)",
       "Bash(swift test:*)",
       "Bash(rg:*)",
-      "Bash(xcrun simctl list:*)"
+      "Bash(xcrun simctl list:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

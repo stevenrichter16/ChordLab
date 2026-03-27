@@ -96,6 +96,7 @@ struct PracticeTabView: View {
             }
             .padding()
         }
+        .accessibilityIdentifier(ChordLabAutomationID.practiceRoot)
         .navigationTitle("Practice")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {

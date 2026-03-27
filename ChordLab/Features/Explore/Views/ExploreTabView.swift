@@ -11,6 +11,7 @@ import Tonic
 struct ExploreTabView: View {
     var body: some View {
         ChordVisualizerView()
+            .accessibilityIdentifier(ChordLabAutomationID.exploreRoot)
             //.navigationTitle("Explore")
             .navigationBarTitleDisplayMode(.inline)
     }

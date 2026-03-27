@@ -10,10 +10,10 @@ import SwiftData
 
 @main
 struct ChordLabApp: App {
-    let dataManager = DataManager()
+    let dataManager = ChordLabUITestBootstrap.makeDataManager()
     let theoryEngine = TheoryEngine()
-    let audioEngine = AudioEngine()
-    let appState = AppState()
+    let audioEngine = ChordLabUITestBootstrap.makeAudioEngine()
+    let appState = ChordLabUITestBootstrap.makeAppState()
     
     var body: some Scene {
         WindowGroup {

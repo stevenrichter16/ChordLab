@@ -104,6 +104,7 @@ struct LearnTabView: View {
             }
             .padding()
         }
+        .accessibilityIdentifier(ChordLabAutomationID.learnRoot)
         .navigationTitle("Learn")
         .navigationBarTitleDisplayMode(.large)
     }

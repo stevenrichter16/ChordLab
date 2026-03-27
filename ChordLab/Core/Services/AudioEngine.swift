@@ -15,6 +15,7 @@ final class AudioEngine {
     let samplerNode = AVAudioUnitSampler()
     let reverb = AVAudioUnitReverb()
     private var oscillatorNodes: [AVAudioSourceNode] = []
+    private let audioEnabled: Bool
     
     // State
     var isPlaying = false
@@ -25,7 +26,9 @@ final class AudioEngine {
     private var sequencer: AudioSequencer?
     private var metronome: Metronome?
     
-    init() {
+    init(disableAudio: Bool = false) {
+        self.audioEnabled = !disableAudio
+        guard audioEnabled else { return }
         setupAudioEngine()
         setupAudioSession()
     }
@@ -63,6 +66,7 @@ final class AudioEngine {
     }
     
     func start() {
+        guard audioEnabled else { return }
         guard !engine.isRunning else { return }
         
         do {
@@ -73,6 +77,7 @@ final class AudioEngine {
     }
     
     func stop() {
+        guard audioEnabled else { return }
         if engine.isRunning {
             engine.stop()
         }
@@ -81,7 +86,7 @@ final class AudioEngine {
     // MARK: - Note Playback
     
     func playNote(_ note: Note, velocity: UInt8 = 80, duration: Double = 1.0) {
-        print("in audioEngine Play Note: \(note)")
+        guard audioEnabled else { return }
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }
@@ -101,6 +106,7 @@ final class AudioEngine {
     // MARK: - Chord Playback
     
     func playChord(_ chord: Chord, velocity: UInt8 = 80, duration: Double = 0.5) {
+        guard audioEnabled else { return }
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }
@@ -166,6 +172,7 @@ final class AudioEngine {
     }
     
     private func stopChordNotes(_ chord: Chord) {
+        guard audioEnabled else { return }
         let notes = chord.noteClasses.enumerated().map { index, noteClass in
             let baseOctave = 4
             var octave = baseOctave
@@ -199,6 +206,7 @@ final class AudioEngine {
     // MARK: - Control
     
     func stopAllNotes() {
+        guard audioEnabled else { return }
         for noteNumber in UInt8(0)...UInt8(127) {
             samplerNode.stopNote(noteNumber, onChannel: 0)
         }
@@ -212,12 +220,14 @@ final class AudioEngine {
     
     func setVolume(_ volume: Float) {
         currentVolume = max(0, min(1, volume))
+        guard audioEnabled else { return }
         engine.mainMixerNode.outputVolume = currentVolume
     }
     
     // MARK: - Progression Playback
     
     func playProgression(_ progression: [TheoryEngine.PlaybackChord], loop: Bool = false) {
+        guard audioEnabled else { return }
         stopPlayback()
         
         sequencer = AudioSequencer(
@@ -231,6 +241,7 @@ final class AudioEngine {
     }
     
     func stopPlayback() {
+        guard audioEnabled else { return }
         sequencer?.stop()
         sequencer = nil
         stopAllNotes()
@@ -239,11 +250,13 @@ final class AudioEngine {
     // MARK: - Metronome
     
     func startMetronome() {
+        guard audioEnabled else { return }
         metronome = Metronome(tempo: Double(currentTempo))
         metronome?.start()
     }
-    
+
     func stopMetronome() {
+        guard audioEnabled else { return }
         metronome?.stop()
         metronome = nil
     }

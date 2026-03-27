@@ -32,6 +32,7 @@ struct CompactTabBar: View {
                         label: tabs[index].label,
                         isSelected: selectedTab == index,
                         namespace: animation,
+                        accessibilityIdentifier: ChordLabAutomationID.tabButtonID(label: tabs[index].label),
                         action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 selectedTab = index
@@ -46,6 +47,7 @@ struct CompactTabBar: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+            .accessibilityIdentifier(ChordLabAutomationID.tabBar)
             
             // Safe area extension
             GeometryReader { geometry in
@@ -64,6 +66,7 @@ struct CompactTabItem: View {
     let label: String
     let isSelected: Bool
     var namespace: Namespace.ID
+    let accessibilityIdentifier: String
     let action: () -> Void
     
     var body: some View {
@@ -96,6 +99,10 @@ struct CompactTabItem: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(label))
+        .accessibilityValue(Text(isSelected ? "Selected" : "Not selected"))
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 
@@ -118,6 +125,7 @@ struct UltraCompactTabBar: View {
                     UltraCompactTabItem(
                         icon: tabs[index].icon,
                         isSelected: selectedTab == index,
+                        accessibilityIdentifier: ChordLabAutomationID.tabButtonID(label: tabs[index].label),
                         action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 selectedTab = index
@@ -134,6 +142,7 @@ struct UltraCompactTabBar: View {
             .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
             .background(Color.appSecondaryBackground)
+            .accessibilityIdentifier(ChordLabAutomationID.tabBar)
         }
         .background(Color.appSecondaryBackground)
         .shadow(color: .black.opacity(0.1), radius: 10, y: -5)
@@ -143,6 +152,7 @@ struct UltraCompactTabBar: View {
 struct UltraCompactTabItem: View {
     let icon: String
     let isSelected: Bool
+    let accessibilityIdentifier: String
     let action: () -> Void
     
     var body: some View {
@@ -166,6 +176,7 @@ struct UltraCompactTabItem: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 
@@ -203,6 +214,7 @@ struct FloatingTabBar: View {
                         label: tabs[index].label,
                         isSelected: selectedTab == index,
                         namespace: animation,
+                        accessibilityIdentifier: ChordLabAutomationID.tabButtonID(label: tabs[index].label),
                         action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                 selectedTab = index
@@ -221,6 +233,7 @@ struct FloatingTabBar: View {
                 .ultraThinMaterial,
                 in: Rectangle()
             )
+            .accessibilityIdentifier(ChordLabAutomationID.tabBar)
         }
         .overlay(
             Rectangle()
@@ -237,6 +250,7 @@ struct FloatingTabItem: View {
     let label: String
     let isSelected: Bool
     var namespace: Namespace.ID
+    let accessibilityIdentifier: String
     let action: () -> Void
     
     var body: some View {
@@ -267,6 +281,7 @@ struct FloatingTabItem: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityIdentifier(accessibilityIdentifier)
     }
 }
 

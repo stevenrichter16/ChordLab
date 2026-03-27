@@ -26,26 +26,32 @@ struct ContentView: View {
                     NavigationStack {
                         LearnTabView()
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.learnRoot)
                 case 1:
                     NavigationStack {
                         ExploreTabView()
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.exploreRoot)
                 case 2:
                     NavigationStack {
                         LibraryTabView()
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.libraryRoot)
                 case 3:
                     NavigationStack {
                         PracticeTabView()
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.practiceRoot)
                 case 4:
                     NavigationStack {
                         ProfileTabView()
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.profileRoot)
                 default:
                     NavigationStack {
                         LearnTabView()
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.learnRoot)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -67,6 +73,7 @@ struct ContentView: View {
             .ignoresSafeArea(edges: .bottom)
         }
         .background(Color.appBackground)
+        .accessibilityIdentifier(ChordLabAutomationID.appRoot)
     }
 }
 
@@ -74,6 +81,6 @@ struct ContentView: View {
     ContentView()
         .environment(DataManager(inMemory: true))
         .environment(TheoryEngine())
-        .environment(AudioEngine())
+        .environment(AudioEngine(disableAudio: true))
         .environment(AppState())
 }

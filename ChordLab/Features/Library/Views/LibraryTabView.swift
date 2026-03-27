@@ -28,6 +28,7 @@ struct LibraryTabView: View {
             VStack(spacing: 0) {
                 if progressions.isEmpty && searchText.isEmpty {
                     LibraryEmptyStateView()
+                        .accessibilityIdentifier(ChordLabAutomationID.libraryEmpty)
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 12) {
@@ -40,6 +41,7 @@ struct LibraryTabView: View {
                     }
                 }
             }
+            .accessibilityIdentifier(ChordLabAutomationID.libraryRoot)
             .navigationTitle("Library")
             .searchable(text: $searchText, prompt: "Search progressions")
             .toolbar {
@@ -69,6 +71,7 @@ struct LibraryTabView: View {
                     } label: {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
+                    .accessibilityIdentifier(ChordLabAutomationID.libraryFilterButton)
                 }
             }
         }
@@ -148,6 +151,7 @@ struct LibraryProgressionCard: View {
                 Text(progression.name)
                     .font(.headline)
                     .lineLimit(1)
+                    .accessibilityIdentifier(ChordLabAutomationID.libraryCardTitle)
                 
                 Spacer()
                 
@@ -225,6 +229,7 @@ struct LibraryProgressionCard: View {
         .padding()
         .background(Color.appSecondaryBackground)
         .cornerRadius(12)
+        .accessibilityIdentifier(ChordLabAutomationID.libraryCard)
         .onTapGesture {
             showingDetail = true
         }

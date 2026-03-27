@@ -123,6 +123,7 @@ struct ProfileTabView: View {
                 .padding()
             }
         }
+        .accessibilityIdentifier(ChordLabAutomationID.profileRoot)
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {

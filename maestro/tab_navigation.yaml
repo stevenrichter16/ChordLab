@@ -1,0 +1,32 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+    arguments:
+      OPENCLAW_UI_TEST_MODE: 1
+      OPENCLAW_UI_TEST_SCENARIO: ${OPENCLAW_UI_TEST_SCENARIO}
+      OPENCLAW_UI_TEST_DISABLE_AUDIO: 1
+- assertVisible:
+    id: "chordlab.tabbar"
+- tapOn:
+    id: "chordlab.tab.button.explore"
+- assertVisible:
+    id: "chordlab.tab.explore.root"
+- tapOn:
+    id: "chordlab.tab.button.library"
+- assertVisible:
+    id: "chordlab.tab.library.root"
+- tapOn:
+    id: "chordlab.tab.button.practice"
+- assertVisible:
+    id: "chordlab.tab.practice.root"
+- tapOn:
+    id: "chordlab.tab.button.profile"
+- assertVisible:
+    id: "chordlab.tab.profile.root"
+- tapOn:
+    id: "chordlab.tab.button.learn"
+- assertVisible:
+    id: "chordlab.tab.learn.root"
+- takeScreenshot: "chordlab-tab-navigation"

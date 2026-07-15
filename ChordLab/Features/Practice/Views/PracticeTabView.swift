@@ -10,9 +10,10 @@ import SwiftUI
 struct PracticeTabView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(TheoryEngine.self) private var theoryEngine
-    
+
     @State private var currentStreak = 0
-    
+    @State private var recentSessions: [PracticeSession] = []
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -20,64 +21,72 @@ struct PracticeTabView: View {
                 HStack {
                     Image(systemName: "flame.fill")
                         .font(.largeTitle)
-                        .foregroundColor(.orange)
-                    
+                        .foregroundColor(currentStreak > 0 ? .orange : .secondary)
+
                     VStack(alignment: .leading) {
                         Text("\(currentStreak) Day Streak")
                             .font(.headline)
-                        Text("Keep it going!")
+                        Text(currentStreak > 0 ? "Keep it going!" : "Complete a session to start a streak")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    
+
                     Spacer()
                 }
                 .padding()
                 .background(Color.appSecondaryBackground)
                 .cornerRadius(12)
-                
+
                 // Practice Modes
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Practice Modes")
                         .font(.headline)
-                    
+
                     VStack(spacing: 12) {
                         PracticeModeCard(
                             title: "Ear Training",
-                            subtitle: "Identify chords by ear",
+                            subtitle: "Identify chord qualities by ear",
                             icon: "ear.fill",
                             color: .blue
-                        )
-                        
+                        ) {
+                            EarTrainingView()
+                        }
+
                         PracticeModeCard(
                             title: "Chord Recognition",
-                            subtitle: "Name the chord shown",
+                            subtitle: "Name the chord shown on the piano",
                             icon: "pianokeys.inverse",
                             color: .green
-                        )
-                        
+                        ) {
+                            ChordRecognitionView()
+                        }
+
                         PracticeModeCard(
-                            title: "Progression Builder",
-                            subtitle: "Create chord progressions",
+                            title: "Progression Challenge",
+                            subtitle: "Identify progressions by ear",
                             icon: "square.stack.3d.up.fill",
                             color: .purple
-                        )
-                        
+                        ) {
+                            ProgressionChallengeView()
+                        }
+
                         PracticeModeCard(
                             title: "Theory Quiz",
                             subtitle: "Test your knowledge",
                             icon: "questionmark.circle.fill",
                             color: .orange
-                        )
+                        ) {
+                            TheoryQuizView()
+                        }
                     }
                 }
-                
+
                 // Recent Scores
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Recent Scores")
                         .font(.headline)
-                    
-                    if currentStreak == 0 {
+
+                    if recentSessions.isEmpty {
                         Text("Complete a practice session to see your scores")
                             .font(.body)
                             .foregroundColor(.secondary)
@@ -86,38 +95,44 @@ struct PracticeTabView: View {
                             .background(Color.appTertiaryBackground)
                             .cornerRadius(8)
                     } else {
-                        // Placeholder for recent scores
                         VStack(spacing: 8) {
-                            ScoreRow(mode: "Ear Training", score: 85, date: Date())
-                            ScoreRow(mode: "Theory Quiz", score: 92, date: Date())
+                            ForEach(recentSessions, id: \.id) { session in
+                                ScoreRow(
+                                    mode: session.mode.rawValue,
+                                    score: session.score,
+                                    date: session.completedAt
+                                )
+                            }
                         }
                     }
                 }
             }
             .padding()
         }
+        .background(Color.appBackground)
         .navigationTitle("Practice")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {
-            loadPracticeStreak()
+            loadPracticeData()
         }
     }
-    
-    private func loadPracticeStreak() {
-        // TODO: Load actual streak from DataManager
-        currentStreak = 3 // Placeholder
+
+    private func loadPracticeData() {
+        currentStreak = (try? dataManager.getCurrentPracticeStreak()) ?? 0
+        recentSessions = (try? dataManager.getRecentPracticeSessions(limit: 5)) ?? []
     }
 }
 
-struct PracticeModeCard: View {
+struct PracticeModeCard<Destination: View>: View {
     let title: String
     let subtitle: String
     let icon: String
     let color: Color
-    
+    @ViewBuilder let destination: () -> Destination
+
     var body: some View {
-        Button {
-            // TODO: Navigate to practice mode
+        NavigationLink {
+            destination()
         } label: {
             HStack {
                 Image(systemName: icon)
@@ -126,7 +141,7 @@ struct PracticeModeCard: View {
                     .frame(width: 50, height: 50)
                     .background(color.opacity(0.2))
                     .cornerRadius(10)
-                
+
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.headline)
@@ -135,9 +150,9 @@ struct PracticeModeCard: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .foregroundColor(.secondary)
             }
@@ -145,6 +160,7 @@ struct PracticeModeCard: View {
             .background(Color.appSecondaryBackground)
             .cornerRadius(12)
         }
+        .buttonStyle(.plain)
     }
 }
 
@@ -152,7 +168,7 @@ struct ScoreRow: View {
     let mode: String
     let score: Int
     let date: Date
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading) {
@@ -162,9 +178,9 @@ struct ScoreRow: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            
+
             Spacer()
-            
+
             Text("\(score)%")
                 .font(.headline)
                 .foregroundColor(scoreColor)
@@ -173,7 +189,7 @@ struct ScoreRow: View {
         .background(Color.appTertiaryBackground)
         .cornerRadius(8)
     }
-    
+
     private var scoreColor: Color {
         if score >= 90 {
             return .green
@@ -190,5 +206,6 @@ struct ScoreRow: View {
         PracticeTabView()
             .environment(DataManager(inMemory: true))
             .environment(TheoryEngine())
+            .environment(AudioEngine())
     }
 }

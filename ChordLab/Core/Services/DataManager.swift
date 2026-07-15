@@ -157,6 +157,34 @@ final class DataManager {
         try context.save()
     }
     
+    /// Saves a completed practice session and updates every achievement
+    /// that practice activity can advance (session counts, streaks, mastery).
+    func recordPracticeSession(mode: PracticeSession.PracticeMode, score: Int, totalQuestions: Int, correctAnswers: Int, difficulty: PracticeSession.PracticeDifficulty, duration: TimeInterval) throws {
+        try savePracticeSession(
+            mode: mode,
+            score: score,
+            totalQuestions: totalQuestions,
+            correctAnswers: correctAnswers,
+            difficulty: difficulty,
+            duration: duration
+        )
+
+        let totalSessions = try context.fetchCount(FetchDescriptor<PracticeSession>())
+        try updateAchievementProgress(identifier: "first_practice", newValue: totalSessions)
+
+        let streak = try getCurrentPracticeStreak()
+        try updateAchievementProgress(identifier: "practice_streak_7", newValue: streak)
+        try updateAchievementProgress(identifier: "practice_streak_30", newValue: streak)
+
+        if mode == .earTraining {
+            let allSessions = try context.fetch(FetchDescriptor<PracticeSession>())
+            let highScoringEarSessions = allSessions
+                .filter { $0.mode == .earTraining && $0.score >= 90 }
+                .count
+            try updateAchievementProgress(identifier: "ear_training_pro", newValue: highScoringEarSessions)
+        }
+    }
+
     func getRecentPracticeSessions(limit: Int) throws -> [PracticeSession] {
         var descriptor = FetchDescriptor<PracticeSession>(
             sortBy: [SortDescriptor(\.completedAt, order: .reverse)]

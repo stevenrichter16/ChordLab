@@ -39,12 +39,12 @@ final class PracticeTabViewTests: XCTestCase {
     func testPracticeModeCardProperties() {
         // Given
         let modes = [
-            ("Ear Training", "Identify chords by ear", "ear.fill", Color.blue),
-            ("Chord Recognition", "Name the chord shown", "pianokeys.inverse", Color.green),
-            ("Progression Builder", "Create chord progressions", "square.stack.3d.up.fill", Color.purple),
+            ("Ear Training", "Identify chord qualities by ear", "ear.fill", Color.blue),
+            ("Chord Recognition", "Name the chord shown on the piano", "pianokeys.inverse", Color.green),
+            ("Progression Challenge", "Identify progressions by ear", "square.stack.3d.up.fill", Color.purple),
             ("Theory Quiz", "Test your knowledge", "questionmark.circle.fill", Color.orange)
         ]
-        
+
         for (title, subtitle, icon, color) in modes {
             // When
             let card = PracticeModeCard(
@@ -52,8 +52,10 @@ final class PracticeTabViewTests: XCTestCase {
                 subtitle: subtitle,
                 icon: icon,
                 color: color
-            )
-            
+            ) {
+                EmptyView()
+            }
+
             // Then
             XCTAssertEqual(card.title, title)
             XCTAssertEqual(card.subtitle, subtitle)

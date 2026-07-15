@@ -20,6 +20,12 @@ struct ProgressionChallengeView: View {
             mode: .progressionChallenge,
             accentColor: .purple,
             instructions: "Listen to a four-chord progression and identify its Roman numeral pattern. Higher difficulties use more keys and seventh chords.",
+            difficultyDetails: [
+                .beginner: "Triads in C major",
+                .intermediate: "Triads in common keys",
+                .advanced: "Seventh chords, natural keys",
+                .expert: "Seventh chords, all 12 keys"
+            ],
             generator: PracticeQuestionGenerator.progressionQuestions,
             onQuestionShown: { question in
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {

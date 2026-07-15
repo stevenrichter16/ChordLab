@@ -22,6 +22,7 @@ struct PracticeTabView: View {
                     Image(systemName: "flame.fill")
                         .font(.largeTitle)
                         .foregroundColor(currentStreak > 0 ? .orange : .secondary)
+                        .symbolEffect(.pulse, options: .repeating, isActive: currentStreak > 0)
 
                     VStack(alignment: .leading) {
                         Text("\(currentStreak) Day Streak")
@@ -188,6 +189,7 @@ struct ScoreRow: View {
         .padding()
         .background(Color.appTertiaryBackground)
         .cornerRadius(8)
+        .accessibilityElement(children: .combine)
     }
 
     private var scoreColor: Color {

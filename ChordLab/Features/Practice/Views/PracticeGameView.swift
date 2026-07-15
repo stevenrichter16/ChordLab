@@ -12,6 +12,7 @@ struct PracticeGameView<Stimulus: View>: View {
     let mode: PracticeSession.PracticeMode
     let accentColor: Color
     let instructions: String
+    let difficultyDetails: [PracticeSession.PracticeDifficulty: String]
     let generator: (Int, PracticeSession.PracticeDifficulty) -> [PracticeQuestion]
     let onQuestionShown: ((PracticeQuestion) -> Void)?
     let stimulus: (PracticeQuestion) -> Stimulus
@@ -27,6 +28,7 @@ struct PracticeGameView<Stimulus: View>: View {
     @State private var correctCount = 0
     @State private var startedAt = Date()
     @State private var elapsedDuration: TimeInterval = 0
+    @State private var displayedRingProgress: Double = 0
 
     private let questionCount = 10
 
@@ -38,6 +40,7 @@ struct PracticeGameView<Stimulus: View>: View {
         mode: PracticeSession.PracticeMode,
         accentColor: Color,
         instructions: String,
+        difficultyDetails: [PracticeSession.PracticeDifficulty: String] = [:],
         generator: @escaping (Int, PracticeSession.PracticeDifficulty) -> [PracticeQuestion],
         onQuestionShown: ((PracticeQuestion) -> Void)? = nil,
         @ViewBuilder stimulus: @escaping (PracticeQuestion) -> Stimulus
@@ -45,6 +48,7 @@ struct PracticeGameView<Stimulus: View>: View {
         self.mode = mode
         self.accentColor = accentColor
         self.instructions = instructions
+        self.difficultyDetails = difficultyDetails
         self.generator = generator
         self.onQuestionShown = onQuestionShown
         self.stimulus = stimulus
@@ -69,67 +73,81 @@ struct PracticeGameView<Stimulus: View>: View {
     // MARK: - Setup
 
     private var setupView: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 24) {
+                Image(systemName: iconName)
+                    .font(.system(size: 44))
+                    .foregroundColor(accentColor)
+                    .frame(width: 96, height: 96)
+                    .background(Circle().fill(accentColor.opacity(0.12)))
+                    .padding(.top, 24)
 
-            Image(systemName: iconName)
-                .font(.system(size: 56))
-                .foregroundColor(accentColor)
+                Text(instructions)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
 
-            Text(instructions)
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Difficulty")
+                        .font(.headline)
 
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Difficulty")
-                    .font(.headline)
-
-                ForEach(PracticeSession.PracticeDifficulty.allCases, id: \.self) { level in
-                    Button {
-                        difficulty = level
-                    } label: {
-                        HStack {
-                            Text(level.rawValue)
-                                .fontWeight(difficulty == level ? .semibold : .regular)
-                            Spacer()
-                            if difficulty == level {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(accentColor)
+                    ForEach(PracticeSession.PracticeDifficulty.allCases, id: \.self) { level in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                difficulty = level
                             }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(level.rawValue)
+                                        .fontWeight(difficulty == level ? .semibold : .regular)
+
+                                    if let detail = difficultyDetails[level] {
+                                        Text(detail)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                if difficulty == level {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(accentColor)
+                                }
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(difficulty == level ? accentColor.opacity(0.15) : Color.appSecondaryBackground)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .strokeBorder(
+                                        difficulty == level ? accentColor : Color.appBorder,
+                                        lineWidth: difficulty == level ? 2 : 1
+                                    )
+                            )
                         }
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(difficulty == level ? accentColor.opacity(0.15) : Color.appSecondaryBackground)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .strokeBorder(
-                                    difficulty == level ? accentColor : Color.appBorder,
-                                    lineWidth: difficulty == level ? 2 : 1
-                                )
-                        )
+                        .buttonStyle(.plain)
+                        .foregroundColor(.primary)
                     }
-                    .buttonStyle(.plain)
-                    .foregroundColor(.primary)
                 }
-            }
-            .padding(.horizontal)
+                .padding(.horizontal)
 
-            Button(action: start) {
-                Text("Start")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(accentColor)
-                    .cornerRadius(12)
+                Button(action: start) {
+                    Text("Start")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(accentColor)
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 24)
             }
-            .padding(.horizontal)
-
-            Spacer()
         }
     }
 
@@ -161,33 +179,53 @@ struct PracticeGameView<Stimulus: View>: View {
                 .padding(.horizontal)
                 .padding(.top, 8)
 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        Text(question.prompt)
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .multilineTextAlignment(.center)
+                // ZStack so the outgoing and incoming question views overlap
+                // during the slide transition instead of stacking vertically
+                ZStack {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            Text(question.prompt)
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+
+                            stimulus(question)
+
+                            VStack(spacing: 10) {
+                                ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
+                                    AnswerOptionButton(
+                                        text: option,
+                                        state: answerState(for: index, in: question),
+                                        action: { selectAnswer(index) }
+                                    )
+                                }
+                            }
                             .padding(.horizontal)
 
-                        stimulus(question)
-
-                        VStack(spacing: 10) {
-                            ForEach(Array(question.options.enumerated()), id: \.offset) { index, option in
-                                AnswerOptionButton(
-                                    text: option,
-                                    state: answerState(for: index, in: question),
-                                    action: { selectAnswer(index) }
-                                )
+                            if let selected = selectedAnswerIndex {
+                                let isCorrect = selected == question.correctIndex
+                                HStack(spacing: 6) {
+                                    Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    Text(isCorrect ? "Correct!" : "Correct answer: \(question.correctAnswer)")
+                                }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(isCorrect ? .green : .red)
+                                .padding(.horizontal)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.vertical)
                     }
-                    .padding(.vertical)
+                    .id(question.id)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                    .onAppear {
+                        onQuestionShown?(question)
+                    }
                 }
-            }
-            .id(question.id)
-            .onAppear {
-                onQuestionShown?(question)
             }
         }
     }
@@ -218,7 +256,7 @@ struct PracticeGameView<Stimulus: View>: View {
                     .stroke(Color.appTertiaryBackground, lineWidth: 14)
 
                 Circle()
-                    .trim(from: 0, to: Double(correctCount) / Double(total))
+                    .trim(from: 0, to: displayedRingProgress)
                     .stroke(scoreColor(percentage), style: StrokeStyle(lineWidth: 14, lineCap: .round))
                     .rotationEffect(.degrees(-90))
 
@@ -231,6 +269,14 @@ struct PracticeGameView<Stimulus: View>: View {
                 }
             }
             .frame(width: 180, height: 180)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Score \(percentage) percent, \(correctCount) of \(total) correct")
+            .onAppear {
+                displayedRingProgress = 0
+                withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
+                    displayedRingProgress = Double(correctCount) / Double(total)
+                }
+            }
 
             Text(resultMessage(percentage))
                 .font(.headline)
@@ -295,17 +341,22 @@ struct PracticeGameView<Stimulus: View>: View {
         currentIndex = 0
         selectedAnswerIndex = nil
         correctCount = 0
+        displayedRingProgress = 0
         startedAt = Date()
-        phase = .playing
+        withAnimation(.easeInOut(duration: 0.25)) {
+            phase = .playing
+        }
     }
 
     private func selectAnswer(_ index: Int) {
         guard selectedAnswerIndex == nil, currentIndex < questions.count else { return }
 
-        selectedAnswerIndex = index
         let isCorrect = index == questions[currentIndex].correctIndex
-        if isCorrect {
-            correctCount += 1
+        withAnimation(.easeInOut(duration: 0.25)) {
+            selectedAnswerIndex = index
+            if isCorrect {
+                correctCount += 1
+            }
         }
 
         let feedback = UINotificationFeedbackGenerator()
@@ -321,8 +372,10 @@ struct PracticeGameView<Stimulus: View>: View {
         guard phase == .playing, currentIndex == index else { return }
 
         if currentIndex + 1 < questions.count {
-            currentIndex += 1
-            selectedAnswerIndex = nil
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                currentIndex += 1
+                selectedAnswerIndex = nil
+            }
         } else {
             finish()
         }
@@ -346,7 +399,9 @@ struct PracticeGameView<Stimulus: View>: View {
             // Non-fatal: results still display, only history is lost
         }
 
-        phase = .results
+        withAnimation(.easeInOut(duration: 0.3)) {
+            phase = .results
+        }
     }
 
     // MARK: - Helpers

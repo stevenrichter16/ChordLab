@@ -193,8 +193,10 @@ struct StatCard: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.system(size: 18, weight: .medium))
                 .foregroundColor(.appPrimary)
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(Color.appPrimary.opacity(0.12)))
 
             Text(value)
                 .font(.headline)
@@ -209,6 +211,7 @@ struct StatCard: View {
         .padding()
         .background(Color.appSecondaryBackground)
         .cornerRadius(12)
+        .accessibilityElement(children: .combine)
     }
 }
 

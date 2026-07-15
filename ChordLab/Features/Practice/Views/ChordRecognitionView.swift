@@ -25,6 +25,12 @@ struct ChordRecognitionView: View {
             mode: .chordRecognition,
             accentColor: .green,
             instructions: "A chord is highlighted on the piano — name it. Root, third, fifth and seventh are color-coded just like in Explore.",
+            difficultyDetails: [
+                .beginner: "Triads in C major",
+                .intermediate: "Triads in common keys",
+                .advanced: "Seventh chords, natural keys",
+                .expert: "Seventh chords, all 12 keys"
+            ],
             generator: PracticeQuestionGenerator.chordRecognitionQuestions,
             onQuestionShown: { question in
                 theoryEngine.setKey(question.keyName, scaleType: "major")

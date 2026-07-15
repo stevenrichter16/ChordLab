@@ -114,6 +114,9 @@ struct DiatonicChordButton: View {
                 isPressed = isPressing
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(chord.description), \(romanNumeral), \(degreeName)")
+        .accessibilityHint("Plays the chord. Touch and hold to add it to the progression.")
     }
     
     private var functionColor: Color {

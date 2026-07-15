@@ -56,7 +56,7 @@ struct LearnTabView: View {
                 
                 // Today's Focus
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Today's Focus")
+                    Label("Today's Focus", systemImage: "target")
                         .font(.headline)
 
                     Text("Practice identifying progressions in \(theoryEngine.currentKey) major")
@@ -71,7 +71,9 @@ struct LearnTabView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
+                .background(Color.appSecondaryBackground)
                 .cornerRadius(12)
 
                 // Quick Actions
@@ -113,7 +115,6 @@ struct LearnTabView: View {
                         }
                     }
                 }
-                .padding()
 
                 // Theory Tip
                 VStack(alignment: .leading, spacing: 8) {

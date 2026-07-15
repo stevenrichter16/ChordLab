@@ -318,6 +318,7 @@ struct ChordDetailRow: View {
         .padding()
         .background(isPlaying ? Color.appPrimary.opacity(0.1) : Color.clear)
         .cornerRadius(8)
+        .accessibilityElement(children: .combine)
     }
 }
 

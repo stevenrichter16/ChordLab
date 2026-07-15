@@ -320,6 +320,7 @@ struct ChordPianoKeyView: View {
         .animation(.easeInOut(duration: 0.1), value: isPlaying)
         .animation(.easeInOut(duration: 0.3), value: highlightState)
         .modifier(PulsingModifier(isPulsing: highlightState == .root))
+        .accessibilityLabel("Piano key \(formatKeyLabel())")
     }
     
     private var keyColor: Color {

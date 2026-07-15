@@ -49,7 +49,13 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
+            // The custom tab bar is overlaid on the content, so reserve its
+            // height as a safe-area inset: scroll views gain bottom content
+            // inset automatically and the last items can scroll clear of it
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: 64)
+            }
+
             // Custom tab bar overlay
             VStack {
                 Spacer()

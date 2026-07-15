@@ -110,24 +110,37 @@ struct LibraryTabView: View {
 // MARK: - Empty State View
 
 struct LibraryEmptyStateView: View {
+    @Environment(AppState.self) private var appState
+
     var body: some View {
         VStack(spacing: 24) {
             Image(systemName: "music.note.list")
-                .font(.system(size: 64))
-                .foregroundColor(.secondary)
-            
+                .font(.system(size: 56))
+                .foregroundColor(.appPrimary)
+                .frame(width: 120, height: 120)
+                .background(Circle().fill(Color.appPrimary.opacity(0.1)))
+
             VStack(spacing: 8) {
                 Text("No Progressions Yet")
                     .font(.title2)
                     .fontWeight(.semibold)
-                
-                Text("Create chord progressions in the Explore tab\nand save them here for later")
+
+                Text("Hold chord buttons in Explore to build\na progression, then save it here")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
+
+            Button {
+                appState.switchToExplore()
+            } label: {
+                Label("Open Explore", systemImage: "pianokeys")
+                    .padding(.horizontal, 8)
+            }
+            .buttonStyle(.borderedProminent)
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -160,6 +173,7 @@ struct LibraryProgressionCard: View {
                         .foregroundColor(progression.isFavorite ? .yellow : .secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(progression.isFavorite ? "Remove from favorites" : "Add to favorites")
                 
                 Menu {
                     Button("Rename", systemImage: "pencil") {
@@ -309,4 +323,5 @@ struct LibraryProgressionCard: View {
 #Preview {
     LibraryTabView()
         .environment(DataManager(inMemory: true))
+        .environment(AppState())
 }

@@ -13,6 +13,12 @@ struct TheoryQuizView: View {
             mode: .theoryQuiz,
             accentColor: .orange,
             instructions: "Answer questions about Roman numerals, chord functions, and chord tones. Higher difficulties use more keys and seventh chords.",
+            difficultyDetails: [
+                .beginner: "Key of C major",
+                .intermediate: "Common keys, triads",
+                .advanced: "Natural keys, seventh chords",
+                .expert: "All 12 keys, seventh chords"
+            ],
             generator: PracticeQuestionGenerator.theoryQuizQuestions,
             stimulus: { question in
                 HStack(spacing: 8) {

@@ -87,63 +87,69 @@ struct ChordVisualizerView: View {
                 }
                 .padding(.horizontal)
                 
-                // Current chord display
-                if let chord = selectedChord {
-                    HStack(spacing: 12) {
-                        Text(chord.formattedSymbol)
-                            .font(.system(size: 18, weight: .bold))
-                        
-                        // Only show roman numeral and degree name if we have a selected index
-                        if let index = selectedChordIndex, index < currentDiatonicChords.count {
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(currentDiatonicChords[index].romanNumeral)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.secondary)
-                            
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(currentDiatonicChords[index].degreeName)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.appPrimary)
-                        } else {
-                            // For chords selected from timeline, determine roman numeral and function
-                            let romanNumeral = theoryEngine.getRomanNumeral(for: chord.description)
-                            let function = theoryEngine.determineFunction(romanNumeral: romanNumeral)
-                            
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(romanNumeral)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.secondary)
-                            
-                            Text("•")
-                                .foregroundColor(.secondary)
-                            
-                            Text(function.rawValue)
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.appPrimary)
+                // Current chord display — fixed-height container so
+                // selecting/clearing a chord doesn't shift the grid below
+                Group {
+                    if let chord = selectedChord {
+                        VStack(spacing: 12) {
+                            HStack(spacing: 12) {
+                                Text(chord.formattedSymbol)
+                                    .font(.system(size: 18, weight: .bold))
+
+                                // Only show roman numeral and degree name if we have a selected index
+                                if let index = selectedChordIndex, index < currentDiatonicChords.count {
+                                    Text("•")
+                                        .foregroundColor(.secondary)
+
+                                    Text(currentDiatonicChords[index].romanNumeral)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.secondary)
+
+                                    Text("•")
+                                        .foregroundColor(.secondary)
+
+                                    Text(currentDiatonicChords[index].degreeName)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.appPrimary)
+                                } else {
+                                    // For chords selected from timeline, determine roman numeral and function
+                                    let romanNumeral = theoryEngine.getRomanNumeral(for: chord.description)
+                                    let function = theoryEngine.determineFunction(romanNumeral: romanNumeral)
+
+                                    Text("•")
+                                        .foregroundColor(.secondary)
+
+                                    Text(romanNumeral)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.secondary)
+
+                                    Text("•")
+                                        .foregroundColor(.secondary)
+
+                                    Text(function.rawValue)
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.appPrimary)
+                                }
+                            }
+
+                            // Chord notes
+                            HStack(spacing: 8) {
+                                ForEach(chord.noteClasses, id: \.self) { note in
+                                    ChordNoteButton(
+                                        note: note,
+                                        role: cachedChordToneRoles[note]
+                                    )
+                                }
+                            }
                         }
+                    } else {
+                        Text("Select a chord")
+                            .font(.title2)
+                            .foregroundColor(.secondary)
                     }
-                    
-                    // Chord notes
-                    HStack(spacing: 8) {
-                        ForEach(chord.noteClasses, id: \.self) { note in
-                            ChordNoteButton(
-                                note: note,
-                                role: cachedChordToneRoles[note]
-                            )
-                        }
-                    }
-                } else {
-                    Text("Select a chord")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
-                        .padding(.vertical, 3)
                 }
+                .frame(minHeight: 84)
+                .animation(.easeInOut(duration: 0.2), value: selectedChord)
                 
                 // Diatonic chord grid
                 DiatonicChordGrid(

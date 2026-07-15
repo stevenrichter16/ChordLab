@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct KeySelector: View {
     @Binding var selectedKey: String
@@ -20,19 +21,33 @@ struct KeySelector: View {
                 .foregroundColor(.secondary)
                 .padding(.leading, 4)
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(keys, id: \.self) { key in
-                        PianoKeyButton(
-                            key: key,
-                            isSelected: selectedKey == key,
-                            action: {
-                                selectedKey = key
-                            }
-                        )
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(keys, id: \.self) { key in
+                            PianoKeyButton(
+                                key: key,
+                                isSelected: selectedKey == key,
+                                action: {
+                                    guard selectedKey != key else { return }
+
+                                    let feedback = UISelectionFeedbackGenerator()
+                                    feedback.selectionChanged()
+
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        selectedKey = key
+                                        proxy.scrollTo(key, anchor: .center)
+                                    }
+                                }
+                            )
+                            .id(key)
+                        }
                     }
+                    .padding(.horizontal, 4)
                 }
-                .padding(.horizontal, 4)
+                .onAppear {
+                    proxy.scrollTo(selectedKey, anchor: .center)
+                }
             }
         }
     }

@@ -23,6 +23,11 @@ struct SaveProgressionSheet: View {
     @State private var customTag = ""
     @State private var showingSaveError = false
     @State private var saveError: String?
+    @FocusState private var nameFieldFocused: Bool
+
+    private var scaleName: String {
+        theoryEngine.currentScaleType.capitalized
+    }
     
     // Predefined tags
     let suggestedTags = ["Jazz", "Pop", "Rock", "Classical", "Blues", "Practice", "Original", "Cover", "Beginner", "Advanced"]
@@ -33,11 +38,13 @@ struct SaveProgressionSheet: View {
                 // Name Section
                 Section {
                     TextField("Progression Name", text: $progressionName)
+                        .focused($nameFieldFocused)
                         .onAppear {
                             // Auto-generate name if empty
                             if progressionName.isEmpty {
                                 progressionName = generateDefaultName()
                             }
+                            nameFieldFocused = true
                         }
                 } header: {
                     Text("Name")
@@ -49,14 +56,14 @@ struct SaveProgressionSheet: View {
                 Section("Preview") {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Label("\(currentKey) Major", systemImage: "key")
+                            Label("\(currentKey) \(scaleName)", systemImage: "key")
                             Spacer()
                             Label("\(tempo) BPM", systemImage: "metronome")
                         }
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                        
-                        Text(chords.map { $0.description }.joined(separator: " - "))
+
+                        Text(chords.map { $0.formattedSymbol }.joined(separator: " - "))
                             .font(.system(.body, design: .monospaced))
                             .lineLimit(2)
                     }
@@ -117,8 +124,8 @@ struct SaveProgressionSheet: View {
     // MARK: - Helper Methods
     
     private func generateDefaultName() -> String {
-        let chordNames = chords.prefix(3).map { $0.description }.joined(separator: "-")
-        return "\(currentKey) Major: \(chordNames)"
+        let chordNames = chords.prefix(3).map { $0.formattedSymbol }.joined(separator: "-")
+        return "\(currentKey) \(scaleName): \(chordNames)"
     }
     
     private func toggleTag(_ tag: String) {

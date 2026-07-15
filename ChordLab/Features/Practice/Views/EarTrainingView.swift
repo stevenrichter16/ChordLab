@@ -16,6 +16,12 @@ struct EarTrainingView: View {
             mode: .earTraining,
             accentColor: .blue,
             instructions: "Listen to each chord and identify its quality. Higher difficulties add seventh chords and trickier qualities.",
+            difficultyDetails: [
+                .beginner: "Major & minor triads",
+                .intermediate: "Adds diminished & augmented",
+                .advanced: "Adds seventh chords",
+                .expert: "Seventh chord qualities only"
+            ],
             generator: PracticeQuestionGenerator.earTrainingQuestions,
             onQuestionShown: { question in
                 guard let chord = question.chord else { return }

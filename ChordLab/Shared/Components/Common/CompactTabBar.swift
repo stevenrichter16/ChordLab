@@ -96,6 +96,8 @@ struct CompactTabItem: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 
@@ -117,6 +119,7 @@ struct UltraCompactTabBar: View {
                 ForEach(0..<tabs.count, id: \.self) { index in
                     UltraCompactTabItem(
                         icon: tabs[index].icon,
+                        label: tabs[index].label,
                         isSelected: selectedTab == index,
                         action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -142,9 +145,10 @@ struct UltraCompactTabBar: View {
 
 struct UltraCompactTabItem: View {
     let icon: String
+    let label: String
     let isSelected: Bool
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             ZStack {
@@ -155,7 +159,7 @@ struct UltraCompactTabItem: View {
                         .frame(width: 40, height: 40)
                         .transition(.scale.combined(with: .opacity))
                 }
-                
+
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
                     .symbolRenderingMode(.hierarchical)
@@ -166,6 +170,8 @@ struct UltraCompactTabItem: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 
@@ -267,12 +273,14 @@ struct FloatingTabItem: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 
 #Preview("Compact Tab Bar") {
     @State var selectedTab = 0
-    
+
     return VStack {
         Spacer()
         CompactTabBar(selectedTab: $selectedTab)

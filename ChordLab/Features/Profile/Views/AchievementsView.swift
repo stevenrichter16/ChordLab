@@ -93,6 +93,10 @@ struct AchievementRow: View {
         .background(Color.appSecondaryBackground)
         .cornerRadius(12)
         .opacity(achievement.isUnlocked ? 1.0 : 0.85)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "\(achievement.name), \(achievement.isUnlocked ? "unlocked" : "locked"), \(achievement.achievementDescription)"
+        )
     }
 }
 

@@ -106,7 +106,8 @@ struct FloatingProgressionPlayer: View {
             .frame(width: 36, height: 36)
             .background(isPlaying ? Color.red : Color.appPrimary)
             .clipShape(Circle())
-            
+            .accessibilityLabel(isPlaying ? "Stop progression" : "Play progression")
+
             if !progression.isEmpty {
                 Text(progressionString)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
@@ -170,6 +171,7 @@ struct FloatingProgressionPlayer: View {
                 }
                 .background(isPlaying ? Color.red : Color.appPrimary)
                 .cornerRadius(16, corners: [.topLeft, .bottomLeft])
+                .accessibilityLabel(isPlaying ? "Stop progression" : "Play progression")
                 
                 // Timeline
                 ScrollViewReader { proxy in
@@ -365,7 +367,8 @@ struct FloatingProgressionPlayer: View {
                     .frame(width: 36, height: 36)
                     .background(isPlaying ? Color.red : Color.appPrimary)
                     .clipShape(Circle())
-                    
+                    .accessibilityLabel(isPlaying ? "Stop progression" : "Play progression")
+
                     // Loop toggle
                     Button(action: { isLooping.toggle() }) {
                         Image(systemName: "repeat")
@@ -375,6 +378,7 @@ struct FloatingProgressionPlayer: View {
                     .frame(width: 30, height: 30)
                     .background(isLooping ? Color.appPrimary : Color.appTertiaryBackground)
                     .clipShape(Circle())
+                    .accessibilityLabel(isLooping ? "Disable loop" : "Enable loop")
                     
                     Spacer()
                     
@@ -403,7 +407,8 @@ struct FloatingProgressionPlayer: View {
                         RoundedRectangle(cornerRadius: 15)
                             .fill(showBPMSlider ? Color.appPrimary : Color.appTertiaryBackground)
                     )
-                    
+                    .accessibilityLabel("Tempo: \(tempo) beats per minute")
+
                     // Save button
                     Button(action: { showingSaveSheet = true }) {
                         Image(systemName: "square.and.arrow.down")
@@ -414,7 +419,8 @@ struct FloatingProgressionPlayer: View {
                     .background(Color.appPrimary.opacity(0.1))
                     .clipShape(Circle())
                     .disabled(progression.isEmpty)
-                    
+                    .accessibilityLabel("Save progression")
+
                     // Clear button
                     Button(action: clearProgression) {
                         Image(systemName: "trash")
@@ -424,6 +430,7 @@ struct FloatingProgressionPlayer: View {
                     .frame(width: 30, height: 30)
                     .background(Color.red.opacity(0.1))
                     .clipShape(Circle())
+                    .accessibilityLabel("Clear progression")
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
@@ -695,7 +702,8 @@ struct ChordMoveArrows: View {
                     .opacity(canMoveLeft ? 1.0 : 0.5)
             }
             .disabled(!canMoveLeft)
-            
+            .accessibilityLabel("Move chord left")
+
             // Right arrow
             Button(action: onMoveRight) {
                 Image(systemName: "chevron.right.circle.fill")
@@ -704,6 +712,7 @@ struct ChordMoveArrows: View {
                     .opacity(canMoveRight ? 1.0 : 0.5)
             }
             .disabled(!canMoveRight)
+            .accessibilityLabel("Move chord right")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -769,6 +778,7 @@ struct MinimalChordTimelineItem: View {
                             .font(.system(size: 12))
                             .foregroundColor(isPlaying ? .white.opacity(0.8) : .secondary.opacity(0.6))
                     }
+                    .accessibilityLabel("Remove \(chord.formattedSymbol)")
                 }
                 .padding(.horizontal, 4)
                 .padding(.top, 4)
@@ -864,6 +874,7 @@ struct ChordTimelineItem: View {
                             .font(.system(size: 14))
                             .foregroundColor(isPlaying ? .white.opacity(0.8) : .secondary)
                     }
+                    .accessibilityLabel("Remove \(chord.formattedSymbol)")
                 }
                 Spacer()
             }

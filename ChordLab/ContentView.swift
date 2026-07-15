@@ -67,6 +67,12 @@ struct ContentView: View {
             .ignoresSafeArea(edges: .bottom)
         }
         .background(Color.appBackground)
+        .onAppear {
+            // Honor the persisted sound preference from the first frame
+            if let userData = try? dataManager.getOrCreateUserData(), !userData.soundEnabled {
+                audioEngine.setVolume(0)
+            }
+        }
     }
 }
 

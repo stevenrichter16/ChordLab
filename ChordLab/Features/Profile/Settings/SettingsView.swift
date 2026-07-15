@@ -9,11 +9,16 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppState.self) private var appState
+    @Environment(DataManager.self) private var dataManager
+    @Environment(AudioEngine.self) private var audioEngine
     @Environment(\.dismiss) private var dismiss
-    
+
+    @State private var soundEnabled = true
+    @State private var showingResetConfirmation = false
+
     var body: some View {
         @Bindable var appState = appState
-        
+
         NavigationStack {
             List {
                 // Appearance Section
@@ -30,18 +35,18 @@ struct SettingsView: View {
                         .pickerStyle(.menu)
                         .labelsHidden()
                     }
-                    
+
                     // Tab Bar Preview
                     VStack(spacing: 8) {
                         Text("Preview")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
+
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.appTertiaryBackground)
                                 .frame(height: 80)
-                            
+
                             switch appState.tabBarStyle {
                             case .compact:
                                 CompactTabBar(selectedTab: .constant(2))
@@ -60,24 +65,27 @@ struct SettingsView: View {
                     }
                     .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
                 }
-                
+
                 // Sound Section
                 Section("Sound") {
                     HStack {
-                        Label("Haptic Feedback", systemImage: "waveform")
+                        Label("Sound", systemImage: "speaker.wave.2")
                         Spacer()
-                        Toggle("", isOn: .constant(true))
-                            .labelsHidden()
-                    }
-                    
-                    HStack {
-                        Label("Sound Effects", systemImage: "speaker.wave.2")
-                        Spacer()
-                        Toggle("", isOn: .constant(true))
+                        Toggle("", isOn: $soundEnabled)
                             .labelsHidden()
                     }
                 }
-                
+
+                // Data Section
+                Section("Data") {
+                    Button(role: .destructive) {
+                        showingResetConfirmation = true
+                    } label: {
+                        Label("Reset All Data", systemImage: "trash")
+                            .foregroundColor(.red)
+                    }
+                }
+
                 // About Section
                 Section("About") {
                     HStack {
@@ -86,8 +94,8 @@ struct SettingsView: View {
                         Text("1.0.0")
                             .foregroundColor(.secondary)
                     }
-                    
-                    Link(destination: URL(string: "https://github.com/yourusername/chordlab")!) {
+
+                    Link(destination: URL(string: "https://github.com/stevenrichter16/ChordLab")!) {
                         HStack {
                             Label("GitHub", systemImage: "link")
                             Spacer()
@@ -107,6 +115,27 @@ struct SettingsView: View {
                     }
                 }
             }
+            .onAppear {
+                soundEnabled = (try? dataManager.getOrCreateUserData())?.soundEnabled ?? true
+            }
+            .onChange(of: soundEnabled) { _, isOn in
+                audioEngine.setVolume(isOn ? 0.7 : 0)
+                try? dataManager.updateUserData { userData in
+                    userData.soundEnabled = isOn
+                }
+            }
+            .confirmationDialog(
+                "Reset all data?",
+                isPresented: $showingResetConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Reset Everything", role: .destructive) {
+                    try? dataManager.clearAllData()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This deletes all saved progressions, practice history, and achievement progress. This cannot be undone.")
+            }
         }
     }
 }
@@ -114,4 +143,6 @@ struct SettingsView: View {
 #Preview {
     SettingsView()
         .environment(AppState())
+        .environment(DataManager(inMemory: true))
+        .environment(AudioEngine())
 }

@@ -3,7 +3,17 @@
 ## Quick Reference
 - **Architecture**: SwiftUI + @Observable (iOS 17+) + Tonic library + SwiftData
 - **Main Services**: TheoryEngine (music theory), AudioEngine (playback), DataManager (persistence)
-- **Current State**: Phase 4 (Explore Tab) completed with Piano Chord Visualizer
+- **Current State**: Phase 4 (Explore Tab) completed with Piano Chord Visualizer; Arcade (Games) tab added
+
+## Arcade (Games) Section
+A self-contained mini-games section, deliberately isolated from the music-theory app:
+- **Location**: `ChordLab/Features/Games/` — no dependency on TheoryEngine, AudioEngine, or the SwiftData schema
+- **Entry**: 6th tab "Games" (`gamecontroller.fill`) → `GamesHomeView` hub → games open in `fullScreenCover` (tab bar never overlaps game controls)
+- **Routing**: `GameHostView` switches on `GameInfo.id`; catalog lives in `GameCatalog` (GamesModels.swift)
+- **Scores**: `GameScores.shared` — UserDefaults-backed (`arcade.<gameId>.<field>` keys), `report(score:for:higherIsBetter:)` for bests, counters for wins/bankrolls
+- **Shared UI**: `GameScreen` (chrome w/ close+restart), `GameOverOverlay`, `StatPill`, `ArcadeButton`, `PlayingCard`/`PlayingCardView` (card games), `GameHaptics`
+- **Games (19)**: TicTacToe (minimax), ConnectFour (alpha-beta), RPS, Dots&Boxes (chain-aware AI), Snake, 2048, Breakout, WhackAMole, Simon, Reaction Timer, Blackjack (chips/betting), HigherLower, VideoPoker (Jacks or Better), Minesweeper, Sudoku (unique-solution generator), LightsOut, MemoryMatch, WordGuess (Wordle-style), Hangman
+- **Conventions**: each game = one file, one `...GameView` struct, helper types nested inside the view (single-module namespace!); timers via `Timer.publish + onReceive`; async sequencing via generation-counter-guarded `Task.sleep`
 
 ## Project Structure
 ```

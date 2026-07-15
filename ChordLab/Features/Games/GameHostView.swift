@@ -12,8 +12,26 @@ struct GameHostView: View {
 
     var body: some View {
         switch game.id {
-        default:
-            GameComingSoonView(game: game)
+        case "tictactoe": TicTacToeGameView()
+        case "connectfour": ConnectFourGameView()
+        case "rps": RPSGameView()
+        case "dotsboxes": DotsAndBoxesGameView()
+        case "snake": SnakeGameView()
+        case "game2048": Game2048View()
+        case "breakout": BreakoutGameView()
+        case "whackamole": WhackAMoleGameView()
+        case "simon": SimonGameView()
+        case "reaction": ReactionGameView()
+        case "blackjack": BlackjackGameView()
+        case "higherlower": HigherLowerGameView()
+        case "videopoker": VideoPokerGameView()
+        case "minesweeper": MinesweeperGameView()
+        case "sudoku": SudokuGameView()
+        case "lightsout": LightsOutGameView()
+        case "memory": MemoryMatchGameView()
+        case "wordguess": WordGuessGameView()
+        case "hangman": HangmanGameView()
+        default: GameComingSoonView(game: game)
         }
     }
 }

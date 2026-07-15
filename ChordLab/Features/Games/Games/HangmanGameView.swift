@@ -293,12 +293,15 @@ struct HangmanGameView: View {
 
         var body: some View {
             ZStack {
-                // Static gallows structure.
-                frameLine(CGPoint(x: 25, y: 195), CGPoint(x: 165, y: 195))   // base
-                frameLine(CGPoint(x: 50, y: 195), CGPoint(x: 50, y: 15))     // pole
-                frameLine(CGPoint(x: 50, y: 15), CGPoint(x: 135, y: 15))     // beam
-                frameLine(CGPoint(x: 50, y: 42), CGPoint(x: 77, y: 15))      // brace
-                frameLine(CGPoint(x: 135, y: 15), CGPoint(x: 135, y: 36))    // rope
+                // Static gallows structure (grouped to stay within
+                // ViewBuilder's 10-child limit).
+                Group {
+                    frameLine(CGPoint(x: 25, y: 195), CGPoint(x: 165, y: 195))   // base
+                    frameLine(CGPoint(x: 50, y: 195), CGPoint(x: 50, y: 15))     // pole
+                    frameLine(CGPoint(x: 50, y: 15), CGPoint(x: 135, y: 15))     // beam
+                    frameLine(CGPoint(x: 50, y: 42), CGPoint(x: 77, y: 15))      // brace
+                    frameLine(CGPoint(x: 135, y: 15), CGPoint(x: 135, y: 36))    // rope
+                }
 
                 // Body parts, revealed one per mistake with a draw-on animation.
                 Circle()                                                     // 1. head

@@ -293,8 +293,7 @@ struct ConnectFourGameView: View {
         aiThinking = true
         let gen = generation
         let snapshot = board
-        Task {
-            // Search off the main actor snapshot; tiny boards are fast, but be safe.
+        Task { @MainActor in
             let column = Self.bestMove(board: snapshot, aiPlayer: 2, depth: 5)
             try? await Task.sleep(nanoseconds: 450_000_000)
             guard generation == gen, winner == nil, !isDraw else { return }

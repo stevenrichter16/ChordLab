@@ -324,7 +324,7 @@ struct BlackjackGameView: View {
     private func stand() {
         phase = .dealerTurn
         let generation = roundGeneration
-        Task {
+        Task { @MainActor in
             // Dealer draws to 17 with visible pacing.
             while true {
                 try? await Task.sleep(nanoseconds: 700_000_000)
@@ -356,8 +356,10 @@ struct BlackjackGameView: View {
             outcome = "Push — two blackjacks"
             tint = .secondary
         } else if playerBJ {
-            payout = bet + bet * 3 / 2
-            outcome = "Blackjack! +$\(bet * 3 / 2)"
+            // 3:2, rounded up so odd bets aren't shortchanged.
+            let winnings = (bet * 3 + 1) / 2
+            payout = bet + winnings
+            outcome = "Blackjack! +$\(winnings)"
             tint = .green
         } else if dealerBJ {
             outcome = "Dealer blackjack"

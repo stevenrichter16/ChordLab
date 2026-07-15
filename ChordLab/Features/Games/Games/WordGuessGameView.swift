@@ -284,7 +284,7 @@ struct WordGuessGameView: View {
         guard currentGuess.count == 5 else {
             GameHaptics.warning()
             withAnimation(.default) { shakeRow = true }
-            Task {
+            Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 350_000_000)
                 shakeRow = false
             }

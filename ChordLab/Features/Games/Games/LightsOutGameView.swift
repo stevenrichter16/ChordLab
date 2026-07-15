@@ -159,7 +159,7 @@ struct LightsOutGameView: View {
         s.setValue(s.counter("wins", for: "lightsout"), for: "lightsout")
         wins = s.counter("wins", for: "lightsout")
 
-        Task {
+        Task { @MainActor in
             try? await Task.sleep(nanoseconds: 450_000_000)
             guard isWon else { return }
             withAnimation(.easeOut(duration: 0.25)) {

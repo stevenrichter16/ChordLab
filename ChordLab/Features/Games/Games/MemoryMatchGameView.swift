@@ -195,7 +195,7 @@ struct MemoryMatchGameView: View {
 
         if cards[first].emoji == cards[index].emoji {
             // Match: keep both revealed with a little bounce.
-            Task {
+            Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 300_000_000)
                 guard generation == gen else { return }
                 GameHaptics.success()
@@ -212,7 +212,7 @@ struct MemoryMatchGameView: View {
         } else {
             // No match: block input, then flip both back.
             isBusy = true
-            Task {
+            Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 900_000_000)
                 guard generation == gen else { return }
                 cards[first].isFaceUp = false

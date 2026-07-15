@@ -195,7 +195,7 @@ struct SimonGameView: View {
         let litTime = max(0.22, 0.45 - Double(seq.count - 1) * 0.02)
         let gapTime = max(0.08, 0.15 - Double(seq.count - 1) * 0.005)
 
-        Task {
+        Task { @MainActor in
             litPad = nil
             try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             guard generation == gen else { return }
@@ -236,7 +236,7 @@ struct SimonGameView: View {
     private func flash(_ pad: Pad) {
         let gen = generation
         litPad = pad
-        Task {
+        Task { @MainActor in
             try? await Task.sleep(nanoseconds: 180_000_000)
             guard generation == gen, litPad == pad else { return }
             litPad = nil
@@ -254,7 +254,7 @@ struct SimonGameView: View {
 
         generation += 1
         let gen = generation
-        Task {
+        Task { @MainActor in
             litPad = nil
             // Flash the pad the player should have tapped.
             for _ in 0..<3 {

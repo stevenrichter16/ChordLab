@@ -16,6 +16,8 @@ struct GameHostView: View {
         case "connectfour": ConnectFourGameView()
         case "rps": RPSGameView()
         case "dotsboxes": DotsAndBoxesGameView()
+        case "yahtzee": YahtzeeGameView()
+        case "pong": PongGameView()
         case "snake": SnakeGameView()
         case "game2048": Game2048View()
         case "breakout": BreakoutGameView()

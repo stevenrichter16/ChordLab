@@ -43,4 +43,8 @@ final class AppState {
     func switchToProfile() {
         selectedTab = 4
     }
+
+    func switchToGames() {
+        selectedTab = 5
+    }
 }

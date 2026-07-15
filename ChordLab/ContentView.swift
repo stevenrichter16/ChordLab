@@ -42,6 +42,10 @@ struct ContentView: View {
                     NavigationStack {
                         ProfileTabView()
                     }
+                case 5:
+                    NavigationStack {
+                        GamesHomeView()
+                    }
                 default:
                     NavigationStack {
                         LearnTabView()

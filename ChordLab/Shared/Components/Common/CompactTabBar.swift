@@ -19,7 +19,8 @@ struct CompactTabBar: View {
         ("magnifyingglass", "Explore"), 
         ("books.vertical.fill", "Library"),
         ("music.note.list", "Practice"),
-        ("person.fill", "Profile")
+        ("person.fill", "Profile"),
+        ("gamecontroller.fill", "Games")
     ]
     
     var body: some View {
@@ -108,7 +109,8 @@ struct UltraCompactTabBar: View {
         ("magnifyingglass", "Explore"),
         ("books.vertical.fill", "Library"),
         ("music.note.list", "Practice"),
-        ("person.fill", "Profile")
+        ("person.fill", "Profile"),
+        ("gamecontroller.fill", "Games")
     ]
     
     var body: some View {
@@ -190,7 +192,8 @@ struct FloatingTabBar: View {
         ("magnifyingglass", "Explore"),
         ("books.vertical.fill", "Library"),
         ("music.note.list", "Practice"),
-        ("person.fill", "Profile")
+        ("person.fill", "Profile"),
+        ("gamecontroller.fill", "Games")
     ]
     
     var body: some View {

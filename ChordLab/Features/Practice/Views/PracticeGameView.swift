@@ -26,6 +26,7 @@ struct PracticeGameView<Stimulus: View>: View {
     @State private var selectedAnswerIndex: Int? = nil
     @State private var correctCount = 0
     @State private var startedAt = Date()
+    @State private var elapsedDuration: TimeInterval = 0
 
     private let questionCount = 10
 
@@ -330,6 +331,7 @@ struct PracticeGameView<Stimulus: View>: View {
     private func finish() {
         let total = max(questions.count, 1)
         let percentage = Int((Double(correctCount) / Double(total) * 100).rounded())
+        elapsedDuration = Date().timeIntervalSince(startedAt)
 
         do {
             try dataManager.recordPracticeSession(
@@ -338,7 +340,7 @@ struct PracticeGameView<Stimulus: View>: View {
                 totalQuestions: questions.count,
                 correctAnswers: correctCount,
                 difficulty: difficulty,
-                duration: Date().timeIntervalSince(startedAt)
+                duration: elapsedDuration
             )
         } catch {
             // Non-fatal: results still display, only history is lost
@@ -359,7 +361,7 @@ struct PracticeGameView<Stimulus: View>: View {
     }
 
     private var formattedDuration: String {
-        let seconds = Int(Date().timeIntervalSince(startedAt))
+        let seconds = Int(elapsedDuration)
         return String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
 

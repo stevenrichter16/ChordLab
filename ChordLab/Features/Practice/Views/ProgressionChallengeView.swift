@@ -11,6 +11,10 @@ import Tonic
 struct ProgressionChallengeView: View {
     @Environment(AudioEngine.self) private var audioEngine
 
+    // Progression playback runs at a slower tempo; remember the app-wide
+    // tempo so leaving the game doesn't permanently change it
+    @State private var savedTempo = 120
+
     var body: some View {
         PracticeGameView(
             mode: .progressionChallenge,
@@ -28,8 +32,12 @@ struct ProgressionChallengeView: View {
                 }
             }
         )
+        .onAppear {
+            savedTempo = audioEngine.currentTempo
+        }
         .onDisappear {
             audioEngine.stopPlayback()
+            audioEngine.setTempo(savedTempo)
         }
     }
 

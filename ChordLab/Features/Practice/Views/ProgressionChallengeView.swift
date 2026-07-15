@@ -21,12 +21,13 @@ struct ProgressionChallengeView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     playProgression(question.progression)
                 }
+            },
+            stimulus: { question in
+                ReplayProgressionButton(progression: question.progression) {
+                    playProgression(question.progression)
+                }
             }
-        ) { question in
-            ReplayProgressionButton(progression: question.progression) {
-                playProgression(question.progression)
-            }
-        }
+        )
         .onDisappear {
             audioEngine.stopPlayback()
         }

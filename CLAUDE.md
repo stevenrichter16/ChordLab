@@ -3,7 +3,7 @@
 ## Quick Reference
 - **Architecture**: SwiftUI + @Observable (iOS 17+) + Tonic library + SwiftData
 - **Main Services**: TheoryEngine (music theory), AudioEngine (playback), DataManager (persistence)
-- **Current State**: Phase 4 (Explore Tab) completed with Piano Chord Visualizer
+- **Current State**: Explore (Piano Chord Visualizer, all 12 keys), Practice (4 playable modes), Profile (live stats + achievements), and Library (full CRUD) implemented
 
 ## Project Structure
 ```
@@ -15,11 +15,25 @@ ChordLab/
 ├── Features/
 │   ├── Learn/         # ✅ ScalePianoView, KeyScaleSelector
 │   ├── Explore/       # ✅ ChordVisualizerView, FloatingProgressionPlayer
+│   ├── Library/       # ✅ Saved progressions: search/sort, rename/duplicate/delete
 │   ├── Builder/       # 📋 TODO: Drag-drop progression builder
-│   ├── Practice/      # 📋 TODO: Ear training, quizzes
-│   └── Profile/       # 📋 TODO: Stats, achievements
+│   ├── Practice/      # ✅ Ear training, chord recognition, progressions, quiz
+│   └── Profile/       # ✅ Stats, achievements (AchievementsView)
 └── Shared/
     └── Components/    # Piano/, Common/, Charts/
+```
+
+## Practice Tab Architecture
+```swift
+PracticeGameView<Stimulus>       // Generic session container: setup -> questions -> results
+├── PracticeQuestionGenerator    // Static generators; uses throwaway TheoryEngine instances
+│                                // so global key state is never mutated mid-game
+├── EarTrainingView              // Chord quality by ear (auto-plays, replay button)
+├── ChordRecognitionView         // Name the chord shown on ChordPianoView
+├── ProgressionChallengeView     // Identify 4-chord Roman numeral patterns by ear
+└── TheoryQuizView               // Roman numerals, functions, chord tones
+// Results are saved via DataManager.recordPracticeSession which also
+// advances first_practice / streak / ear_training_pro achievements
 ```
 
 ## Key Tonic API Patterns
@@ -100,11 +114,20 @@ visualizedChord: Chord?      // For piano highlighting
 - **Drag state management**: Reset on drop with proper cleanup
 - **Timeline selection**: Clears grid selection, updates display
 
+## Key Invariants (learned the hard way)
+- **Chord voicing must accumulate octaves**: use `AudioEngine.voicedNotes(for:)`
+  everywhere a chord is spelled into octaves; per-note comparison folds notes
+  after a pitch-class wrap back down an octave (G7 bug)
+- **Roman numerals carry quality suffixes** ("ii7", "V7", "Imaj7", "vii°7");
+  `determineFunction` strips suffixes before matching the degree
+- **Chord.parse normalizes unicode accidentals** so `formattedSymbol` output
+  ("B♭m7") round-trips
+
 ## Next Implementation Tasks
-1. **Builder Tab**: Full drag-drop progression builder with analysis
-2. **Practice Tab**: Ear training, chord recognition, theory quizzes
-3. **Profile Tab**: Statistics, achievements, progress tracking
-4. **Polish**: Animations, accessibility, app icon
+1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar)
+2. **Learn Tab**: Structured lessons and theory tips
+3. **Polish**: Animations, accessibility, app icon
+4. **Audio**: Load a SoundFont into AVAudioUnitSampler for richer piano tone
 
 ## Testing Strategy
 - Unit tests for all services (87 passing)
@@ -113,6 +136,6 @@ visualizedChord: Chord?      // For piano highlighting
 - Performance profiling for smooth 60fps
 
 ## Git Workflow
-- Branch: `scrollable-piano`
+- Feature branches off `main`
 - Commits: Feature-based with clear messages
 - Never push unless explicitly requested

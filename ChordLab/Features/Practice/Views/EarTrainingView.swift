@@ -22,10 +22,11 @@ struct EarTrainingView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                     audioEngine.playChord(chord, velocity: 80, duration: 1.2)
                 }
+            },
+            stimulus: { question in
+                ReplayChordButton(chord: question.chord, tint: .blue)
             }
-        ) { question in
-            ReplayChordButton(chord: question.chord, tint: .blue)
-        }
+        )
     }
 }
 

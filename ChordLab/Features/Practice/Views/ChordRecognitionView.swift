@@ -25,19 +25,20 @@ struct ChordRecognitionView: View {
             generator: PracticeQuestionGenerator.chordRecognitionQuestions,
             onQuestionShown: { question in
                 theoryEngine.setKey(question.keyName, scaleType: "major")
-            }
-        ) { question in
-            VStack(spacing: 12) {
-                ChordPianoView(
-                    highlightedChord: question.chord,
-                    currentKey: question.keyName,
-                    playingChordNotes: .constant([])
-                )
-                .padding(.horizontal)
+            },
+            stimulus: { question in
+                VStack(spacing: 12) {
+                    ChordPianoView(
+                        highlightedChord: question.chord,
+                        currentKey: question.keyName,
+                        playingChordNotes: .constant([])
+                    )
+                    .padding(.horizontal)
 
-                ReplayChordButton(chord: question.chord, tint: .green)
+                    ReplayChordButton(chord: question.chord, tint: .green)
+                }
             }
-        }
+        )
         .onAppear {
             savedKey = theoryEngine.currentKey
             savedScale = theoryEngine.currentScaleType

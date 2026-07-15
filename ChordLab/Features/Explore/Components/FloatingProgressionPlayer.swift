@@ -88,6 +88,9 @@ struct FloatingProgressionPlayer: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: dragOffset)
         .onDisappear {
             arrowDismissTimer?.invalidate()
+            // Playback is driven by a Timer that outlives this view; without
+            // this, audio keeps advancing after the user switches tabs
+            stopPlayback()
         }
     }
     

@@ -81,7 +81,6 @@ final class AudioEngine {
     // MARK: - Note Playback
     
     func playNote(_ note: Note, velocity: UInt8 = 80, duration: Double = 1.0) {
-        print("in audioEngine Play Note: \(note)")
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }
@@ -105,32 +104,9 @@ final class AudioEngine {
             start()
             guard engine.isRunning else { return }
         }
-        
-        let notes = chord.noteClasses.enumerated().map { index, noteClass in
-            // Determine octave for proper voicing
-            let baseOctave = 4
-            var octave = baseOctave
-            
-            // Ensure notes are in ascending order
-            if index > 0 {
-                // Get the canonical note for each NoteClass
-                let previousNoteClass = chord.noteClasses[index - 1]
-                
-                // Use the semitone values to compare pitch classes
-                let previousSemitone = previousNoteClass.intValue
-                let currentSemitone = noteClass.intValue
-                
-                // If current note is lower than previous, move to next octave
-                if currentSemitone < previousSemitone {
-                    octave = baseOctave + 1
-                }
-            }
-            
-            // Create a Note from the NoteClass using its canonical representation
-            let canonicalNote = noteClass.canonicalNote
-            return Note(canonicalNote.letter, accidental: canonicalNote.accidental, octave: octave)
-        }
-        
+
+        let notes = voicedNotes(for: chord)
+
         // Play all notes with slight timing offset and adjusted velocities
         for (index, note) in notes.enumerated() {
             // More aggressive velocity reduction for cleaner sound
@@ -166,34 +142,31 @@ final class AudioEngine {
     }
     
     private func stopChordNotes(_ chord: Chord) {
-        let notes = chord.noteClasses.enumerated().map { index, noteClass in
-            let baseOctave = 4
-            var octave = baseOctave
-            
-            if index > 0 {
-                // Get the canonical note for each NoteClass
-                let previousNoteClass = chord.noteClasses[index - 1]
-                
-                // Use the semitone values to compare pitch classes
-                let previousSemitone = previousNoteClass.intValue
-                let currentSemitone = noteClass.intValue
-                
-                // If current note is lower than previous, move to next octave
-                if currentSemitone < previousSemitone {
-                    octave = baseOctave + 1
-                }
+        for note in voicedNotes(for: chord) {
+            samplerNode.stopNote(UInt8(note.pitch.midiNoteNumber), onChannel: 0)
+        }
+
+        isPlaying = false
+    }
+
+    /// Ascending close voicing starting at the base octave.
+    /// The octave must accumulate across the whole chord: once the pitch class
+    /// wraps (e.g. G7 = G-B-D-F, where D wraps past B), every later note stays
+    /// in the higher octave instead of folding back down.
+    func voicedNotes(for chord: Chord, baseOctave: Int = 4) -> [Note] {
+        var octave = baseOctave
+        var previousSemitone: Int?
+
+        return chord.noteClasses.map { noteClass in
+            let semitone = noteClass.intValue
+            if let previous = previousSemitone, semitone < previous {
+                octave += 1
             }
-            
-            // Create a Note from the NoteClass using its canonical representation
+            previousSemitone = semitone
+
             let canonicalNote = noteClass.canonicalNote
             return Note(canonicalNote.letter, accidental: canonicalNote.accidental, octave: octave)
         }
-        
-        for note in notes {
-            samplerNode.stopNote(UInt8(note.pitch.midiNoteNumber), onChannel: 0)
-        }
-        
-        isPlaying = false
     }
     
     // MARK: - Control

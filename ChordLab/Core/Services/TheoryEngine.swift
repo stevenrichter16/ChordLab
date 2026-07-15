@@ -216,16 +216,7 @@ final class TheoryEngine {
         if let degree = scaleNotes.firstIndex(of: chordRoot) {
             // Diatonic chord
             let roman = ["I", "II", "III", "IV", "V", "VI", "VII"][degree]
-            
-            // Lowercase for minor chords
-            switch chord.type {
-            case .minor, .min7:
-                return roman.lowercased()
-            case .dim, .dim7, .halfDim7:
-                return roman.lowercased() + "°"
-            default:
-                return roman
-            }
+            return applyChordQuality(to: roman, type: chord.type)
         } else {
             // Non-diatonic chord - check for borrowed chords
             // Get the chromatic distance from the root
@@ -253,35 +244,65 @@ final class TheoryEngine {
             default: roman = "?"
             }
             
-            // Apply chord quality
-            switch chord.type {
-            case .minor, .min7:
-                roman = roman.lowercased()
-            case .dim, .dim7, .halfDim7:
-                roman = roman.lowercased() + "°"
-            default:
-                break
-            }
-            
-            return accidental + roman
+            return accidental + applyChordQuality(to: roman, type: chord.type)
         }
     }
-    
+
+    /// Formats a Roman numeral with the chord's quality (case and suffix),
+    /// e.g. "II" + .min7 -> "ii7", "V" + .dom7 -> "V7", "VII" + .halfDim7 -> "vii°7"
+    private func applyChordQuality(to roman: String, type: ChordType) -> String {
+        switch type {
+        case .minor:
+            return roman.lowercased()
+        case .min7:
+            return roman.lowercased() + "7"
+        case .dim:
+            return roman.lowercased() + "°"
+        case .dim7:
+            return roman.lowercased() + "°7"
+        case .halfDim7:
+            return roman.lowercased() + "°7"
+        case .maj7:
+            return roman + "maj7"
+        case .dom7:
+            return roman + "7"
+        case .aug:
+            return roman + "+"
+        default:
+            return roman
+        }
+    }
+
     public func determineFunction(romanNumeral: String) -> ChordFunction {
-        switch romanNumeral.uppercased() {
-        case "I", "IMAJ7":
+        // Secondary dominants (V/V) and accidental-prefixed numerals (♭III) are non-diatonic
+        if romanNumeral.contains("/") { return .chromatic }
+        if romanNumeral.hasPrefix("♭") || romanNumeral.hasPrefix("♯") || romanNumeral.hasPrefix("#") {
+            return .chromatic
+        }
+
+        // Strip quality suffixes ("ii7", "IVmaj7", "vii°7"...) down to the bare degree
+        var base = romanNumeral.uppercased()
+        for suffix in ["MAJ7", "M7", "Ø7", "°7", "7", "Ø", "°", "+"] {
+            if base.hasSuffix(suffix) {
+                base = String(base.dropLast(suffix.count))
+                break
+            }
+        }
+
+        switch base {
+        case "I":
             return .tonic
-        case "II", "IIM7":
+        case "II":
             return .supertonic
-        case "III", "IIIM7":
+        case "III":
             return .mediant
-        case "IV", "IVMAJ7":
+        case "IV":
             return .subdominant
-        case "V", "V7":
+        case "V":
             return .dominant
-        case "VI", "VIM7":
+        case "VI":
             return .submediant
-        case "VII", "VII°":
+        case "VII":
             return .leadingTone
         default:
             return .chromatic
@@ -766,8 +787,13 @@ extension Chord {
         if rootString.isEmpty {
             return nil
         }
-        
-        guard let root = NoteClass(rootString) else { return nil }
+
+        // Normalize unicode accidentals (chord.formattedSymbol emits "♯"/"♭")
+        // so symbols round-trip through NoteClass's ASCII string parser
+        let normalizedRoot = rootString
+            .replacingOccurrences(of: "♯", with: "#")
+            .replacingOccurrences(of: "♭", with: "b")
+        guard let root = NoteClass(normalizedRoot) else { return nil }
         
         // Determine chord type from suffix
         let chordType: ChordType

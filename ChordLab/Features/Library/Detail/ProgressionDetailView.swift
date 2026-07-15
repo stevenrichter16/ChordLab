@@ -11,11 +11,15 @@ import Tonic
 struct ProgressionDetailView: View {
     let progression: SavedProgression
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     @Environment(TheoryEngine.self) private var theoryEngine
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(AppState.self) private var appState
     @State private var isPlaying = false
     @State private var currentPlayIndex: Int? = nil
+    @State private var showingRenameAlert = false
+    @State private var showingDeleteConfirmation = false
+    @State private var newName = ""
     
     var body: some View {
         NavigationStack {
@@ -127,23 +131,41 @@ struct ProgressionDetailView: View {
                 
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
-                        Button("Edit", systemImage: "pencil") {
-                            // TODO: Edit functionality
+                        Button("Rename", systemImage: "pencil") {
+                            newName = progression.name
+                            showingRenameAlert = true
                         }
-                        
+
                         Button("Duplicate", systemImage: "doc.on.doc") {
-                            // TODO: Duplicate functionality
+                            duplicateProgression()
                         }
-                        
+
                         Divider()
-                        
+
                         Button("Delete", systemImage: "trash", role: .destructive) {
-                            // TODO: Delete functionality
+                            showingDeleteConfirmation = true
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
                 }
+            }
+            .alert("Rename Progression", isPresented: $showingRenameAlert) {
+                TextField("Name", text: $newName)
+                Button("Cancel", role: .cancel) { }
+                Button("Save") {
+                    renameProgression()
+                }
+            }
+            .confirmationDialog(
+                "Delete \"\(progression.name)\"?",
+                isPresented: $showingDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    deleteProgression()
+                }
+                Button("Cancel", role: .cancel) { }
             }
         }
     }
@@ -202,6 +224,36 @@ struct ProgressionDetailView: View {
         }
     }
     
+    private func renameProgression() {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        progression.name = trimmed
+        progression.dateModified = Date()
+        try? modelContext.save()
+    }
+
+    private func duplicateProgression() {
+        let copy = SavedProgression(
+            name: progression.name + " Copy",
+            progressionChords: progression.progressionChords,
+            key: progression.key,
+            scale: progression.scale,
+            tempo: progression.tempo
+        )
+        copy.tags = progression.tags
+        copy.notes = progression.notes
+        copy.timeSignature = progression.timeSignature
+        modelContext.insert(copy)
+        try? modelContext.save()
+    }
+
+    private func deleteProgression() {
+        isPlaying = false
+        modelContext.delete(progression)
+        try? modelContext.save()
+        dismiss()
+    }
+
     private func loadInVisualizer() {
         // Load the progression into TheoryEngine
         theoryEngine.loadProgression(progression)

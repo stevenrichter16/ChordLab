@@ -135,8 +135,12 @@ struct LibraryEmptyStateView: View {
 
 struct LibraryProgressionCard: View {
     let progression: SavedProgression
+    @Environment(\.modelContext) private var modelContext
     @State private var showingDetail = false
-    
+    @State private var showingRenameAlert = false
+    @State private var showingDeleteConfirmation = false
+    @State private var newName = ""
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
@@ -158,16 +162,19 @@ struct LibraryProgressionCard: View {
                 .buttonStyle(.plain)
                 
                 Menu {
-                    Button("Edit", systemImage: "pencil") {
-                        // TODO: Edit functionality
+                    Button("Rename", systemImage: "pencil") {
+                        newName = progression.name
+                        showingRenameAlert = true
                     }
-                    
+
                     Button("Duplicate", systemImage: "doc.on.doc") {
-                        // TODO: Duplicate functionality
+                        duplicateProgression()
                     }
-                    
+
+                    Divider()
+
                     Button("Delete", systemImage: "trash", role: .destructive) {
-                        // TODO: Delete functionality
+                        showingDeleteConfirmation = true
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -231,8 +238,53 @@ struct LibraryProgressionCard: View {
         .sheet(isPresented: $showingDetail) {
             ProgressionDetailView(progression: progression)
         }
+        .alert("Rename Progression", isPresented: $showingRenameAlert) {
+            TextField("Name", text: $newName)
+            Button("Cancel", role: .cancel) { }
+            Button("Save") {
+                renameProgression()
+            }
+        }
+        .confirmationDialog(
+            "Delete \"\(progression.name)\"?",
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                deleteProgression()
+            }
+            Button("Cancel", role: .cancel) { }
+        }
     }
-    
+
+    private func renameProgression() {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        progression.name = trimmed
+        progression.dateModified = Date()
+        try? modelContext.save()
+    }
+
+    private func duplicateProgression() {
+        let copy = SavedProgression(
+            name: progression.name + " Copy",
+            progressionChords: progression.progressionChords,
+            key: progression.key,
+            scale: progression.scale,
+            tempo: progression.tempo
+        )
+        copy.tags = progression.tags
+        copy.notes = progression.notes
+        copy.timeSignature = progression.timeSignature
+        modelContext.insert(copy)
+        try? modelContext.save()
+    }
+
+    private func deleteProgression() {
+        modelContext.delete(progression)
+        try? modelContext.save()
+    }
+
     private var chordPreview: String {
         let chords = progression.progressionChords.prefix(4).map { $0.chordSymbol }
         let preview = chords.joined(separator: " - ")

@@ -10,8 +10,8 @@ import SwiftUI
 struct KeySelector: View {
     @Binding var selectedKey: String
     
-    // White keys only for initial implementation
-    private let keys = ["C", "D", "E", "F", "G", "A", "B"]
+    // All 12 keys, spelled the way each major key is conventionally written
+    private let keys = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -43,9 +43,15 @@ struct PianoKeyButton: View {
     let isSelected: Bool
     let action: () -> Void
     
+    private var displayName: String {
+        key
+            .replacingOccurrences(of: "#", with: "♯")
+            .replacingOccurrences(of: "b", with: "♭")
+    }
+
     var body: some View {
         Button(action: action) {
-            Text(key)
+            Text(displayName)
                 .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
                 .foregroundColor(isSelected ? .white : .primary)
                 .frame(width: 50, height: 50)

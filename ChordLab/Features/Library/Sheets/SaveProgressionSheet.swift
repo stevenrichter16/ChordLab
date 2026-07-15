@@ -44,7 +44,11 @@ struct SaveProgressionSheet: View {
                             if progressionName.isEmpty {
                                 progressionName = generateDefaultName()
                             }
-                            nameFieldFocused = true
+                            // Focusing synchronously in a sheet's onAppear is
+                            // unreliable; defer until presentation settles
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                nameFieldFocused = true
+                            }
                         }
                 } header: {
                     Text("Name")

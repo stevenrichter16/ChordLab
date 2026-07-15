@@ -278,17 +278,6 @@ struct FloatingTabItem: View {
     }
 }
 
-#Preview("Compact Tab Bar") {
-    @State var selectedTab = 0
-
-    return VStack {
-        Spacer()
-        CompactTabBar(selectedTab: $selectedTab)
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(Color.appBackground)
-}
-
 #Preview("Ultra Compact Tab Bar") {
     @State var selectedTab = 0
     

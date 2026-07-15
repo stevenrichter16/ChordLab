@@ -6,6 +6,7 @@
 //
 
 import AVFoundation
+import AudioToolbox
 import Tonic
 
 @Observable
@@ -15,19 +16,50 @@ final class AudioEngine {
     let samplerNode = AVAudioUnitSampler()
     let reverb = AVAudioUnitReverb()
     private var oscillatorNodes: [AVAudioSourceNode] = []
-    
+
     // State
     var isPlaying = false
     var currentTempo: Int = 120
     private var currentVolume: Float = 0.7
-    
+    private(set) var isInstrumentLoaded = false
+
     // Playback
     private var sequencer: AudioSequencer?
     private var metronome: Metronome?
-    
+
     init() {
         setupAudioEngine()
         setupAudioSession()
+        loadInstrument()
+    }
+
+    // MARK: - Instrument
+
+    /// Loads the bundled GeneralUser GS piano into the sampler.
+    /// Without a sound bank, AVAudioUnitSampler falls back to a thin sine tone.
+    private func loadInstrument() {
+        // Synchronized folders may bundle resources flat or with structure;
+        // check both locations before giving up
+        let url = Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2")
+            ?? Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2", subdirectory: "Resources/Sounds")
+            ?? Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2", subdirectory: "Sounds")
+
+        guard let url else {
+            print("GeneralUser.sf2 not found in bundle - using default sampler tone")
+            return
+        }
+
+        do {
+            try samplerNode.loadSoundBankInstrument(
+                at: url,
+                program: 0, // Acoustic Grand Piano
+                bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                bankLSB: UInt8(kAUSampler_DefaultBankLSB)
+            )
+            isInstrumentLoaded = true
+        } catch {
+            print("Failed to load SoundFont: \(error)")
+        }
     }
     
     // MARK: - Setup
@@ -109,19 +141,18 @@ final class AudioEngine {
 
         // Play all notes with slight timing offset and adjusted velocities
         for (index, note) in notes.enumerated() {
-            // More aggressive velocity reduction for cleaner sound
+            // Scale velocity down as chords get denser. The raw sine fallback
+            // needs a much heavier cut than the sampled piano to avoid mud.
             let noteCount = notes.count
-            let adjustedVelocity: UInt8
-            
-            if noteCount <= 3 {
-                // Triads: 50% velocity for cleaner sound
-                let calculated = Int(velocity) * 50 / 100
-                adjustedVelocity = UInt8(min(calculated, 127))
+            let scalePercent: Int
+            if isInstrumentLoaded {
+                scalePercent = noteCount <= 3 ? 80 : 70
             } else {
-                // 7th chords: 40% velocity to prevent muddiness
-                let calculated = Int(velocity) * 40 / 100
-                adjustedVelocity = UInt8(min(calculated, 127))
+                scalePercent = noteCount <= 3 ? 50 : 40
             }
+
+            let calculated = Int(velocity) * scalePercent / 100
+            let adjustedVelocity = UInt8(min(calculated, 127))
             
             // Add micro-delay between notes (like guitar strumming)
             let delay = Double(index) * 0.015  // 15ms between each note for more separation

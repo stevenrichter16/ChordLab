@@ -126,11 +126,17 @@ visualizedChord: Chord?      // For piano highlighting
 - **Chord.parse normalizes unicode accidentals** so `formattedSymbol` output
   ("B♭m7") round-trips
 
+## Audio
+- The sampler loads `Resources/Sounds/GeneralUser.sf2` (GeneralUser GS,
+  program 0 piano) at launch; `AudioEngine.isInstrumentLoaded` gates the
+  velocity scaling (sampled piano: 80/70%, sine fallback: 50/40%)
+- License permits bundling (see `Resources/Sounds/GeneralUser-LICENSE.txt`);
+  attribution shown in Settings > About
+
 ## Next Implementation Tasks
 1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar)
 2. **Learn Tab**: Structured lessons and theory tips
-3. **Polish**: Animations, accessibility, app icon
-4. **Audio**: Load a SoundFont into AVAudioUnitSampler for richer piano tone
+3. **Polish**: App icon, onboarding
 
 ## Testing Strategy
 - Unit tests for all services (87 passing)

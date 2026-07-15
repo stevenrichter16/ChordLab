@@ -87,11 +87,18 @@ struct SettingsView: View {
                 }
 
                 // About Section
-                Section("About") {
+                Section {
                     HStack {
                         Label("Version", systemImage: "info.circle")
                         Spacer()
                         Text("1.0.0")
+                            .foregroundColor(.secondary)
+                    }
+
+                    HStack {
+                        Label("Piano Sound", systemImage: "pianokeys")
+                        Spacer()
+                        Text("GeneralUser GS")
                             .foregroundColor(.secondary)
                     }
 
@@ -104,6 +111,10 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                } header: {
+                    Text("About")
+                } footer: {
+                    Text("Piano samples from the GeneralUser GS SoundFont by S. Christian Collins.")
                 }
             }
             .navigationTitle("Settings")

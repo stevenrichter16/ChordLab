@@ -39,6 +39,12 @@ struct GameHostView: View {
         case "traffic": TrafficGameView()
         case "lemonade": LemonadeGameView()
         case "outbreak": OutbreakGameView()
+        case "particlelife": ParticleLifeGameView()
+        case "wealthants": WealthAntsGameView()
+        case "forestfire": ForestFireGameView()
+        case "windowlights": WindowLightsGameView()
+        case "moss": MossGardenGameView()
+        case "smalllife": SmallLifeGameView()
         default: GameComingSoonView(game: game)
         }
     }

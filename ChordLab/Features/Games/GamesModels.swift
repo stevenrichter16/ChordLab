@@ -18,6 +18,7 @@ enum GameCategory: String, CaseIterable, Identifiable {
     case puzzle = "Puzzle"
     case word = "Word"
     case sims = "Sims"
+    case watch = "Watch"
 
     var id: String { rawValue }
 
@@ -29,6 +30,7 @@ enum GameCategory: String, CaseIterable, Identifiable {
         case .puzzle: return "puzzlepiece.fill"
         case .word: return "textformat.abc"
         case .sims: return "globe.americas.fill"
+        case .watch: return "eye.fill"
         }
     }
 }
@@ -156,7 +158,27 @@ enum GameCatalog {
                  scoreLabel: "Best $"),
         GameInfo(id: "outbreak", name: "Outbreak", icon: "cross.case.fill", tint: .teal,
                  category: .sims, blurb: "Contain the spread, three moves a turn.",
-                 scoreLabel: "Saved")
+                 scoreLabel: "Saved"),
+
+        // Watch — ambient sims, no lose state, barely any buttons
+        GameInfo(id: "particlelife", name: "Particle Life", icon: "atom", tint: .purple,
+                 category: .watch, blurb: "Random chemistry, lifelike creatures.",
+                 scoreLabel: nil),
+        GameInfo(id: "wealthants", name: "Wealth of Ants", icon: "ant.fill", tint: .brown,
+                 category: .watch, blurb: "Fair trades, unfair outcomes.",
+                 scoreLabel: nil),
+        GameInfo(id: "forestfire", name: "Forest Fire", icon: "flame.fill", tint: .orange,
+                 category: .watch, blurb: "Growth, lightning, and equilibrium.",
+                 scoreLabel: nil),
+        GameInfo(id: "windowlights", name: "Window Lights", icon: "building.2.fill", tint: .indigo,
+                 category: .watch, blurb: "A city block living on your real clock.",
+                 scoreLabel: nil),
+        GameInfo(id: "moss", name: "Moss Garden", icon: "leaf.fill", tint: .green,
+                 category: .watch, blurb: "Plant seeds. Come back tomorrow.",
+                 scoreLabel: "Days"),
+        GameInfo(id: "smalllife", name: "A Small Life", icon: "book.closed.fill", tint: .teal,
+                 category: .watch, blurb: "One tiny villager, narrated forever.",
+                 scoreLabel: "Days")
     ]
 
     static func games(in category: GameCategory) -> [GameInfo] {

@@ -84,6 +84,8 @@ enum GameCatalog {
         GameInfo(id: "dotsboxes", name: "Dots & Boxes", icon: "square.grid.3x3.topleft.filled", tint: .teal,
                  category: .classics, blurb: "Claim boxes, don't give away chains.",
                  scoreLabel: "Wins"),
+        GameInfo(id: "yahtzee", name: "Yahtzee", icon: "dice.fill", tint: .red,
+                 category: .classics, blurb: "Roll, hold, and fill the score sheet."),
 
         // Arcade
         GameInfo(id: "snake", name: "Snake", icon: "point.topleft.down.curvedto.point.bottomright.up", tint: .green,
@@ -99,6 +101,11 @@ enum GameCatalog {
         GameInfo(id: "reaction", name: "Reaction Timer", icon: "bolt.fill", tint: .mint,
                  category: .arcade, blurb: "Tap the instant it turns green.",
                  scoreLabel: "Best ms", higherIsBetter: false),
+        GameInfo(id: "pong", name: "Pong", icon: "circlebadge.2.fill", tint: .cyan,
+                 category: .arcade, blurb: "First to 7 against the AI paddle.",
+                 scoreLabel: "Wins"),
+        GameInfo(id: "flappy", name: "Tap Flight", icon: "bird.fill", tint: .orange,
+                 category: .arcade, blurb: "Flap through the gaps."),
 
         // Cards
         GameInfo(id: "blackjack", name: "Blackjack", icon: "suit.club.fill", tint: .indigo,
@@ -110,6 +117,9 @@ enum GameCatalog {
         GameInfo(id: "videopoker", name: "Video Poker", icon: "suit.diamond.fill", tint: .red,
                  category: .cards, blurb: "Jacks or Better. Hold and draw.",
                  scoreLabel: "Credits"),
+        GameInfo(id: "solitaire", name: "Solitaire", icon: "suit.spade.fill", tint: .green,
+                 category: .cards, blurb: "Classic Klondike. Tap to move, undo included.",
+                 scoreLabel: "Wins"),
 
         // Puzzle
         GameInfo(id: "minesweeper", name: "Minesweeper", icon: "flag.fill", tint: .gray,

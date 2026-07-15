@@ -118,5 +118,7 @@ struct LessonRow: View {
     NavigationStack {
         LessonListView()
             .environment(DataManager(inMemory: true))
+            .environment(TheoryEngine())
+            .environment(AudioEngine())
     }
 }

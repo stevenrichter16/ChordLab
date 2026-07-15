@@ -94,6 +94,40 @@ struct LemonadeGameView: View {
         max(0, cash / Self.costPerCup)
     }
 
+    // MARK: - Live projection
+
+    /// Total material cost for the cups queued up, in cents.
+    private var materialCostCents: Int {
+        cupsToMake * Self.costPerCup
+    }
+
+    /// Expected foot traffic under tomorrow's forecast — the mean of the
+    /// same crowd distribution runDay() samples from, without the noise.
+    private var expectedCustomers: Double {
+        34.0 * forecast.crowdMultiplier * reputation
+    }
+
+    /// Probability a customer's willingness to pay clears `priceCents`,
+    /// via a logistic approximation of the normal CDF (same mean/sd as
+    /// the willingness-to-pay draw in runDay()).
+    private var buyProbability: Double {
+        let z = 1.702 * (forecast.willingnessMean - Double(priceCents)) / 42.0
+        return 1 / (1 + exp(-z))
+    }
+
+    /// Expected cups sold, capped by how many are actually made.
+    private var expectedSold: Double {
+        min(expectedCustomers * buyProbability, Double(cupsToMake))
+    }
+
+    private var expectedRevenueCents: Int {
+        Int((expectedSold * Double(priceCents)).rounded())
+    }
+
+    private var expectedProfitCents: Int {
+        expectedRevenueCents - materialCostCents
+    }
+
     var body: some View {
         GameScreen(game: GameCatalog.game(withId: "lemonade")!, onRestart: { newSeason() }) {
             VStack(spacing: 12) {
@@ -217,6 +251,8 @@ struct LemonadeGameView: View {
             .padding(14)
             .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 16))
 
+            projectionCard
+
             // Opening with zero cups is allowed so a broke player can
             // still pass the day instead of soft-locking.
             ArcadeButton(title: cupsToMake == 0 ? "Skip the Day" : "Open the Stand",
@@ -226,6 +262,34 @@ struct LemonadeGameView: View {
                 runDay()
             }
         }
+    }
+
+    /// Live cost/revenue/profit estimate for the current price and cup
+    /// count, so the player can see the trade-off before opening the
+    /// stand — not just after the day plays out.
+    private var projectionCard: some View {
+        VStack(spacing: 6) {
+            HStack {
+                Text("Today's projection")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("estimate")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            resultRow("Cost of materials", "-\(dollars(materialCostCents))")
+            resultRow("Est. cups sold", "~\(Int(expectedSold.rounded())) of \(cupsToMake)")
+            resultRow("Est. revenue", "+\(dollars(expectedRevenueCents))")
+            Divider()
+            resultRow("Est. profit", dollars(expectedProfitCents),
+                      emphasized: true,
+                      tint: expectedProfitCents >= 0 ? .green : .red)
+            Text("Based on tomorrow's forecast — actual weather and customers vary.")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(14)
+        .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func resultsCard(_ result: DayResult) -> some View {

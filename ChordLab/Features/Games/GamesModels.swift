@@ -191,7 +191,8 @@ final class GameScores {
         if let current {
             isRecord = higherIsBetter ? score > current : score < current
         } else {
-            isRecord = true
+            // First recorded game: don't celebrate a zero score.
+            isRecord = higherIsBetter ? score > 0 : true
         }
         if isRecord {
             defaults.set(score, forKey: key(gameId, "best"))

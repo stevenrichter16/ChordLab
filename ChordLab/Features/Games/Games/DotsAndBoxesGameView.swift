@@ -213,7 +213,7 @@ struct DotsAndBoxesGameView: View {
         HStack(spacing: 10) {
             StatPill(label: playerName(1), value: "\(board.scores[0])", tint: .blue)
             StatPill(label: "Left",
-                     value: "\(gridSize * gridSize - board.scores[0] - board.scores[1])",
+                     value: "\(board.size * board.size - board.scores[0] - board.scores[1])",
                      tint: .gray)
             StatPill(label: playerName(2), value: "\(board.scores[1])", tint: .red)
         }
@@ -245,7 +245,10 @@ struct DotsAndBoxesGameView: View {
     private var boardView: some View {
         GeometryReader { geo in
             let side = min(geo.size.width, geo.size.height)
-            let cell = side / CGFloat(gridSize)
+            // Render from board.size, not gridSize: when the picker changes,
+            // the body can re-evaluate before onChange rebuilds the board,
+            // and indexing board arrays with the new gridSize would crash.
+            let cell = side / CGFloat(board.size)
 
             ZStack(alignment: .topLeading) {
                 boxLayer(cell: cell)
@@ -262,8 +265,8 @@ struct DotsAndBoxesGameView: View {
     }
 
     private func boxLayer(cell: CGFloat) -> some View {
-        ForEach(0..<gridSize, id: \.self) { r in
-            ForEach(0..<gridSize, id: \.self) { c in
+        ForEach(0..<board.size, id: \.self) { r in
+            ForEach(0..<board.size, id: \.self) { c in
                 let owner = board.boxes[r][c]
                 if owner != 0 {
                     RoundedRectangle(cornerRadius: 10)
@@ -284,13 +287,13 @@ struct DotsAndBoxesGameView: View {
 
     @ViewBuilder
     private func edgeLayer(cell: CGFloat) -> some View {
-        ForEach(0...gridSize, id: \.self) { r in
-            ForEach(0..<gridSize, id: \.self) { c in
+        ForEach(0...board.size, id: \.self) { r in
+            ForEach(0..<board.size, id: \.self) { c in
                 edgeView(BoardModel.Edge(isHorizontal: true, r: r, c: c), cell: cell)
             }
         }
-        ForEach(0..<gridSize, id: \.self) { r in
-            ForEach(0...gridSize, id: \.self) { c in
+        ForEach(0..<board.size, id: \.self) { r in
+            ForEach(0...board.size, id: \.self) { c in
                 edgeView(BoardModel.Edge(isHorizontal: false, r: r, c: c), cell: cell)
             }
         }
@@ -317,8 +320,8 @@ struct DotsAndBoxesGameView: View {
     }
 
     private func dotLayer(cell: CGFloat) -> some View {
-        ForEach(0...gridSize, id: \.self) { r in
-            ForEach(0...gridSize, id: \.self) { c in
+        ForEach(0...board.size, id: \.self) { r in
+            ForEach(0...board.size, id: \.self) { c in
                 Circle()
                     .fill(Color.primary.opacity(0.55))
                     .frame(width: 9, height: 9)

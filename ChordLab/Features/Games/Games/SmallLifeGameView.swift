@@ -61,6 +61,10 @@ struct SmallLifeGameView: View {
 
     @State private var life: SLState?
     @State private var pending: [SLEntry] = []
+    /// The day's end-state, committed only when its last entry reveals —
+    /// otherwise the header card spoils the feed (cat chip before the
+    /// adoption entry, pay bump before the workday, next day number).
+    @State private var stagedLife: SLState?
     @State private var isPaused = false
     @State private var fastForward = false
     @State private var accumulated = 0.0
@@ -158,8 +162,10 @@ struct SmallLifeGameView: View {
             }
             .background(Color.appSecondaryBackground.opacity(0.5), in: RoundedRectangle(cornerRadius: 12))
             .padding(.horizontal, 12)
-            .onChange(of: life.entries.count) { _, _ in
-                if let lastId = life.entries.last?.id {
+            .onChange(of: life.entries.last?.id) { _, lastId in
+                // Track the last id, not the count: once the 160-entry cap
+                // is reached the count stops changing but entries don't.
+                if let lastId {
                     withAnimation(.easeOut(duration: 0.3)) {
                         proxy.scrollTo(lastId, anchor: .bottom)
                     }
@@ -295,7 +301,8 @@ struct SmallLifeGameView: View {
         if let data = try? JSONEncoder().encode(life) {
             UserDefaults.standard.set(data, forKey: Self.storageKey)
         }
-        GameScores.shared.setValue(life.day, for: "smalllife")
+        // Best-ever days: starting a new life must not wipe the record.
+        GameScores.shared.report(score: life.day, for: "smalllife")
     }
 
     private func startNewLife() {
@@ -320,7 +327,10 @@ struct SmallLifeGameView: View {
         fresh.nextEntryId = 1
         life = fresh
         pending = []
+        stagedLife = nil
         accumulated = 0
+        isPaused = false
+        fastForward = false
         save()
     }
 
@@ -346,7 +356,14 @@ struct SmallLifeGameView: View {
             life = current
         }
         if pending.isEmpty {
-            save()   // persist at each completed day
+            // Day fully revealed: commit its end-state (day counter, mood,
+            // money, flags) while keeping the revealed feed, then persist.
+            if var staged = stagedLife, let revealed = life {
+                staged.entries = revealed.entries
+                life = staged
+                stagedLife = nil
+            }
+            save()
         }
     }
 
@@ -454,6 +471,16 @@ struct SmallLifeGameView: View {
             add("20:\(Int.random(in: 10...59))", solo.0, solo.1, moodDelta: solo.2)
         }
 
+        // Afternoon fern impulse (before evening so the feed stays in
+        // clock order).
+        if !current.hasPlant && Double.random(in: 0..<1) < 0.06 {
+            add("17:2\(Int.random(in: 0...9))", "leaf.fill",
+                "Bought a small fern on impulse. It has opinions about the windowsill already.",
+                moodDelta: 0.04)
+            current.hasPlant = true
+            current.money -= 6
+        }
+
         // Arcs
         current.lonelyStreak = hadCompany ? 0 : current.lonelyStreak + 1
         if current.catName == nil && current.lonelyStreak >= 3 && Double.random(in: 0..<1) < 0.4 {
@@ -477,14 +504,6 @@ struct SmallLifeGameView: View {
             let violin = violins.randomElement()!
             add("21:1\(Int.random(in: 0...9))", violin.0, violin.1, moodDelta: violin.2)
         }
-        if !current.hasPlant && Double.random(in: 0..<1) < 0.06 {
-            add("17:2\(Int.random(in: 0...9))", "leaf.fill",
-                "Bought a small fern on impulse. It has opinions about the windowsill already.",
-                moodDelta: 0.04)
-            current.hasPlant = true
-            current.money -= 6
-        }
-
         // Night note
         let nights = [
             ("moon.zzz.fill", "Lights out. Tomorrow can have the rest.", 0.0),
@@ -494,7 +513,7 @@ struct SmallLifeGameView: View {
         let night = nights.randomElement()!
         add("23:0\(Int.random(in: 0...9))", night.0, night.1, moodDelta: night.2)
 
-        life = current
+        stagedLife = current
         pending = newEntries
     }
 }

@@ -155,7 +155,7 @@ struct PracticeGameView<Stimulus: View>: View {
                             .foregroundColor(.green)
                     }
 
-                    ProgressView(value: Double(currentIndex), total: Double(questions.count))
+                    ProgressView(value: Double(currentIndex + 1), total: Double(questions.count))
                         .tint(accentColor)
                 }
                 .padding(.horizontal)

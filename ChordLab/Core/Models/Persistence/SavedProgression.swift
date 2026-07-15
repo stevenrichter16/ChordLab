@@ -104,4 +104,16 @@ final class SavedProgression {
         let beatsPerSecond = Double(tempo) / 60.0
         return totalBeats / beatsPerSecond
     }
+
+    /// First of "X Copy", "X Copy 2", "X Copy 3"... not already taken
+    static func copyName(basedOn name: String, existingNames: [String]) -> String {
+        let base = name + " Copy"
+        if !existingNames.contains(base) { return base }
+
+        var counter = 2
+        while existingNames.contains("\(base) \(counter)") {
+            counter += 1
+        }
+        return "\(base) \(counter)"
+    }
 }

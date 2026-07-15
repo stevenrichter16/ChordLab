@@ -13,8 +13,11 @@ struct ChordRecognitionView: View {
     @Environment(AudioEngine.self) private var audioEngine
 
     // The piano's enharmonic spelling follows the global engine key, so we
-    // set it per-question and restore the user's key when leaving
-    @State private var savedKey: String = "C"
+    // set it per-question and restore the user's key when leaving.
+    // Captured at most once: on re-entry after a tab switch, the question
+    // view's onAppear (which sets the question key) can fire before ours,
+    // and re-capturing then would clobber the user's key with a question key.
+    @State private var savedKey: String? = nil
     @State private var savedScale: String = "major"
 
     var body: some View {
@@ -40,11 +43,15 @@ struct ChordRecognitionView: View {
             }
         )
         .onAppear {
-            savedKey = theoryEngine.currentKey
-            savedScale = theoryEngine.currentScaleType
+            if savedKey == nil {
+                savedKey = theoryEngine.currentKey
+                savedScale = theoryEngine.currentScaleType
+            }
         }
         .onDisappear {
-            theoryEngine.setKey(savedKey, scaleType: savedScale)
+            if let savedKey {
+                theoryEngine.setKey(savedKey, scaleType: savedScale)
+            }
         }
     }
 }

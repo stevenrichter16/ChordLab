@@ -266,8 +266,9 @@ struct LibraryProgressionCard: View {
     }
 
     private func duplicateProgression() {
+        let existingNames = ((try? modelContext.fetch(FetchDescriptor<SavedProgression>())) ?? []).map(\.name)
         let copy = SavedProgression(
-            name: progression.name + " Copy",
+            name: SavedProgression.copyName(basedOn: progression.name, existingNames: existingNames),
             progressionChords: progression.progressionChords,
             key: progression.key,
             scale: progression.scale,

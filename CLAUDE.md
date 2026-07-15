@@ -118,8 +118,11 @@ visualizedChord: Chord?      // For piano highlighting
 - **Chord voicing must accumulate octaves**: use `AudioEngine.voicedNotes(for:)`
   everywhere a chord is spelled into octaves; per-note comparison folds notes
   after a pitch-class wrap back down an octave (G7 bug)
-- **Roman numerals carry quality suffixes** ("ii7", "V7", "Imaj7", "vii°7");
+- **Roman numerals carry quality suffixes** ("ii7", "V7", "Imaj7", "viiø7");
   `determineFunction` strips suffixes before matching the degree
+- **NoteClass(String) must cover edge enharmonics** (E#, B#, Cb, Fb) — F#
+  major's vii chord is rooted on E#, and a parse failure silently drops
+  chords from saved progressions
 - **Chord.parse normalizes unicode accidentals** so `formattedSymbol` output
   ("B♭m7") round-trips
 

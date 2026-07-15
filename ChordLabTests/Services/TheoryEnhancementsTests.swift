@@ -33,7 +33,7 @@ final class TheoryEnhancementsTests: XCTestCase {
         XCTAssertEqual(theoryEngine.getRomanNumeral(for: "Fmaj7"), "IVmaj7")
         XCTAssertEqual(theoryEngine.getRomanNumeral(for: "G7"), "V7")
         XCTAssertEqual(theoryEngine.getRomanNumeral(for: "Am7"), "vi7")
-        XCTAssertEqual(theoryEngine.getRomanNumeral(for: "Bø7"), "vii°7")
+        XCTAssertEqual(theoryEngine.getRomanNumeral(for: "Bø7"), "viiø7")
     }
 
     func testTriadRomanNumeralsUnchanged() {
@@ -69,6 +69,35 @@ final class TheoryEnhancementsTests: XCTestCase {
         XCTAssertEqual(Chord.parse("F♯m")?.root, NoteClass(.F, accidental: .sharp))
         XCTAssertEqual(Chord.parse("F♯m")?.type, .minor)
         XCTAssertEqual(Chord.parse("E♭maj7")?.type, .maj7)
+    }
+
+    func testParseEdgeEnharmonicSpellings() {
+        // F# major's vii chord is rooted on E# — these spellings must parse
+        // or saved progressions in sharp keys silently drop chords
+        XCTAssertEqual(Chord.parse("E♯ø7")?.root, NoteClass(.E, accidental: .sharp))
+        XCTAssertEqual(Chord.parse("E♯ø7")?.type, .halfDim7)
+        XCTAssertEqual(Chord.parse("E#°")?.type, .dim)
+        XCTAssertEqual(Chord.parse("B♯m")?.root, NoteClass(.B, accidental: .sharp))
+        XCTAssertEqual(Chord.parse("Cb")?.root, NoteClass(.C, accidental: .flat))
+        XCTAssertEqual(Chord.parse("Fb")?.root, NoteClass(.F, accidental: .flat))
+    }
+
+    func testAllDiatonicSymbolsRoundTripInEveryKey() {
+        let allKeys = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+
+        for key in allKeys {
+            let engine = TheoryEngine()
+            engine.setKey(key, scaleType: "major")
+
+            let entries = engine.getDiatonicChordsWithAnalysis() + engine.getSeventhChordsWithAnalysis()
+            for entry in entries {
+                let symbol = entry.chord.formattedSymbol
+                let parsed = Chord.parse(symbol)
+                XCTAssertNotNil(parsed, "\(symbol) (in \(key) major) should parse")
+                XCTAssertEqual(parsed?.root, entry.chord.root, "Root of \(symbol) should round-trip")
+                XCTAssertEqual(parsed?.type, entry.chord.type, "Type of \(symbol) should round-trip")
+            }
+        }
     }
 
     func testFormattedSymbolRoundTrip() {
@@ -172,6 +201,45 @@ final class TheoryEnhancementsTests: XCTestCase {
                 XCTAssertTrue(question.correctIndex < question.options.count)
             }
         }
+    }
+
+    // MARK: - Streak counting
+
+    @MainActor
+    func testPracticeStreakCountsMultipleSessionsPerDay() throws {
+        let dataManager = DataManager(inMemory: true)
+        let calendar = Calendar.current
+
+        // Three sessions today and three yesterday: a count-limited fetch
+        // used to undercount this as fewer distinct days
+        for dayOffset in 0...1 {
+            for _ in 0..<3 {
+                let session = PracticeSession(
+                    mode: .earTraining,
+                    score: 80,
+                    totalQuestions: 10,
+                    correctAnswers: 8,
+                    difficulty: .beginner,
+                    duration: 60
+                )
+                session.completedAt = calendar.date(byAdding: .day, value: -dayOffset, to: Date())!
+                dataManager.context.insert(session)
+            }
+        }
+        try dataManager.context.save()
+
+        XCTAssertEqual(try dataManager.getCurrentPracticeStreak(), 2)
+    }
+
+    // MARK: - Duplicate naming
+
+    func testCopyNameUniquing() {
+        XCTAssertEqual(SavedProgression.copyName(basedOn: "Jam", existingNames: ["Jam"]), "Jam Copy")
+        XCTAssertEqual(SavedProgression.copyName(basedOn: "Jam", existingNames: ["Jam", "Jam Copy"]), "Jam Copy 2")
+        XCTAssertEqual(
+            SavedProgression.copyName(basedOn: "Jam", existingNames: ["Jam", "Jam Copy", "Jam Copy 2"]),
+            "Jam Copy 3"
+        )
     }
 
     // MARK: - Diatonic data available for all 12 keys

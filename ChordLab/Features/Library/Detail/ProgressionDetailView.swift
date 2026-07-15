@@ -188,35 +188,30 @@ struct ProgressionDetailView: View {
         isPlaying = true
         progression.playCount += 1
         progression.lastPlayedAt = Date()
-        
-        // Convert ProgressionChords to Tonic Chords
-        let chords = progression.progressionChords.compactMap { progressionChord in
-            Chord.parse(progressionChord.chordSymbol)
-        }
-        
-        // Calculate the delay between chords based on tempo
+
+        // Copy chord data out of the SwiftData model up front: the playback
+        // task must never touch a model the user may delete mid-playback, and
+        // iterating the full list keeps highlight/duration indices aligned
+        // even if a chord symbol fails to parse
+        let chordData = progression.progressionChords
         let beatsPerSecond = Double(progression.tempo) / 60.0
-        
-        // Play each chord in sequence
+
         Task {
-            for (index, chord) in chords.enumerated() {
+            for (index, item) in chordData.enumerated() {
                 guard isPlaying else { break }
-                
-                // Update UI to show which chord is playing
+
                 await MainActor.run {
                     currentPlayIndex = index
                 }
-                
-                // Play the chord
-                audioEngine.playChord(chord)
-                
-                // Wait for the duration of this chord
-                let duration = progression.progressionChords[index].duration
-                let delaySeconds = duration / beatsPerSecond
-                
+
+                let delaySeconds = item.duration / beatsPerSecond
+                if let chord = Chord.parse(item.chordSymbol) {
+                    audioEngine.playChord(chord, duration: delaySeconds * 0.9)
+                }
+
                 try? await Task.sleep(nanoseconds: UInt64(delaySeconds * 1_000_000_000))
             }
-            
+
             // Reset when done
             await MainActor.run {
                 isPlaying = false
@@ -234,8 +229,9 @@ struct ProgressionDetailView: View {
     }
 
     private func duplicateProgression() {
+        let existingNames = ((try? modelContext.fetch(FetchDescriptor<SavedProgression>())) ?? []).map(\.name)
         let copy = SavedProgression(
-            name: progression.name + " Copy",
+            name: SavedProgression.copyName(basedOn: progression.name, existingNames: existingNames),
             progressionChords: progression.progressionChords,
             key: progression.key,
             scale: progression.scale,

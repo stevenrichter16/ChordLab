@@ -249,7 +249,7 @@ final class TheoryEngine {
     }
 
     /// Formats a Roman numeral with the chord's quality (case and suffix),
-    /// e.g. "II" + .min7 -> "ii7", "V" + .dom7 -> "V7", "VII" + .halfDim7 -> "vii°7"
+    /// e.g. "II" + .min7 -> "ii7", "V" + .dom7 -> "V7", "VII" + .halfDim7 -> "viiø7"
     private func applyChordQuality(to roman: String, type: ChordType) -> String {
         switch type {
         case .minor:
@@ -261,7 +261,7 @@ final class TheoryEngine {
         case .dim7:
             return roman.lowercased() + "°7"
         case .halfDim7:
-            return roman.lowercased() + "°7"
+            return roman.lowercased() + "ø7"
         case .maj7:
             return roman + "maj7"
         case .dom7:
@@ -652,7 +652,7 @@ final class TheoryEngine {
     func getSeventhChordsWithAnalysis() -> [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] {
         // Use precalculated chords if available
         if let precalcData = precalculatedSevenths[currentKey] {
-            let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "vii°7"]
+            let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "viiø7"]
             let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
             let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
             
@@ -666,7 +666,7 @@ final class TheoryEngine {
         
         // Fallback to calculation if key not in precalculated data
         let chords = getSeventhChords()
-        let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "vii°7"]
+        let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "viiø7"]
         let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
         let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
         

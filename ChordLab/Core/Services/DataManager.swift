@@ -205,34 +205,35 @@ final class DataManager {
     }
     
     func getCurrentPracticeStreak() throws -> Int {
-        // Simple implementation - counts consecutive days with practice
-        let sessions = try getRecentPracticeSessions(limit: 30)
-        
-        guard !sessions.isEmpty else { return 0 }
-        
+        // Counts consecutive days with at least one practice session.
+        // Fetch by date window, not session count — a count-limited fetch
+        // undercounts streaks as soon as users play multiple sessions per day.
         let calendar = Calendar.current
-        var streak = 0
-        var currentDate = Date()
-        
-        for _ in 0..<30 {
-            let dayStart = calendar.startOfDay(for: currentDate)
-            let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart)!
-            
-            let hasPractice = sessions.contains { session in
-                session.completedAt >= dayStart && session.completedAt < dayEnd
-            }
-            
-            if hasPractice {
-                streak += 1
-                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
-            } else if calendar.isDateInToday(currentDate) {
-                // Today doesn't have practice yet, check yesterday
-                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate)!
-            } else {
-                break
-            }
+        let today = calendar.startOfDay(for: Date())
+        guard let cutoff = calendar.date(byAdding: .day, value: -366, to: today) else { return 0 }
+
+        let descriptor = FetchDescriptor<PracticeSession>(
+            predicate: #Predicate { $0.completedAt >= cutoff }
+        )
+        let sessions = try context.fetch(descriptor)
+        let practiceDays = Set(sessions.map { calendar.startOfDay(for: $0.completedAt) })
+
+        guard !practiceDays.isEmpty else { return 0 }
+
+        var day = today
+        // No practice yet today doesn't break a streak still alive from yesterday
+        if !practiceDays.contains(day) {
+            guard let yesterday = calendar.date(byAdding: .day, value: -1, to: day) else { return 0 }
+            day = yesterday
         }
-        
+
+        var streak = 0
+        while practiceDays.contains(day) {
+            streak += 1
+            guard let previous = calendar.date(byAdding: .day, value: -1, to: day) else { break }
+            day = previous
+        }
+
         return streak
     }
     

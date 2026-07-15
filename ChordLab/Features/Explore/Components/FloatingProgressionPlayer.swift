@@ -584,11 +584,10 @@ struct FloatingProgressionPlayer: View {
         // Also set as selected chord to update the display
         theoryEngine.selectedChord = progression[index]
         
-        // Play the chord
-        audioEngine.playChord(progression[index], velocity: 80, duration: 0.8)
-        
-        // Schedule next chord
+        // Stop just before the next chord so repeated chords re-trigger cleanly
         let interval = 60.0 / Double(tempo) // Convert BPM to seconds
+        audioEngine.playChord(progression[index], velocity: 80, duration: interval * 0.9)
+
         playbackTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             currentPlayIndex = (currentPlayIndex ?? 0) + 1
             playNextChord()

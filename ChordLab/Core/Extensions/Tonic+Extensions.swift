@@ -34,11 +34,14 @@ extension NoteClass {
         switch string {
         case "C": self = .C
         case "C♯", "C#": self = .Cs
+        case "C♭", "Cb": self = NoteClass(.C, accidental: .flat)
         case "D♭", "Db": self = .Db
         case "D": self = .D
         case "D♯", "D#": self = .Ds
         case "E♭", "Eb": self = .Eb
         case "E": self = .E
+        case "E♯", "E#": self = NoteClass(.E, accidental: .sharp)
+        case "F♭", "Fb": self = NoteClass(.F, accidental: .flat)
         case "F": self = .F
         case "F♯", "F#": self = .Fs
         case "G♭", "Gb": self = .Gb
@@ -49,6 +52,7 @@ extension NoteClass {
         case "A♯", "A#": self = .As
         case "B♭", "Bb": self = .Bb
         case "B": self = .B
+        case "B♯", "B#": self = NoteClass(.B, accidental: .sharp)
         default: return nil
         }
     }

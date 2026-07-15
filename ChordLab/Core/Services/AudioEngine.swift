@@ -262,10 +262,13 @@ class AudioSequencer {
         }
         
         let item = progression[currentIndex]
-        audioEngine?.playChord(item.chord, velocity: UInt8(item.velocity), duration: item.duration)
-        
-        // Schedule next chord
         let interval = (60.0 / tempo) * item.duration
+
+        // Stop the chord just before the next one starts: a repeated chord
+        // re-triggers the same MIDI notes, and a stop scheduled past the
+        // re-trigger would silence the new chord almost immediately
+        audioEngine?.playChord(item.chord, velocity: UInt8(item.velocity), duration: interval * 0.9)
+
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
             self?.currentIndex += 1
             self?.playNext()

@@ -100,7 +100,7 @@ final class TheoryEngineSeventhsTests: XCTestCase {
         let halfDimChord = chordsWithAnalysis[6]
         XCTAssertEqual(halfDimChord.chord.root, .B)
         XCTAssertEqual(halfDimChord.chord.type, .halfDim7)
-        XCTAssertEqual(halfDimChord.romanNumeral, "vii°7")
+        XCTAssertEqual(halfDimChord.romanNumeral, "viiø7")
         XCTAssertEqual(halfDimChord.function, .leadingTone)
         XCTAssertEqual(halfDimChord.degreeName, "Leading Tone")
     }

@@ -12,7 +12,7 @@ A self-contained mini-games section, deliberately isolated from the music-theory
 - **Routing**: `GameHostView` switches on `GameInfo.id`; catalog lives in `GameCatalog` (GamesModels.swift)
 - **Scores**: `GameScores.shared` — UserDefaults-backed (`arcade.<gameId>.<field>` keys), `report(score:for:higherIsBetter:)` for bests, counters for wins/bankrolls
 - **Shared UI**: `GameScreen` (chrome w/ close+restart), `GameOverOverlay`, `StatPill`, `ArcadeButton`, `PlayingCard`/`PlayingCardView` (card games), `GameHaptics`
-- **Games (19)**: TicTacToe (minimax), ConnectFour (alpha-beta), RPS, Dots&Boxes (chain-aware AI), Snake, 2048, Breakout, WhackAMole, Simon, Reaction Timer, Blackjack (chips/betting), HigherLower, VideoPoker (Jacks or Better), Minesweeper, Sudoku (unique-solution generator), LightsOut, MemoryMatch, WordGuess (Wordle-style), Hangman
+- **Games (27)**: TicTacToe (minimax), ConnectFour (alpha-beta), RPS, Dots&Boxes (chain-aware AI), Yahtzee, Snake, 2048, Breakout, WhackAMole, Simon, Reaction Timer, Pong, Tap Flight (flappy), Blackjack (chips/betting), HigherLower, VideoPoker (Jacks or Better), Solitaire (Klondike, tap-to-move + undo), Minesweeper, Sudoku (unique-solution generator), LightsOut, MemoryMatch, WordGuess (Wordle-style), Hangman, plus Sims: Sheepdog (boids herding), Traffic Tycoon (intersection sim), Lemonade Stand (economic sim), Outbreak (turn-based SIR grid)
 - **Conventions**: each game = one file, one `...GameView` struct, helper types nested inside the view (single-module namespace!); timers via `Timer.publish + onReceive`; async sequencing via generation-counter-guarded `Task.sleep`
 
 ## Project Structure

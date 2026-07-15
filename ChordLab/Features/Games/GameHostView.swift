@@ -35,6 +35,10 @@ struct GameHostView: View {
         case "memory": MemoryMatchGameView()
         case "wordguess": WordGuessGameView()
         case "hangman": HangmanGameView()
+        case "sheepdog": SheepdogGameView()
+        case "traffic": TrafficGameView()
+        case "lemonade": LemonadeGameView()
+        case "outbreak": OutbreakGameView()
         default: GameComingSoonView(game: game)
         }
     }

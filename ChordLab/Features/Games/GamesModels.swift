@@ -17,6 +17,7 @@ enum GameCategory: String, CaseIterable, Identifiable {
     case cards = "Cards"
     case puzzle = "Puzzle"
     case word = "Word"
+    case sims = "Sims"
 
     var id: String { rawValue }
 
@@ -27,6 +28,7 @@ enum GameCategory: String, CaseIterable, Identifiable {
         case .cards: return "suit.spade.fill"
         case .puzzle: return "puzzlepiece.fill"
         case .word: return "textformat.abc"
+        case .sims: return "globe.americas.fill"
         }
     }
 }
@@ -141,7 +143,20 @@ enum GameCatalog {
                  scoreLabel: "Streak"),
         GameInfo(id: "hangman", name: "Hangman", icon: "figure.stand", tint: .orange,
                  category: .word, blurb: "Guess letters before the doodle is done.",
-                 scoreLabel: "Wins")
+                 scoreLabel: "Wins"),
+
+        // Sims
+        GameInfo(id: "sheepdog", name: "Sheepdog", icon: "pawprint.fill", tint: .brown,
+                 category: .sims, blurb: "Herd the flock home. They have other plans.",
+                 scoreLabel: "Level"),
+        GameInfo(id: "traffic", name: "Traffic Tycoon", icon: "car.fill", tint: .indigo,
+                 category: .sims, blurb: "Run the lights. Beat the gridlock."),
+        GameInfo(id: "lemonade", name: "Lemonade Stand", icon: "cup.and.saucer.fill", tint: .yellow,
+                 category: .sims, blurb: "14 days of weather, prices, and profit.",
+                 scoreLabel: "Best $"),
+        GameInfo(id: "outbreak", name: "Outbreak", icon: "cross.case.fill", tint: .teal,
+                 category: .sims, blurb: "Contain the spread, three moves a turn.",
+                 scoreLabel: "Saved")
     ]
 
     static func games(in category: GameCategory) -> [GameInfo] {

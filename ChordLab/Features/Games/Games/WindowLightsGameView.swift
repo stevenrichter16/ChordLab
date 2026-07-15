@@ -75,10 +75,11 @@ struct WindowLightsGameView: View {
         /// backgrounded app resumes instead of leaping days ahead.
         var simTime = Date()
         var lastFrame: Date?
-        /// Walk/twinkle phase clock: commuter strolls and star twinkle run
-        /// at real-time pace at every speed. Accumulated per-frame like the
-        /// sim clock, so cycling speeds never teleports dots or re-rolls
-        /// twinkle the way dividing absolute time by the multiplier did.
+        /// Walk/twinkle phase clock: commuter strolls and star twinkle speed
+        /// up proportionally with the timelapse multiplier, same as simTime.
+        /// Accumulated per-frame (never divides absolute time by the
+        /// multiplier), so cycling speeds changes the pace without
+        /// teleporting dots or re-rolling twinkle.
         var walkPhase = Date().timeIntervalSinceReferenceDate
 
         var wakes: [WLWake] = []
@@ -245,12 +246,13 @@ struct WindowLightsGameView: View {
     /// Advance the timelapse clock by a clamped per-frame delta (never raw
     /// wall-clock deltas, which would leap days across a suspension).
     private func advanceSimClock(realNow: Date) -> Date {
-        // The walk/twinkle phase accumulates real dt at every speed (the
-        // looser cap covers the 1 Hz idle frame gap) so it stays continuous
-        // across speed changes instead of jumping with the divisor.
+        // The looser cap covers the 1 Hz idle frame gap. Both clocks
+        // accumulate from the same clamped dt scaled by the multiplier, so
+        // walk/twinkle pace speeds up right along with the sim clock while
+        // staying continuous across speed changes (no divisor jump).
         let dt = SimClock.dt(since: city.lastFrame, to: realNow, cap: 1.5)
         city.lastFrame = realNow
-        city.walkPhase += dt
+        city.walkPhase += min(dt, 0.5) * Double(speed.rawValue)
         guard speed != .x1 else { return realNow }
         city.simTime.addTimeInterval(min(dt, 0.5) * Double(speed.rawValue))
         return city.simTime
@@ -596,9 +598,9 @@ struct WindowLightsGameView: View {
     private func drawStars(context: GraphicsContext, size: CGSize, darkness: Double) {
         guard darkness > 0.05 else { return }
 
-        // Twinkle phase rides the frame-accumulated walk clock: real-time
-        // pace at every speed, and continuous across speed changes instead
-        // of re-rolling every star when the multiplier flips.
+        // Twinkle phase rides the frame-accumulated walk clock: speeds up
+        // with the timelapse multiplier, and continuous across speed
+        // changes instead of re-rolling every star when the multiplier flips.
         let slotBase = city.walkPhase / 4
         for star in 0..<56 {
             let x = Self.hash(city.seed, star, 21) * Double(size.width)
@@ -653,9 +655,10 @@ struct WindowLightsGameView: View {
         let count = Int(commuterIntensity(hour: hourOfDay(date)) * 13)
         guard count > 0 else { return }
 
-        // Walk phase is the frame-accumulated real-time clock: dots stroll
-        // at the same pace in timelapse (no wrapping the screen many times
-        // per frame) and never teleport when the multiplier changes.
+        // Walk phase is the frame-accumulated clock: dots stroll faster in
+        // proportion to the timelapse multiplier and never teleport when
+        // the multiplier changes (dt is clamped, so a single frame can't
+        // wrap the screen many times even at 1440x).
         let seconds = city.walkPhase
         for k in 0..<count {
             let speed = 22.0 + Self.hash(city.seed, k, 31) * 26

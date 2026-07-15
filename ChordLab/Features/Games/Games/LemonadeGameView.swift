@@ -61,9 +61,11 @@ struct LemonadeGameView: View {
         let sold: Int
         let prepared: Int
         let revenue: Int      // cents
-        let cost: Int         // cents
+        let cost: Int          // cents, materials + marketing
+        let marketingCost: Int // cents, 0 if flyers weren't bought
         let soldOut: Bool
         let repChange: Double
+        let buzzMultiplier: Double  // momentum going into this day
     }
 
     private enum LemonadePhase {
@@ -74,7 +76,9 @@ struct LemonadeGameView: View {
 
     private static let totalDays = 14
     private static let startingCash = 2000       // cents
-    private static let costPerCup = 30           // cents
+    private static let baseCostPerCup = 30        // cents, below the bulk-discount tiers
+    private static let marketingCostCents = 200   // cents, flyer run
+    private static let marketingBoost = 1.2        // +20% customers the day flyers go up
 
     @State private var day = 1
     @State private var cash = LemonadeGameView.startingCash
@@ -82,29 +86,67 @@ struct LemonadeGameView: View {
     @State private var forecast: Weather = .sunny
     @State private var priceCents = 100
     @State private var cupsToMake = 20
+    @State private var marketingBought = false
+    /// Consecutive sellout streak; drives tomorrow's buzz bonus and resets
+    /// the moment a day doesn't sell out.
+    @State private var consecutiveSoldOut = 0
     @State private var phase: LemonadePhase = .planning
     @State private var lastResult: DayResult? = nil
     @State private var isNewRecord = false
+    /// Cash at the end of each completed day, starting with day 0's
+    /// opening balance — feeds the trend sparkline.
+    @State private var cashHistory: [Int] = [LemonadeGameView.startingCash]
 
     private var totalProfitCents: Int {
         cash - Self.startingCash
     }
 
+    /// Sell-out streak converted to a same-day customer multiplier: +15%
+    /// per consecutive sellout, capped at +40% so it can't run away.
+    private var buzzMultiplier: Double {
+        1.0 + min(0.4, Double(consecutiveSoldOut) * 0.15)
+    }
+
+    /// Bulk-discount rate for a given batch size — the whole batch prices
+    /// at the tier it reaches, not a marginal per-cup schedule.
+    private func costPerCup(for cups: Int) -> Int {
+        switch cups {
+        case 50...: return 24
+        case 20..<50: return 27
+        default: return Self.baseCostPerCup
+        }
+    }
+
+    private func materialCost(for cups: Int) -> Int {
+        cups * costPerCup(for: cups)
+    }
+
     private var maxAffordableCups: Int {
-        max(0, cash / Self.costPerCup)
+        let budget = max(0, cash - (marketingBought ? Self.marketingCostCents : 0))
+        var cups = 0
+        while materialCost(for: cups + 1) <= budget && cups < 200 {
+            cups += 1
+        }
+        return cups
     }
 
     // MARK: - Live projection
 
     /// Total material cost for the cups queued up, in cents.
     private var materialCostCents: Int {
-        cupsToMake * Self.costPerCup
+        materialCost(for: cupsToMake)
+    }
+
+    private var plannedMarketingCents: Int {
+        marketingBought ? Self.marketingCostCents : 0
     }
 
     /// Expected foot traffic under tomorrow's forecast — the mean of the
-    /// same crowd distribution runDay() samples from, without the noise.
+    /// same crowd distribution runDay() samples from, without the noise,
+    /// scaled by any sellout buzz and a planned flyer run.
     private var expectedCustomers: Double {
-        34.0 * forecast.crowdMultiplier * reputation
+        34.0 * forecast.crowdMultiplier * reputation * buzzMultiplier
+            * (marketingBought ? Self.marketingBoost : 1.0)
     }
 
     /// Probability a customer's willingness to pay clears `priceCents`,
@@ -125,7 +167,7 @@ struct LemonadeGameView: View {
     }
 
     private var expectedProfitCents: Int {
-        expectedRevenueCents - materialCostCents
+        expectedRevenueCents - materialCostCents - plannedMarketingCents
     }
 
     var body: some View {
@@ -135,6 +177,13 @@ struct LemonadeGameView: View {
                     StatPill(label: "Day", value: "\(min(day, Self.totalDays))/\(Self.totalDays)")
                     StatPill(label: "Cash", value: dollars(cash), tint: .green)
                     StatPill(label: "Reputation", value: repStars, tint: .yellow)
+                }
+
+                if cashHistory.count > 1 {
+                    CashSparkline(samples: cashHistory, baseline: Self.startingCash)
+                        .frame(height: 24)
+                        .padding(.horizontal, 16)
+                        .accessibilityLabel("Season cash trend, currently \(dollars(cash))")
                 }
 
                 ScrollView(showsIndicators: false) {
@@ -187,6 +236,12 @@ struct LemonadeGameView: View {
                 Text("Forecasts are right about 4 days in 5…")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                if consecutiveSoldOut > 0 {
+                    Label("Buzzing from yesterday — +\(Int((buzzMultiplier - 1) * 100))% customers expected",
+                          systemImage: "flame.fill")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.orange)
+                }
             }
             Spacer()
         }
@@ -239,17 +294,24 @@ struct LemonadeGameView: View {
                     in: 0...Double(max(1, min(80, maxAffordableCups)))
                 )
                 HStack {
-                    Text("Costs \(dollars(cupsToMake * Self.costPerCup)) to make")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    Text("\(costPerCup(for: cupsToMake))¢/cup · \(dollars(materialCostCents)) total")
+                        .font(.caption2.weight(costPerCup(for: cupsToMake) < Self.baseCostPerCup ? .semibold : .regular))
+                        .foregroundStyle(costPerCup(for: cupsToMake) < Self.baseCostPerCup ? .green : .secondary)
                     Spacer()
                     Text("Unsold cups are wasted")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                if let hint = bulkDiscountHint {
+                    Text(hint)
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
             }
             .padding(14)
             .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 16))
+
+            marketingCard
 
             projectionCard
 
@@ -258,10 +320,45 @@ struct LemonadeGameView: View {
             ArcadeButton(title: cupsToMake == 0 ? "Skip the Day" : "Open the Stand",
                          systemImage: "storefront.fill",
                          tint: .yellow,
-                         isEnabled: cupsToMake * Self.costPerCup <= cash) {
+                         isEnabled: materialCostCents + plannedMarketingCents <= cash) {
                 runDay()
             }
         }
+    }
+
+    /// Next bulk-discount tier the player hasn't reached yet, or nil once
+    /// they're already at the best rate.
+    private var bulkDiscountHint: String? {
+        switch cupsToMake {
+        case ..<20: return "Make 20+ for 27¢/cup"
+        case 20..<50: return "Make 50+ for 24¢/cup"
+        default: return nil
+        }
+    }
+
+    /// One-time flyer run: costs a flat fee, boosts today's foot traffic.
+    /// Auto-resets each planning day so it never silently carries over.
+    private var marketingCard: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "megaphone.fill")
+                .font(.title3)
+                .foregroundStyle(.orange)
+                .frame(width: 36, height: 36)
+                .background(Color.orange.opacity(0.15), in: RoundedRectangle(cornerRadius: 10))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Put up flyers")
+                    .font(.subheadline.weight(.semibold))
+                Text("\(dollars(Self.marketingCostCents)) · +\(Int((Self.marketingBoost - 1) * 100))% customers today")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: $marketingBought)
+                .labelsHidden()
+                .disabled(!marketingBought && materialCostCents + Self.marketingCostCents > cash)
+        }
+        .padding(14)
+        .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 16))
     }
 
     /// Live cost/revenue/profit estimate for the current price and cup
@@ -278,6 +375,9 @@ struct LemonadeGameView: View {
                     .foregroundStyle(.tertiary)
             }
             resultRow("Cost of materials", "-\(dollars(materialCostCents))")
+            if marketingBought {
+                resultRow("Marketing", "-\(dollars(Self.marketingCostCents))")
+            }
             resultRow("Est. cups sold", "~\(Int(expectedSold.rounded())) of \(cupsToMake)")
             resultRow("Est. revenue", "+\(dollars(expectedRevenueCents))")
             Divider()
@@ -302,10 +402,16 @@ struct LemonadeGameView: View {
             }
 
             VStack(spacing: 6) {
+                if result.buzzMultiplier > 1.001 {
+                    resultRow("Sellout buzz", "+\(Int((result.buzzMultiplier - 1) * 100))% customers")
+                }
                 resultRow("Thirsty passersby", "\(result.customers)")
                 resultRow("Cups sold", "\(result.sold) of \(result.prepared)")
                 resultRow("Revenue", "+\(dollars(result.revenue))")
-                resultRow("Supplies", "-\(dollars(result.cost))")
+                resultRow("Supplies", "-\(dollars(result.cost - result.marketingCost))")
+                if result.marketingCost > 0 {
+                    resultRow("Marketing", "-\(dollars(result.marketingCost))")
+                }
                 Divider()
                 resultRow("Day profit", dollars(result.revenue - result.cost),
                           emphasized: true,
@@ -313,7 +419,7 @@ struct LemonadeGameView: View {
             }
 
             if result.soldOut {
-                Label("Sold out! Word spreads, but missed sales sting.", systemImage: "flame.fill")
+                Label("Sold out! Word spreads — expect a bump in tomorrow's crowd.", systemImage: "flame.fill")
                     .font(.caption)
                     .foregroundStyle(.orange)
             }
@@ -335,6 +441,30 @@ struct LemonadeGameView: View {
         }
         .padding(16)
         .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    /// Thin trend line of end-of-day cash across the season.
+    private struct CashSparkline: View {
+        let samples: [Int]
+        let baseline: Int
+
+        var body: some View {
+            let tint: Color = (samples.last ?? baseline) >= baseline ? .green : .red
+            GeometryReader { geo in
+                let minV = Double(min(samples.min() ?? baseline, baseline))
+                let maxV = Double(max(samples.max() ?? baseline, baseline))
+                let range = max(1, maxV - minV)
+                Path { path in
+                    for (index, value) in samples.enumerated() {
+                        let x = geo.size.width * CGFloat(index) / CGFloat(max(1, samples.count - 1))
+                        let y = geo.size.height * (1 - CGFloat((Double(value) - minV) / range))
+                        if index == 0 { path.move(to: CGPoint(x: x, y: y)) }
+                        else { path.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(tint, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            }
+        }
     }
 
     private func resultRow(_ label: String, _ value: String,
@@ -384,10 +514,12 @@ struct LemonadeGameView: View {
             actual = Weather.allCases.filter { $0 != forecast }.randomElement() ?? forecast
         }
 
-        let cost = cupsToMake * Self.costPerCup
+        let marketingSpend = marketingBought ? Self.marketingCostCents : 0
+        let cost = materialCost(for: cupsToMake) + marketingSpend
         cash -= cost
 
-        let baseCrowd = 34.0
+        let todaysBuzz = buzzMultiplier
+        let baseCrowd = 34.0 * todaysBuzz * (marketingBought ? Self.marketingBoost : 1.0)
         let crowd = max(0, gaussian(mean: baseCrowd * actual.crowdMultiplier * reputation,
                                     sd: baseCrowd * 0.12))
         let customers = Int(crowd.rounded())
@@ -405,6 +537,7 @@ struct LemonadeGameView: View {
         let revenue = sold * priceCents
         cash += revenue
         let soldOut = buyers > cupsToMake
+        consecutiveSoldOut = soldOut ? consecutiveSoldOut + 1 : 0
 
         // Reputation: fair prices and stock build it; gouging erodes it.
         var repChange = 0.0
@@ -415,7 +548,9 @@ struct LemonadeGameView: View {
 
         lastResult = DayResult(weather: actual, customers: customers, sold: sold,
                                prepared: cupsToMake, revenue: revenue, cost: cost,
-                               soldOut: soldOut, repChange: repChange)
+                               marketingCost: marketingSpend, soldOut: soldOut,
+                               repChange: repChange, buzzMultiplier: todaysBuzz)
+        cashHistory.append(cash)
 
         if revenue >= cost {
             GameHaptics.success()
@@ -424,6 +559,7 @@ struct LemonadeGameView: View {
         }
 
         day += 1
+        marketingBought = false
         forecast = Weather.allCases.randomElement() ?? .sunny
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             phase = .results
@@ -454,8 +590,11 @@ struct LemonadeGameView: View {
         forecast = Weather.allCases.randomElement() ?? .sunny
         priceCents = 100
         cupsToMake = 20
+        marketingBought = false
+        consecutiveSoldOut = 0
         lastResult = nil
         isNewRecord = false
+        cashHistory = [Self.startingCash]
         phase = .planning
     }
 }

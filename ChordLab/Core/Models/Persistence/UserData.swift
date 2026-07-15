@@ -15,6 +15,7 @@ final class UserData {
     var currentScale: String = "major"
     var preferredTempo: Int = 120
     var lastLessonViewed: String?
+    var completedLessons: [String] = []
     var practiceRemindersEnabled: Bool = true
     var soundEnabled: Bool = true
     var createdAt: Date = Date()

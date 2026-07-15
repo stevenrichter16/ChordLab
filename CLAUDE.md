@@ -13,7 +13,7 @@ ChordLab/
 │   ├── Services/      # TheoryEngine, AudioEngine, DataManager
 │   └── Extensions/    # Tonic+Extensions, Color+Theme, View+Modifiers
 ├── Features/
-│   ├── Learn/         # ✅ ScalePianoView, KeyScaleSelector
+│   ├── Learn/         # ✅ ScalePianoView, KeyScaleSelector, 10 interactive lessons
 │   ├── Explore/       # ✅ ChordVisualizerView, FloatingProgressionPlayer
 │   ├── Library/       # ✅ Saved progressions: search/sort, rename/duplicate/delete
 │   ├── Builder/       # 📋 TODO: Drag-drop progression builder
@@ -133,10 +133,18 @@ visualizedChord: Chord?      // For piano highlighting
 - License permits bundling (see `Resources/Sounds/GeneralUser-LICENSE.txt`);
   attribution shown in Settings > About
 
+## Lessons (Learn tab)
+```swift
+LessonLibrary.all            // 10 lessons in curriculum order; ids are stable strings
+LessonDetailView             // pages (demo piano + tappable chords) -> quiz -> completion
+UserData.completedLessons    // persisted ids; DataManager.markLessonCompleted is idempotent
+// theory_expert achievement target is synced to LessonLibrary.all.count on Learn appear
+```
+
 ## Next Implementation Tasks
 1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar)
-2. **Learn Tab**: Structured lessons and theory tips
-3. **Polish**: App icon, onboarding
+2. **Polish**: App icon, onboarding
+3. **Lessons**: Spaced-repetition review of missed quiz questions
 
 ## Testing Strategy
 - Unit tests for all services (87 passing)

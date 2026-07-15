@@ -12,6 +12,17 @@ struct LearnTabView: View {
     @Environment(DataManager.self) private var dataManager
     @Environment(AppState.self) private var appState
     @State private var useScrollablePiano = false
+    @State private var completedLessonIDs: Set<String> = []
+
+    private var nextLesson: Lesson? {
+        LessonLibrary.all.first { !completedLessonIDs.contains($0.id) }
+    }
+
+    /// The next few lessons to surface on the home screen
+    private var upcomingLessons: [Lesson] {
+        let incomplete = LessonLibrary.all.filter { !completedLessonIDs.contains($0.id) }
+        return Array((incomplete.isEmpty ? LessonLibrary.all : incomplete).prefix(3))
+    }
 
     private static let theoryTips = [
         "The V7 chord creates tension that naturally resolves to the I chord due to the tritone between its 3rd and 7th degrees.",
@@ -59,22 +70,76 @@ struct LearnTabView: View {
                     Label("Today's Focus", systemImage: "target")
                         .font(.headline)
 
-                    Text("Practice identifying progressions in \(theoryEngine.currentKey) major")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                    if let next = nextLesson {
+                        Text(completedLessonIDs.isEmpty
+                             ? "Start your theory journey with \"\(next.title)\""
+                             : "Continue your lessons with \"\(next.title)\"")
+                            .font(.body)
+                            .foregroundColor(.secondary)
 
-                    NavigationLink {
-                        ProgressionChallengeView()
-                    } label: {
-                        Text("Start Practice")
-                            .frame(maxWidth: .infinity)
+                        NavigationLink {
+                            LessonDetailView(lesson: next)
+                        } label: {
+                            Text(completedLessonIDs.isEmpty ? "Start Learning" : "Continue Learning")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    } else {
+                        Text("All lessons complete! Sharpen your ear in Practice.")
+                            .font(.body)
+                            .foregroundColor(.secondary)
+
+                        NavigationLink {
+                            ProgressionChallengeView()
+                        } label: {
+                            Text("Start Practice")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-                    .buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
                 .background(Color.appSecondaryBackground)
                 .cornerRadius(12)
+
+                // Lessons
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Lessons")
+                            .font(.headline)
+
+                        Spacer()
+
+                        NavigationLink("See All") {
+                            LessonListView()
+                        }
+                        .font(.caption)
+                    }
+
+                    ProgressView(
+                        value: Double(completedLessonIDs.count),
+                        total: Double(LessonLibrary.all.count)
+                    )
+                    .tint(.appPrimary)
+
+                    Text("\(completedLessonIDs.count) of \(LessonLibrary.all.count) complete")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    ForEach(upcomingLessons) { lesson in
+                        NavigationLink {
+                            LessonDetailView(lesson: lesson)
+                        } label: {
+                            LessonRow(
+                                lesson: lesson,
+                                number: (LessonLibrary.all.firstIndex(where: { $0.id == lesson.id }) ?? 0) + 1,
+                                isCompleted: completedLessonIDs.contains(lesson.id)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
 
                 // Quick Actions
                 VStack(alignment: .leading, spacing: 12) {
@@ -134,6 +199,13 @@ struct LearnTabView: View {
         }
         .navigationTitle("Learn")
         .navigationBarTitleDisplayMode(.large)
+        .onAppear {
+            completedLessonIDs = (try? dataManager.getCompletedLessonIDs()) ?? []
+            try? dataManager.syncAchievementTarget(
+                identifier: "theory_expert",
+                target: LessonLibrary.all.count
+            )
+        }
     }
 }
 

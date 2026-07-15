@@ -141,6 +141,42 @@ final class DataManager {
         try context.save()
     }
     
+    // MARK: - Lessons
+
+    func getCompletedLessonIDs() throws -> Set<String> {
+        Set(try getOrCreateUserData().completedLessons)
+    }
+
+    func recordLessonViewed(_ lessonID: String) throws {
+        try updateUserData { userData in
+            userData.lastLessonViewed = lessonID
+        }
+    }
+
+    /// Marks a lesson complete (idempotent) and advances the theory_expert achievement
+    func markLessonCompleted(_ lessonID: String) throws {
+        let userData = try getOrCreateUserData()
+        guard !userData.completedLessons.contains(lessonID) else { return }
+
+        userData.completedLessons.append(lessonID)
+        userData.modifiedAt = Date()
+        try context.save()
+
+        try updateAchievementProgress(identifier: "theory_expert", newValue: userData.completedLessons.count)
+    }
+
+    /// Keeps an achievement's target in sync with the actual content count
+    /// (e.g. theory_expert was seeded before the lesson curriculum existed)
+    func syncAchievementTarget(identifier: String, target: Int) throws {
+        let allAchievements = try context.fetch(FetchDescriptor<Achievement>())
+        guard let achievement = allAchievements.first(where: { $0.identifier == identifier }),
+              achievement.targetValue != target else { return }
+
+        achievement.targetValue = target
+        achievement.updateProgress(newValue: achievement.currentValue)
+        try context.save()
+    }
+
     // MARK: - Practice Sessions
     
     func savePracticeSession(mode: PracticeSession.PracticeMode, score: Int, totalQuestions: Int, correctAnswers: Int, difficulty: PracticeSession.PracticeDifficulty, duration: TimeInterval) throws {

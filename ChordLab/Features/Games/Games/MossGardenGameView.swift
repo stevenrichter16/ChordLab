@@ -28,34 +28,38 @@ struct MossGardenGameView: View {
     var body: some View {
         GameScreen(game: GameCatalog.game(withId: "moss")!, onRestart: nil) {
             VStack(spacing: 10) {
-                HStack(spacing: 10) {
-                    StatPill(label: "Plants", value: "\(plants.count)/\(Self.maxPlants)", tint: .green)
-                    StatPill(label: "Oldest", value: oldestText, tint: .mint)
-
-                    if !plants.isEmpty {
-                        Button {
-                            GameHaptics.warning()
-                            showClearConfirm = true
-                        } label: {
-                            Image(systemName: "trash")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                                .frame(width: 32, height: 32)
-                                .background(Color.appSecondaryBackground, in: Circle())
-                        }
-                    }
-                }
-
                 TimelineView(.animation(minimumInterval: 1.0)) { timeline in
-                    Canvas { context, size in
-                        drawGarden(context: context, size: size, now: timeline.date)
+                    VStack(spacing: 10) {
+                        HStack(spacing: 10) {
+                            StatPill(label: "Plants", value: "\(plants.count)/\(Self.maxPlants)", tint: .green)
+                            StatPill(label: "Oldest", value: oldestText(now: timeline.date), tint: .mint)
+
+                            if !plants.isEmpty {
+                                Button {
+                                    GameHaptics.warning()
+                                    showClearConfirm = true
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 32, height: 32)
+                                        .background(Color.appSecondaryBackground, in: Circle())
+                                }
+                            }
+                        }
+
+                        GeometryReader { geo in
+                            Canvas { context, size in
+                                drawGarden(context: context, size: size, now: timeline.date)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .onTapGesture(coordinateSpace: .local) { location in
+                                plantSeed(atFraction: Double(location.x) / max(1, Double(geo.size.width)))
+                            }
+                        }
+                        .padding(.horizontal, 12)
                     }
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .onTapGesture(coordinateSpace: .local) { location in
-                    plantSeed(atTapX: location.x)
-                }
-                .padding(.horizontal, 12)
 
                 Text(plants.isEmpty
                      ? "Tap the soil to plant your first seed."
@@ -101,12 +105,14 @@ struct MossGardenGameView: View {
     private func reportDays() {
         guard let oldest = plants.map(\.planted).min() else { return }
         let days = Int(Date().timeIntervalSince(oldest) / 86_400)
-        GameScores.shared.setValue(days, for: "moss")
+        // Best-ever, not current: clearing and replanting must not wipe
+        // the record, and clock rollbacks must not store negatives.
+        GameScores.shared.report(score: max(0, days), for: "moss")
     }
 
-    private var oldestText: String {
+    private func oldestText(now: Date) -> String {
         guard let oldest = plants.map(\.planted).min() else { return "—" }
-        let hours = Date().timeIntervalSince(oldest) / 3600
+        let hours = max(0, now.timeIntervalSince(oldest)) / 3600
         if hours < 1 { return "\(max(1, Int(hours * 60)))m" }
         if hours < 48 { return "\(Int(hours))h" }
         return "\(Int(hours / 24))d \(Int(hours.truncatingRemainder(dividingBy: 24)))h"
@@ -114,16 +120,18 @@ struct MossGardenGameView: View {
 
     // MARK: - Actions
 
-    private func plantSeed(atTapX x: CGFloat) {
+    private func plantSeed(atFraction fraction: Double) {
         guard plants.count < Self.maxPlants, !showClearConfirm else {
             if plants.count >= Self.maxPlants { GameHaptics.warning() }
             return
         }
         GameHaptics.success()
-        // Store the horizontal position as a fraction so rotation keeps layout.
-        let fraction = min(0.94, max(0.06, Double(x) / max(1, Double(lastCanvasWidth))))
-        plants.append(MossPlant(seed: Int.random(in: 1..<1_000_000),
-                                xFraction: fraction,
+        var seed = Int.random(in: 1..<1_000_000)
+        while plants.contains(where: { $0.seed == seed }) {
+            seed = Int.random(in: 1..<1_000_000)
+        }
+        plants.append(MossPlant(seed: seed,
+                                xFraction: min(0.94, max(0.06, fraction)),
                                 planted: Date()))
         save()
     }
@@ -160,9 +168,6 @@ struct MossGardenGameView: View {
 
     // MARK: - Drawing
 
-    /// Canvas width captured during draw so tap fractions can be computed.
-    @State private var lastCanvasWidth: CGFloat = 390
-
     private static func hash(_ a: Int, _ b: Int, _ c: Int) -> Double {
         var h: UInt64 = 0x9E37_79B9_7F4A_7C15
         for value in [a, b, c] {
@@ -174,12 +179,6 @@ struct MossGardenGameView: View {
     }
 
     private func drawGarden(context: GraphicsContext, size: CGSize, now: Date) {
-        DispatchQueue.main.async {
-            if abs(lastCanvasWidth - size.width) > 1 {
-                lastCanvasWidth = size.width
-            }
-        }
-
         // Soft sky + soil
         let soilTop = size.height - 46
         context.fill(Path(CGRect(origin: .zero, size: size)),
@@ -243,17 +242,12 @@ struct MossGardenGameView: View {
     private func drawBranch(context: GraphicsContext, from start: CGPoint, angle: Double,
                             depth: Int, nodeId: Int, stage: Double, seed: Int,
                             hue: Double, flowerHue: Double, length: Double) {
-        let fullDepth = Int(stage)
-        guard depth <= fullDepth + 1, depth <= 7 else { return }
+        guard depth <= 7 else { return }
 
-        // The newest tier grows in smoothly.
-        let growth: Double
-        if depth <= fullDepth {
-            growth = 1
-        } else {
-            growth = stage - Double(fullDepth)
-            guard growth > 0.05 else { return }
-        }
+        // Every tier (including the first stem) grows in smoothly over
+        // one stage unit: growth = clamp(stage - depth, 0, 1).
+        let growth = min(1.0, max(0.0, stage - Double(depth)))
+        guard growth > 0.05 else { return }
 
         let sway = sin(Self.hash(seed, nodeId, 7) * .pi * 2) * 0.06
         let drawnAngle = angle + sway

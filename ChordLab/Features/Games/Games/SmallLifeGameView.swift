@@ -38,6 +38,41 @@ struct SmallLifeGameView: View {
         var entries: [SLEntry]
     }
 
+    /// Everything a visit needs to resume exactly where it left off —
+    /// including the half-revealed day (pending + stagedLife), so dismissing
+    /// mid-day never re-rolls the day with different content.
+    private struct SLSession: Codable {
+        var life: SLState
+        var pending: [SLEntry]
+        var stagedLife: SLState?
+        var moodHistory: [Double]
+        var kindnessDay: Int
+        var lastSavedAt: Date?
+
+        init(life: SLState, pending: [SLEntry], stagedLife: SLState?,
+             moodHistory: [Double], kindnessDay: Int, lastSavedAt: Date?) {
+            self.life = life
+            self.pending = pending
+            self.stagedLife = stagedLife
+            self.moodHistory = moodHistory
+            self.kindnessDay = kindnessDay
+            self.lastSavedAt = lastSavedAt
+        }
+
+        /// Only `life` is load-bearing: every other field decodes with a
+        /// default so a future session-schema change can never discard a
+        /// long-running life.
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            life = try c.decode(SLState.self, forKey: .life)
+            pending = try c.decodeIfPresent([SLEntry].self, forKey: .pending) ?? []
+            stagedLife = try c.decodeIfPresent(SLState.self, forKey: .stagedLife)
+            moodHistory = try c.decodeIfPresent([Double].self, forKey: .moodHistory) ?? []
+            kindnessDay = try c.decodeIfPresent(Int.self, forKey: .kindnessDay) ?? 0
+            lastSavedAt = try c.decodeIfPresent(Date.self, forKey: .lastSavedAt)
+        }
+    }
+
     private static let storageKey = "arcade.smalllife.state"
 
     private static let names = ["Mara", "Theo", "Juniper", "Sam", "Noor", "Wren", "Felix", "Ida",
@@ -59,17 +94,33 @@ struct SmallLifeGameView: View {
 
     // MARK: - State
 
+    /// Reveal-interval accumulator in a plain reference box: mutating a
+    /// class property does not invalidate the view, so the 0.4s ticks
+    /// between reveals stop forcing body re-evaluations.
+    private final class RevealClock {
+        var accumulated = 0.0
+    }
+
     @State private var life: SLState?
     @State private var pending: [SLEntry] = []
     /// The day's end-state, committed only when its last entry reveals —
     /// otherwise the header card spoils the feed (cat chip before the
     /// adoption entry, pay bump before the workday, next day number).
     @State private var stagedLife: SLState?
+    /// Committed end-of-day moods, newest last, capped at 30.
+    @State private var moodHistory: [Double] = []
+    /// The in-sim day a kindness was last sent (one per day).
+    @State private var kindnessDay = 0
     @State private var isPaused = false
     @State private var fastForward = false
-    @State private var accumulated = 0.0
     @State private var showNewLifeConfirm = false
     @State private var didLoad = false
+    @State private var revealClock = RevealClock()
+
+    @Environment(\.scenePhase) private var scenePhase
+
+    @ScaledMetric(relativeTo: .caption2) private var timeColumnWidth: CGFloat = 40
+    @ScaledMetric(relativeTo: .caption2) private var iconColumnWidth: CGFloat = 16
 
     private let ticker = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
@@ -95,6 +146,15 @@ struct SmallLifeGameView: View {
                     load()
                 }
             }
+            .onDisappear {
+                save()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                // Mid-day progress must survive backgrounding/jetsam.
+                if phase == .background || phase == .inactive {
+                    save()
+                }
+            }
             .onReceive(ticker) { _ in
                 tick()
             }
@@ -114,19 +174,23 @@ struct SmallLifeGameView: View {
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                VStack(spacing: 2) {
-                    Text(moodFace(life.mood))
-                        .font(.system(size: 26))
-                    Text("$\(life.money)")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.green)
+                HStack(spacing: 10) {
+                    moodSparkline
+                    VStack(spacing: 2) {
+                        Text(moodFace(life.mood))
+                            .font(.title)
+                            .accessibilityLabel("Mood: \(moodWord(life.mood))")
+                        Text("$\(life.money)")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.green)
+                    }
                 }
             }
 
             HStack(spacing: 6) {
                 ForEach(life.traits, id: \.self) { trait in
                     Text(trait)
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.caption2.weight(.semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.teal.opacity(0.15), in: Capsule())
@@ -134,7 +198,7 @@ struct SmallLifeGameView: View {
                 }
                 if let cat = life.catName {
                     Text("🐈 \(cat)")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.caption2.weight(.semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.orange.opacity(0.15), in: Capsule())
@@ -191,21 +255,25 @@ struct SmallLifeGameView: View {
                 Rectangle().fill(Color.appBorder).frame(height: 1)
             }
             .padding(.top, 8)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
         } else {
             HStack(alignment: .top, spacing: 8) {
                 Text(entry.time)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.system(.caption2, design: .monospaced).weight(.semibold))
                     .foregroundStyle(.tertiary)
-                    .frame(width: 40, alignment: .trailing)
+                    .frame(width: timeColumnWidth, alignment: .trailing)
                 Image(systemName: entry.icon)
-                    .font(.system(size: 11))
+                    .font(.caption2)
                     .foregroundStyle(.teal)
-                    .frame(width: 16)
+                    .frame(width: iconColumnWidth)
+                    .accessibilityHidden(true)
                 Text(entry.text)
-                    .font(.system(size: 13))
+                    .font(.footnote)
                     .foregroundStyle(.primary.opacity(0.9))
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .accessibilityElement(children: .combine)
             .transition(.move(edge: .bottom).combined(with: .opacity))
         }
     }
@@ -217,7 +285,7 @@ struct SmallLifeGameView: View {
                 isPaused.toggle()
             } label: {
                 Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .frame(width: 40, height: 36)
                     .background(Color.appSecondaryBackground, in: Capsule())
@@ -228,11 +296,25 @@ struct SmallLifeGameView: View {
                 fastForward.toggle()
             } label: {
                 Text(fastForward ? "3×" : "1×")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .font(.system(.subheadline, design: .rounded, weight: .bold))
                     .foregroundStyle(fastForward ? .white : .secondary)
                     .frame(width: 40, height: 36)
                     .background(fastForward ? Color.teal : Color.appSecondaryBackground, in: Capsule())
             }
+
+            Button {
+                GameHaptics.tap()
+                sendKindness()
+            } label: {
+                Image(systemName: "heart.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(kindnessAvailable ? Color.pink : Color.secondary.opacity(0.4))
+                    .frame(width: 40, height: 36)
+                    .background(Color.appSecondaryBackground, in: Capsule())
+            }
+            .disabled(!kindnessAvailable)
+            .accessibilityLabel("Send a small kindness")
+            .accessibilityHint(kindnessAvailable ? "One per day." : "Already sent today.")
 
             Spacer()
 
@@ -275,6 +357,30 @@ struct SmallLifeGameView: View {
         }
     }
 
+    /// Tiny end-of-day mood trace next to the mood face; decorative only.
+    @ViewBuilder
+    private var moodSparkline: some View {
+        if moodHistory.count >= 2 {
+            let history = moodHistory
+            Path { path in
+                let width = 56.0, height = 16.0
+                let stepX = width / Double(history.count - 1)
+                for (i, mood) in history.enumerated() {
+                    let point = CGPoint(x: Double(i) * stepX, y: height - mood * height)
+                    if i == 0 {
+                        path.move(to: point)
+                    } else {
+                        path.addLine(to: point)
+                    }
+                }
+            }
+            .stroke(Color.teal.opacity(0.6),
+                    style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+            .frame(width: 56, height: 16)
+            .accessibilityHidden(true)
+        }
+    }
+
     private func moodFace(_ mood: Double) -> String {
         switch mood {
         case ..<0.2: return "😞"
@@ -285,12 +391,29 @@ struct SmallLifeGameView: View {
         }
     }
 
+    private func moodWord(_ mood: Double) -> String {
+        switch mood {
+        case ..<0.2: return "low"
+        case ..<0.4: return "glum"
+        case ..<0.6: return "steady"
+        case ..<0.8: return "content"
+        default: return "bright"
+        }
+    }
+
     // MARK: - Persistence
 
     private func load() {
-        if let data = UserDefaults.standard.data(forKey: Self.storageKey),
-           let saved = try? JSONDecoder().decode(SLState.self, from: data) {
-            life = saved
+        if let session = SimPersist.load(SLSession.self, key: Self.storageKey) {
+            life = session.life
+            pending = session.pending
+            stagedLife = session.stagedLife
+            moodHistory = session.moodHistory
+            kindnessDay = session.kindnessDay
+            acknowledgeAwayTime(since: session.lastSavedAt)
+        } else if let legacy = SimPersist.load(SLState.self, key: Self.storageKey) {
+            // Pre-session save: just the raw life, no mid-day state.
+            life = legacy
         } else {
             startNewLife()
         }
@@ -298,11 +421,85 @@ struct SmallLifeGameView: View {
 
     private func save() {
         guard let life else { return }
-        if let data = try? JSONEncoder().encode(life) {
-            UserDefaults.standard.set(data, forKey: Self.storageKey)
-        }
+        SimPersist.save(SLSession(life: life,
+                                  pending: pending,
+                                  stagedLife: stagedLife,
+                                  moodHistory: moodHistory,
+                                  kindnessDay: kindnessDay,
+                                  lastSavedAt: Date()),
+                        key: Self.storageKey)
         // Best-ever days: starting a new life must not wipe the record.
         GameScores.shared.report(score: life.day, for: "smalllife")
+    }
+
+    /// Coming back after a full wall-clock day (or more) away earns a
+    /// quiet acknowledgment in the feed — the life doesn't simulate while
+    /// closed, but it shouldn't feel frozen either.
+    private func acknowledgeAwayTime(since lastSaved: Date?) {
+        guard let lastSaved, var current = life else { return }
+        let days = Int(Date().timeIntervalSince(lastSaved) / 86_400)
+        guard days >= 1 else { return }
+        let counts = ["", "one", "two", "three", "four", "five", "six", "seven",
+                      "eight", "nine", "ten", "eleven", "twelve"]
+        let text = days == 1
+            ? "· a quiet day passes ·"
+            : "· \(days < counts.count ? counts[days] : "\(days)") quiet days pass ·"
+        // Ids must clear anything already allocated to pending entries.
+        let id = max(current.nextEntryId, stagedLife?.nextEntryId ?? 0)
+        let divider = SLEntry(id: id, day: (stagedLife ?? current).day, time: "", icon: "",
+                              text: text, isDayHeader: true)
+        if pending.isEmpty {
+            current.entries.append(divider)
+        } else {
+            // A day is mid-reveal: queue the divider so it appears after
+            // the interrupted day finishes, not in the middle of it.
+            pending.append(divider)
+        }
+        current.nextEntryId = id + 1
+        if stagedLife != nil {
+            stagedLife?.nextEntryId = id + 1
+        }
+        life = current
+    }
+
+    // MARK: - Kindness
+
+    private var kindnessAvailable: Bool {
+        guard let life else { return false }
+        return (stagedLife ?? life).day > kindnessDay
+    }
+
+    /// One gentle outside nudge per in-sim day: a small mood lift and a
+    /// matching feed line, written in the narration's own voice.
+    private func sendKindness() {
+        guard kindnessAvailable, var current = life else { return }
+        let kindnesses: [(icon: String, text: String)] = [
+            ("envelope.fill", "A postcard arrives from somewhere warm. No signature, just a doodle of a boat."),
+            ("gift.fill", "A paper bag of plums on the doorstep. No note. The good kind of mystery."),
+            ("heart.fill", "A folded note under the door: \"saw this and thought of you.\" Inside, a pressed clover.")
+        ]
+        let kindness = kindnesses.randomElement()!
+        let id = max(current.nextEntryId, stagedLife?.nextEntryId ?? 0)
+        withAnimation(.easeOut(duration: 0.3)) {
+            current.entries.append(SLEntry(id: id, day: current.day, time: "",
+                                           icon: kindness.icon, text: kindness.text,
+                                           isDayHeader: false))
+            if current.entries.count > 160 {
+                current.entries.removeFirst(current.entries.count - 160)
+            }
+            current.nextEntryId = id + 1
+            current.mood = min(1, current.mood + 0.05)
+            life = current
+        }
+        // The staged end-of-day state must carry the lift too, or the day
+        // commit would quietly erase it.
+        if var staged = stagedLife {
+            staged.nextEntryId = id + 1
+            staged.mood = min(1, staged.mood + 0.05)
+            stagedLife = staged
+        }
+        kindnessDay = (stagedLife ?? current).day
+        save()
     }
 
     private func startNewLife() {
@@ -328,7 +525,9 @@ struct SmallLifeGameView: View {
         life = fresh
         pending = []
         stagedLife = nil
-        accumulated = 0
+        moodHistory = []
+        kindnessDay = 0
+        revealClock.accumulated = 0
         isPaused = false
         fastForward = false
         save()
@@ -337,11 +536,13 @@ struct SmallLifeGameView: View {
     // MARK: - Ambient engine
 
     private func tick() {
-        guard !isPaused, life != nil else { return }
-        accumulated += 0.4
+        // The confirm overlay also pauses the life: it shouldn't keep
+        // living (or saving) behind "Start a new life?".
+        guard !isPaused, !showNewLifeConfirm, life != nil else { return }
+        revealClock.accumulated += 0.4
         let interval = fastForward ? 0.8 : 2.4
-        guard accumulated >= interval else { return }
-        accumulated = 0
+        guard revealClock.accumulated >= interval else { return }
+        revealClock.accumulated = 0
 
         if pending.isEmpty {
             generateNextDay()
@@ -362,6 +563,12 @@ struct SmallLifeGameView: View {
                 staged.entries = revealed.entries
                 life = staged
                 stagedLife = nil
+            }
+            if let mood = life?.mood {
+                moodHistory.append(mood)
+                if moodHistory.count > 30 {
+                    moodHistory.removeFirst(moodHistory.count - 30)
+                }
             }
             save()
         }
@@ -450,6 +657,16 @@ struct SmallLifeGameView: View {
             add("13:\(Int.random(in: 10...59))", quirk.0, quirk.1, moodDelta: quirk.2)
         }
 
+        // Afternoon fern impulse (before evening so the feed stays in
+        // clock order).
+        if !current.hasPlant && Double.random(in: 0..<1) < 0.06 {
+            add("17:2\(Int.random(in: 0...9))", "leaf.fill",
+                "Bought a small fern on impulse. It has opinions about the windowsill already.",
+                moodDelta: 0.04)
+            current.hasPlant = true
+            current.money -= 6
+        }
+
         // Evening — social or solitary
         if Double.random(in: 0..<1) < (isWeekend ? 0.65 : 0.45) {
             hadCompany = true
@@ -469,16 +686,6 @@ struct SmallLifeGameView: View {
             ]
             let solo = solos.randomElement()!
             add("20:\(Int.random(in: 10...59))", solo.0, solo.1, moodDelta: solo.2)
-        }
-
-        // Afternoon fern impulse (before evening so the feed stays in
-        // clock order).
-        if !current.hasPlant && Double.random(in: 0..<1) < 0.06 {
-            add("17:2\(Int.random(in: 0...9))", "leaf.fill",
-                "Bought a small fern on impulse. It has opinions about the windowsill already.",
-                moodDelta: 0.04)
-            current.hasPlant = true
-            current.money -= 6
         }
 
         // Arcs

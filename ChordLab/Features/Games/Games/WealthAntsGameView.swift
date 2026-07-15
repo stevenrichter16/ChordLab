@@ -11,12 +11,33 @@
 import SwiftUI
 
 struct WealthAntsGameView: View {
+    /// Live-switchable economic rules. Wealth is whole dollars, so both
+    /// interventions are built to move only whole dollars (no cents).
+    private enum EconomicPolicy: CaseIterable {
+        case freeMarket, flatTax, ubi
+
+        var label: String {
+            switch self {
+            case .freeMarket: return "Market"
+            case .flatTax: return "Tax"
+            case .ubi: return "UBI"
+            }
+        }
+    }
+
     private final class AntSimulation {
         static let antCount = 110
         static let startingWealth = 10
         static let speed: CGFloat = 46
         static let meetDistance: CGFloat = 9
         static let tradeCooldown: CGFloat = 0.6
+        static let windfallTotal = 24
+        static let windfallShares = 3
+        static let pulseDuration: CGFloat = 0.6
+        /// Flat tax: chance a traded dollar is skimmed into the communal pot
+        /// (a 25% skim in expectation — whole dollars, never fractions).
+        static let taxSkimChance = 0.25
+        static let ubiInterval: CGFloat = 6
 
         var px: [CGFloat] = []
         var py: [CGFloat] = []
@@ -27,6 +48,17 @@ struct WealthAntsGameView: View {
         var lastDate: Date?
         var trades = 0
 
+        var policy: EconomicPolicy = .freeMarket
+        /// Whole dollars skimmed from trades, waiting to be handed back out.
+        var taxPot = 0
+        var ubiClock: CGFloat = 0
+
+        /// Set from the tap gesture, consumed at the top of step() so the
+        /// grant happens on the sim path, not the render path.
+        var pendingWindfall: CGPoint?
+        var pulseCenter: CGPoint?
+        var pulseAge: CGFloat = 0
+
         func reset(in size: CGSize) {
             guard size.width > 40, size.height > 40 else { return }
             worldSize = size
@@ -36,6 +68,10 @@ struct WealthAntsGameView: View {
             wealth = Array(repeating: Self.startingWealth, count: Self.antCount)
             cooldown = Array(repeating: 0, count: Self.antCount)
             trades = 0
+            taxPot = 0
+            ubiClock = 0
+            pendingWindfall = nil
+            pulseCenter = nil
         }
 
         func step(to date: Date, size: CGSize) {
@@ -53,14 +89,25 @@ struct WealthAntsGameView: View {
             guard !px.isEmpty else { return }
 
             let dt: CGFloat
-            if let lastDate {
-                dt = CGFloat(min(date.timeIntervalSince(lastDate), 1.0 / 30.0))
-            } else {
+            if lastDate == nil {
                 dt = 1.0 / 60.0
+            } else {
+                dt = CGFloat(SimClock.dt(since: lastDate, to: date, cap: 1.0 / 30.0))
             }
             lastDate = date
 
             let count = Self.antCount
+
+            // Tap windfall: the nearest ants split a bonus, then the market
+            // gets to work redistributing it.
+            if let tap = pendingWindfall {
+                pendingWindfall = nil
+                grantWindfall(at: tap)
+            }
+            if pulseCenter != nil {
+                pulseAge += dt
+                if pulseAge >= Self.pulseDuration { pulseCenter = nil }
+            }
 
             // Wander
             for i in 0..<count {
@@ -89,7 +136,11 @@ struct WealthAntsGameView: View {
                     let taker = giver == i ? j : i
                     if wealth[giver] > 0 {
                         wealth[giver] -= 1
-                        wealth[taker] += 1
+                        if policy == .flatTax, Double.random(in: 0..<1) < Self.taxSkimChance {
+                            taxPot += 1
+                        } else {
+                            wealth[taker] += 1
+                        }
                         trades += 1
                     }
                     cooldown[i] = Self.tradeCooldown
@@ -97,6 +148,57 @@ struct WealthAntsGameView: View {
                     break
                 }
             }
+
+            // The pot pays out $1 a head as soon as it can afford to
+            // (even after a policy switch, so no dollars stay stranded).
+            if taxPot >= count {
+                taxPot -= count
+                for i in 0..<count { wealth[i] += 1 }
+            }
+
+            if policy == .ubi {
+                ubiClock += dt
+                if ubiClock >= Self.ubiInterval {
+                    ubiClock = 0
+                    applyUBI()
+                }
+            } else {
+                ubiClock = 0
+            }
+        }
+
+        private func grantWindfall(at point: CGPoint) {
+            let nearest = (0..<Self.antCount).sorted { a, b in
+                let da = (px[a] - point.x) * (px[a] - point.x) + (py[a] - point.y) * (py[a] - point.y)
+                let db = (px[b] - point.x) * (px[b] - point.x) + (py[b] - point.y) * (py[b] - point.y)
+                return da < db
+            }.prefix(Self.windfallShares)
+            let share = Self.windfallTotal / Self.windfallShares
+            for i in nearest { wealth[i] += share }
+            pulseCenter = point
+            pulseAge = 0
+        }
+
+        /// UBI: everyone gets $1, funded by a levy proportional to wealth.
+        /// Integer division under-collects, so the shortfall comes from the
+        /// richest ants — money is conserved exactly.
+        private func applyUBI() {
+            let need = Self.antCount
+            let total = wealth.reduce(0, +)
+            guard total >= need else { return }
+            var collected = 0
+            for i in 0..<Self.antCount {
+                let levy = wealth[i] * need / total
+                wealth[i] -= levy
+                collected += levy
+            }
+            while collected < need {
+                guard let i = wealth.indices.max(by: { wealth[$0] < wealth[$1] }),
+                      wealth[i] > 0 else { break }
+                wealth[i] -= 1
+                collected += 1
+            }
+            for i in 0..<Self.antCount { wealth[i] += 1 }
         }
 
         /// Gini coefficient: 0 = perfect equality, 1 = one ant owns it all.
@@ -125,17 +227,24 @@ struct WealthAntsGameView: View {
         }
     }
 
+    private static let giniSampleCap = 240   // ~2 minutes at the 0.5s ticker
+
     @State private var sim = AntSimulation()
     @State private var giniText = "0.00"
     @State private var richest = 10
     @State private var brokeCount = 0
     @State private var tradeCount = 0
     @State private var histogramBins: [Int] = Array(repeating: 0, count: 12)
+    @State private var giniHistory: [Double] = []
+    @State private var policy: EconomicPolicy = .freeMarket
+    @State private var isPaused = false
 
     private let statsTicker = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
-        GameScreen(game: GameCatalog.game(withId: "wealthants")!, onRestart: { resetColony() }) {
+        GameScreen(game: GameCatalog.game(withId: "wealthants")!,
+                   onRestart: { resetColony() },
+                   confirmRestart: true) {
             VStack(spacing: 10) {
                 HStack(spacing: 10) {
                     StatPill(label: "Gini", value: giniText, tint: .orange)
@@ -144,7 +253,12 @@ struct WealthAntsGameView: View {
                     StatPill(label: "Trades", value: "\(tradeCount)", tint: .brown)
                 }
 
-                TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
+                giniSparkline
+                    .frame(height: 16)
+                    .padding(.horizontal, 16)
+                    .accessibilityHidden(true)
+
+                TimelineView(.animation(minimumInterval: 1.0 / 60.0, paused: isPaused)) { timeline in
                     Canvas { context, size in
                         sim.step(to: timeline.date, size: size)
                         context.fill(Path(CGRect(origin: .zero, size: size)),
@@ -156,23 +270,67 @@ struct WealthAntsGameView: View {
                                               width: radius * 2, height: radius * 2)
                             context.fill(Path(ellipseIn: rect), with: .color(antColor(money)))
                         }
+                        if let pulse = sim.pulseCenter {
+                            let progress = min(1, sim.pulseAge / AntSimulation.pulseDuration)
+                            let radius = 6 + progress * 26
+                            let rect = CGRect(x: pulse.x - radius, y: pulse.y - radius,
+                                              width: radius * 2, height: radius * 2)
+                            context.stroke(Path(ellipseIn: rect),
+                                           with: .color(Color(hue: 0.13, saturation: 0.85, brightness: 1.0)
+                                               .opacity(Double(1 - progress) * 0.8)),
+                                           lineWidth: 2)
+                        }
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 12))
+                .onTapGesture { location in
+                    guard !isPaused else { return }
+                    GameHaptics.tap()
+                    sim.pendingWindfall = location
+                }
+                .accessibilityElement()
+                .accessibilityLabel("Ant colony: \(AntSimulation.antCount) ants trading, Gini \(giniText)")
                 .padding(.horizontal, 12)
+
+                HStack(spacing: 10) {
+                    Picker("Policy", selection: $policy) {
+                        ForEach(EconomicPolicy.allCases, id: \.self) { rule in
+                            Text(rule.label).tag(rule)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Button {
+                        GameHaptics.tap()
+                        isPaused.toggle()
+                    } label: {
+                        Image(systemName: isPaused ? "play.fill" : "pause.fill")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 32, height: 32)
+                            .background(Color.appSecondaryBackground, in: Circle())
+                    }
+                    .accessibilityLabel(isPaused ? "Resume" : "Pause")
+                }
+                .padding(.horizontal, 16)
 
                 histogramView
                     .frame(height: 64)
                     .padding(.horizontal, 16)
 
-                Text("Every trade is a fair coin flip for $1. Inequality shows up anyway.")
+                Text("Every trade is a fair coin flip for $1. Inequality shows up anyway — tap to drop a windfall.")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
                     .padding(.bottom, 8)
             }
             .padding(.top, 4)
             .onReceive(statsTicker) { _ in
                 refreshStats()
+            }
+            .onChange(of: policy) { _, newValue in
+                sim.policy = newValue
             }
         }
     }
@@ -183,6 +341,26 @@ struct WealthAntsGameView: View {
         }
         let richness = min(1.0, Double(money) / 40.0)
         return Color(hue: 0.12, saturation: 0.5 + richness * 0.5, brightness: 0.55 + richness * 0.45)
+    }
+
+    /// Two minutes of Gini samples: is inequality still climbing, or settled?
+    private var giniSparkline: some View {
+        Canvas { context, size in
+            guard giniHistory.count >= 2 else { return }
+            let stepX = size.width / CGFloat(Self.giniSampleCap - 1)
+            let maxGini = 0.8
+            var path = Path()
+            for (index, value) in giniHistory.enumerated() {
+                let x = CGFloat(index) * stepX
+                let y = size.height - CGFloat(min(value, maxGini) / maxGini) * size.height
+                if index == 0 {
+                    path.move(to: CGPoint(x: x, y: y))
+                } else {
+                    path.addLine(to: CGPoint(x: x, y: y))
+                }
+            }
+            context.stroke(path, with: .color(.orange.opacity(0.7)), lineWidth: 1.5)
+        }
     }
 
     private var histogramView: some View {
@@ -200,26 +378,36 @@ struct WealthAntsGameView: View {
             .animation(.easeOut(duration: 0.3), value: histogramBins)
 
             HStack {
-                Text("broke").font(.system(size: 9)).foregroundStyle(.tertiary)
+                Text("broke").font(.caption2).foregroundStyle(.tertiary)
                 Spacer()
-                Text("wealth →").font(.system(size: 9)).foregroundStyle(.tertiary)
+                Text("wealth →").font(.caption2).foregroundStyle(.tertiary)
                 Spacer()
-                Text("rich").font(.system(size: 9)).foregroundStyle(.tertiary)
+                Text("rich").font(.caption2).foregroundStyle(.tertiary)
             }
         }
     }
 
     private func refreshStats() {
-        giniText = String(format: "%.2f", sim.gini())
+        let gini = sim.gini()
+        giniText = String(format: "%.2f", gini)
         richest = sim.wealth.max() ?? 0
         brokeCount = sim.wealth.filter { $0 == 0 }.count
         tradeCount = sim.trades
         histogramBins = sim.histogram(bins: 12)
+        if !isPaused {
+            giniHistory.append(gini)
+            if giniHistory.count > Self.giniSampleCap {
+                giniHistory.removeFirst(giniHistory.count - Self.giniSampleCap)
+            }
+        }
     }
 
     private func resetColony() {
         sim.reset(in: sim.worldSize)
         sim.lastDate = nil
+        sim.policy = policy
+        giniHistory.removeAll()
+        isPaused = false
         refreshStats()
     }
 }

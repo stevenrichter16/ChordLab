@@ -220,22 +220,38 @@ final class GameScores {
     }
 
     /// Reports a finished-game score. Stores it if it beats the current best.
+    /// The scoring direction comes from the catalog's GameInfo.higherIsBetter;
+    /// the parameter is kept for source compatibility and only used as a
+    /// fallback for ids the catalog doesn't know.
     /// Returns true when a new record was set.
     @discardableResult
     func report(score: Int, for gameId: String, higherIsBetter: Bool = true) -> Bool {
+        let higherIsBetter = GameCatalog.game(withId: gameId)?.higherIsBetter ?? higherIsBetter
         let current = best(for: gameId)
         let isRecord: Bool
+        let shouldStore: Bool
         if let current {
             isRecord = higherIsBetter ? score > current : score < current
+            shouldStore = isRecord
         } else {
-            // First recorded game: don't celebrate a zero score.
+            // First recorded game: store any non-negative score so day-0
+            // persistent sims read "Days: 0" instead of "Not played yet",
+            // but don't celebrate a zero score as a record.
+            shouldStore = higherIsBetter ? score >= 0 : true
             isRecord = higherIsBetter ? score > 0 : true
         }
-        if isRecord {
+        if shouldStore {
             defaults.set(score, forKey: key(gameId, "best"))
             revision += 1
         }
         return isRecord
+    }
+
+    /// Clears the stored best for a game so its card reads "Not played yet"
+    /// again (e.g. to recover from a clock-inflated "Days" record).
+    func resetBest(for gameId: String) {
+        defaults.removeObject(forKey: key(gameId, "best"))
+        revision += 1
     }
 
     /// Unconditionally stores a value (for running counters like bankroll).
@@ -259,5 +275,74 @@ final class GameScores {
     func setCounter(_ name: String, to value: Int, for gameId: String) {
         defaults.set(value, forKey: key(gameId, name))
         revision += 1
+    }
+}
+
+// MARK: - Sim Persistence
+
+/// Versioned UserDefaults persistence for the persistent Watch sims
+/// (Moss Garden, A Small Life). Values are wrapped in a small
+/// {v, payload} envelope so future schema changes can migrate instead of
+/// silently discarding a long-running world, and the previous stored
+/// bytes are copied to "<key>.bak" before every overwrite so one bad
+/// write can always be recovered.
+enum SimPersist {
+    /// Current envelope schema version.
+    private static let version = 1
+
+    private struct Envelope<T: Codable>: Codable {
+        let v: Int
+        let payload: T
+    }
+
+    /// Load a versioned save. Falls back to decoding legacy raw T for
+    /// pre-versioned data, then to the "<key>.bak" backup copy if the
+    /// primary bytes are missing or undecodable. Returns nil only when
+    /// nothing decodes — NEVER deletes stored bytes on failure.
+    static func load<T: Codable>(_ type: T.Type, key: String) -> T? {
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: key), let value = decode(type, from: data) {
+            return value
+        }
+        if let backup = defaults.data(forKey: key + ".bak"), let value = decode(type, from: backup) {
+            return value
+        }
+        return nil
+    }
+
+    private static func decode<T: Codable>(_ type: T.Type, from data: Data) -> T? {
+        let decoder = JSONDecoder()
+        if let envelope = try? decoder.decode(Envelope<T>.self, from: data) {
+            return envelope.payload
+        }
+        // Legacy save from before versioning: the raw payload bytes.
+        return try? decoder.decode(T.self, from: data)
+    }
+
+    /// Save inside a versioned envelope {v: Int, payload: T}. Copies the
+    /// previous stored bytes to "<key>.bak" before overwriting — but only
+    /// when they decode, so corrupt bytes can never displace the last good
+    /// backup copy.
+    static func save<T: Codable>(_ value: T, key: String) {
+        guard let data = try? JSONEncoder().encode(Envelope(v: version, payload: value)) else { return }
+        let defaults = UserDefaults.standard
+        if let previous = defaults.data(forKey: key), decode(T.self, from: previous) != nil {
+            defaults.set(previous, forKey: key + ".bak")
+        }
+        defaults.set(data, forKey: key)
+    }
+}
+
+// MARK: - Sim Clock
+
+/// Frame-delta helper for the Canvas-driven Watch sims.
+enum SimClock {
+    /// Clamped frame delta: max(0, min(now - last, cap)). Never negative
+    /// (backward wall-clock jumps) and never larger than `cap` (long
+    /// suspends), so a sim can't take one giant or NaN-producing step.
+    /// Returns 0 when `last` is nil.
+    static func dt(since last: Date?, to now: Date, cap: TimeInterval) -> TimeInterval {
+        guard let last else { return 0 }
+        return max(0, min(now.timeIntervalSince(last), cap))
     }
 }

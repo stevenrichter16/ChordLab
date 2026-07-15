@@ -6,11 +6,28 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct GameHostView: View {
     let game: GameInfo
 
     var body: some View {
+        gameBody
+            .onAppear {
+                // Watch sims are meant to be left running; keep the screen awake.
+                if game.category == .watch {
+                    UIApplication.shared.isIdleTimerDisabled = true
+                }
+            }
+            .onDisappear {
+                if game.category == .watch {
+                    UIApplication.shared.isIdleTimerDisabled = false
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var gameBody: some View {
         switch game.id {
         case "tictactoe": TicTacToeGameView()
         case "connectfour": ConnectFourGameView()

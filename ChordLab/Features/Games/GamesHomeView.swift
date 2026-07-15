@@ -57,7 +57,7 @@ struct GamesHomeView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Arcade")
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .font(.system(.largeTitle, design: .rounded, weight: .bold))
             Text("\(GameCatalog.all.count) games. Zero ads. Take a break from the theory.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -72,18 +72,43 @@ struct GameCardView: View {
     let scores: GameScores
     let action: () -> Void
 
+    @State private var showResetConfirm = false
+
     var body: some View {
+        if game.scoreLabel != nil {
+            card
+                .contextMenu {
+                    Button(role: .destructive) {
+                        showResetConfirm = true
+                    } label: {
+                        Label("Reset record", systemImage: "arrow.counterclockwise")
+                    }
+                }
+                .confirmationDialog("Reset the \(game.name) record?",
+                                    isPresented: $showResetConfirm,
+                                    titleVisibility: .visible) {
+                    Button("Reset record", role: .destructive) {
+                        scores.resetBest(for: game.id)
+                    }
+                    Button("Cancel", role: .cancel) {}
+                }
+        } else {
+            card
+        }
+    }
+
+    private var card: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 10) {
                 Image(systemName: game.icon)
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(.title2.weight(.semibold))
                     .foregroundStyle(game.tint)
                     .frame(width: 46, height: 46)
                     .background(game.tint.opacity(0.15), in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(game.name)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .font(.system(.callout, design: .rounded, weight: .semibold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -111,7 +136,7 @@ struct GameCardView: View {
         if let label = game.scoreLabel {
             HStack(spacing: 4) {
                 Image(systemName: "star.fill")
-                    .font(.system(size: 10))
+                    .font(.caption2)
                     .foregroundStyle(.yellow)
                 if let best = scores.best(for: game.id) {
                     Text("\(label): \(best)")

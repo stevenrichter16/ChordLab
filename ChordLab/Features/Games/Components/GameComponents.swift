@@ -42,9 +42,14 @@ enum GameHaptics {
 /// close + restart, centered title, and the game content below.
 struct GameScreen<Content: View>: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var showRestartConfirm = false
 
     let game: GameInfo
     var onRestart: (() -> Void)?
+    /// When true, the restart button asks for confirmation before calling
+    /// onRestart. Watch sims pass true: an accidental tap on the always-
+    /// visible button would erase hours of ambient state.
+    var confirmRestart: Bool = false
     @ViewBuilder var content: () -> Content
 
     var body: some View {
@@ -55,7 +60,7 @@ struct GameScreen<Content: View>: View {
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .frame(width: 36, height: 36)
                         .background(Color.appSecondaryBackground, in: Circle())
@@ -65,7 +70,7 @@ struct GameScreen<Content: View>: View {
 
                 HStack(spacing: 8) {
                     Image(systemName: game.icon)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.subheadline.weight(.semibold))
                         .foregroundStyle(game.tint)
                     Text(game.name)
                         .font(.headline)
@@ -76,13 +81,25 @@ struct GameScreen<Content: View>: View {
                 if let onRestart {
                     Button {
                         GameHaptics.tap()
-                        onRestart()
+                        if confirmRestart {
+                            showRestartConfirm = true
+                        } else {
+                            onRestart()
+                        }
                     } label: {
                         Image(systemName: "arrow.counterclockwise")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
                             .frame(width: 36, height: 36)
                             .background(Color.appSecondaryBackground, in: Circle())
+                    }
+                    .confirmationDialog("Start over?",
+                                        isPresented: $showRestartConfirm,
+                                        titleVisibility: .visible) {
+                        Button("Start over", role: .destructive) { onRestart() }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("The current world is lost.")
                     }
                 } else {
                     Color.clear.frame(width: 36, height: 36)
@@ -108,10 +125,10 @@ struct StatPill: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(label.uppercased())
-                .font(.system(size: 10, weight: .semibold))
+                .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .font(.system(.body, design: .rounded, weight: .bold))
                 .foregroundStyle(tint)
                 .contentTransition(.numericText())
         }
@@ -142,7 +159,7 @@ struct GameOverOverlay: View {
                     .font(.system(size: 44))
 
                 Text(title)
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .font(.system(.title, design: .rounded, weight: .bold))
                     .multilineTextAlignment(.center)
 
                 if let subtitle {
@@ -192,7 +209,9 @@ enum CardSuit: String, CaseIterable {
     var color: Color {
         switch self {
         case .hearts, .diamonds: return .red
-        case .spades, .clubs: return .primary
+        // Literal black, not .primary: the card face is always white,
+        // and .primary resolves to white in dark mode.
+        case .spades, .clubs: return .black
         }
     }
 }
@@ -262,11 +281,11 @@ struct PlayingCardView: View {
                     Spacer()
                 }
                 .padding(width * 0.09)
-                .foregroundStyle(card.suit == .hearts || card.suit == .diamonds ? Color.red : Color.black)
+                .foregroundStyle(card.suit.color)
 
                 Text(card.suit.rawValue)
                     .font(.system(size: width * 0.52))
-                    .foregroundStyle(card.suit == .hearts || card.suit == .diamonds ? Color.red : Color.black)
+                    .foregroundStyle(card.suit.color)
                     .offset(y: height * 0.12)
             } else {
                 RoundedRectangle(cornerRadius: width * 0.08)
@@ -301,7 +320,7 @@ struct ArcadeButton: View {
                 }
                 Text(title)
             }
-            .font(.system(size: 16, weight: .semibold, design: .rounded))
+            .font(.system(.callout, design: .rounded, weight: .semibold))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 13)

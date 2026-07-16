@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "athanor_sporeling.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

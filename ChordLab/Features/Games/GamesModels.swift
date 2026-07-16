@@ -18,6 +18,7 @@ enum GameCategory: String, CaseIterable, Identifiable {
     case puzzle = "Puzzle"
     case word = "Word"
     case sims = "Sims"
+    case rpg = "RPG"
     case watch = "Watch"
 
     var id: String { rawValue }
@@ -30,6 +31,7 @@ enum GameCategory: String, CaseIterable, Identifiable {
         case .puzzle: return "puzzlepiece.fill"
         case .word: return "textformat.abc"
         case .sims: return "globe.americas.fill"
+        case .rpg: return "shield.lefthalf.filled"
         case .watch: return "eye.fill"
         }
     }
@@ -159,6 +161,11 @@ enum GameCatalog {
         GameInfo(id: "outbreak", name: "Outbreak", icon: "cross.case.fill", tint: .teal,
                  category: .sims, blurb: "Contain the spread, three moves a turn.",
                  scoreLabel: "Saved"),
+
+        // RPG
+        GameInfo(id: "athanor", name: "Athanor", icon: "testtube.2", tint: .orange,
+                 category: .rpg, blurb: "Alchemy chess. Every number visible.",
+                 scoreLabel: "Depth"),
 
         // Watch — ambient sims, no lose state, barely any buttons
         GameInfo(id: "particlelife", name: "Particle Life", icon: "atom", tint: .purple,

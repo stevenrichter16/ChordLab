@@ -56,6 +56,7 @@ struct GameHostView: View {
         case "traffic": TrafficGameView()
         case "lemonade": LemonadeGameView()
         case "outbreak": OutbreakGameView()
+        case "athanor": AthanorGameView()
         case "particlelife": ParticleLifeGameView()
         case "wealthants": WealthAntsGameView()
         case "forestfire": ForestFireGameView()

@@ -433,10 +433,10 @@ struct AthanorGameView: View {
     }
 
     enum Event {
-        case hit(Pt, Int, String)                    // pos, amount, victim emoji
-        case die(Pt, String, Bool)                   // pos, emoji, isEnemy
+        case hit(Pt, Int, UnitKind, DmgType)         // pos, amount, victim, cause
+        case die(Pt, UnitKind, Bool)                 // pos, victim, isEnemy
         case surface(Pt, Surface)
-        case frozen(Pt)
+        case frozen(Pt, UnitKind)
         case status(Pt, String)
         case moved(Int, Pt)
         case note(String)
@@ -451,8 +451,8 @@ struct AthanorGameView: View {
 
         var brief: String? {
             switch self {
-            case .hit(_, let n, let e): return "\(e) −\(n)"
-            case .die(_, let e, _): return "\(e)💀"
+            case .hit(_, let n, let k, _): return "\(k.emoji) −\(n)"
+            case .die(_, let k, _): return "\(k.emoji)💀"
             case .surface(_, let sf): return sf == .none ? "clears" : sf.mark
             case .frozen: return "❄️ frozen"
             case .status(_, let t): return t
@@ -558,7 +558,7 @@ struct AthanorGameView: View {
             if type == .frost && u.wet && !u.frozen {                         // rule 3
                 s.units[i].frozen = true
                 if kind.isEnemy { s.freezesThisTurn += 1 }
-                ev.append(.frozen(u.pos))
+                ev.append(.frozen(u.pos, kind))
             } else if u.frozen && (type == .phys || type == .collision) {     // rule 7
                 amount += 2
                 s.units[i].frozen = false
@@ -566,7 +566,7 @@ struct AthanorGameView: View {
             }
 
             s.units[i].hp -= amount
-            ev.append(.hit(s.units[i].pos, amount, kind.emoji))
+            ev.append(.hit(s.units[i].pos, amount, kind, type))
             if s.units[i].hp <= 0 { kill(id, by: type, &s, &ev) }
         }
 
@@ -586,11 +586,11 @@ struct AthanorGameView: View {
                 s.units[i].hp = 0
                 s.heroDead = true
                 s.lastKillerType = type.rawValue
-                ev.append(.die(u.pos, u.kind.emoji, false))
+                ev.append(.die(u.pos, u.kind, false))
                 return
             }
             s.units.remove(at: i)
-            ev.append(.die(u.pos, u.kind.emoji, u.kind.isEnemy))
+            ev.append(.die(u.pos, u.kind, u.kind.isEnemy))
             if u.kind.isEnemy { s.killsThisTurn += 1 }
             switch u.kind {
             case .rat:
@@ -933,7 +933,7 @@ struct AthanorGameView: View {
                     if wasWet, let j = s.index(of: t.id), !s.units[j].frozen {
                         s.units[j].frozen = true
                         if s.units[j].kind.isEnemy { s.freezesThisTurn += 1 }
-                        ev.append(.frozen(s.units[j].pos))
+                        ev.append(.frozen(s.units[j].pos, s.units[j].kind))
                     }
                 } else { ev.append(.whiff("🔪")) }
             }
@@ -1375,7 +1375,7 @@ struct AthanorGameView: View {
                         s[p].surface = .oil
                         ev.append(.surface(p, .oil))
                     }
-                    ev.append(.note("🧈 melts — max HP down"))
+                    ev.append(.note("🧈 melts — max HP \(s.units[i].maxHP)"))
                 }
                 damage(id, 1, .burn, &s, &ev)
             }
@@ -1651,6 +1651,13 @@ struct AthanorGameView: View {
     @State private var previewEvents: [Event] = []
     @State private var previewBoard: BoardState? = nil
     @State private var undoStack: [BoardState] = []
+    /// Parallel to undoStack 1:1 — the log's monotonic next-id at push time,
+    /// so undo truncates exactly the lines the undone action appended.
+    @State private var undoLogMarks: [Int] = []
+    /// Combat history. Derived ONLY from committed Event streams — previews
+    /// and projections never touch it. Per-run, never persisted in RunSave.
+    @State private var combatLog: [LogLine] = []
+    @State private var logNextID = 0
     @State private var inspector = "Tap any tile or unit — every number is visible."
     @State private var docentLine = ""
     @State private var projection = ""
@@ -1694,6 +1701,8 @@ struct AthanorGameView: View {
                 boardView
                     .padding(.horizontal, 12)
                 inspectorStrip
+                    .padding(.horizontal, 12)
+                combatLogView
                     .padding(.horizontal, 12)
                 Spacer(minLength: 0)
                 actionArea
@@ -1781,7 +1790,7 @@ struct AthanorGameView: View {
         guard mode == .confirm, let pb = previewBoard else { return g }
         for e in previewEvents {
             switch e {
-            case .hit(let p, let n, _): g.dmg[p, default: 0] += n
+            case .hit(let p, let n, _, _): g.dmg[p, default: 0] += n
             case .die(let p, _, _): g.skull.insert(p)
             case .moved(let id, let to):
                 if let u = pb.units.first(where: { $0.id == id }) ?? board.units.first(where: { $0.id == id }) {
@@ -2029,7 +2038,7 @@ struct AthanorGameView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .lineLimit(3)
             .padding(10)
-            .frame(minHeight: 56, alignment: .topLeading)
+            .frame(minHeight: 44, alignment: .topLeading)
             .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 12))
     }
 
@@ -2085,6 +2094,128 @@ struct AthanorGameView: View {
         return (0..<3).map { i in
             entry((start + i) % 3, lockedDamage: i == 0 ? u.intent?.damage : nil)
         }.joined(separator: " → ")
+    }
+
+    // MARK: - Combat log
+
+    private enum LogTint { case plain, separator, heroDamage, fire, frost }
+
+    private struct LogLine: Identifiable {
+        let id: Int
+        let text: String
+        let tint: LogTint
+    }
+
+    /// The one Event → log-line narrator. nil = pure bookkeeping (.moved
+    /// feeds ghost previews, not history). Called ONLY on committed event
+    /// streams — ghost previews and the projection line never log.
+    private static func describe(_ e: Event) -> (text: String, tint: LogTint)? {
+        switch e {
+        case .hit(_, let n, let kind, let type):
+            let cause: String
+            switch type {
+            case .phys: cause = ""
+            case .fire: cause = " fire"
+            case .shock: cause = " shock"
+            case .frost: cause = " frost"
+            case .collision: cause = " collision"
+            case .vat: cause = " vat"
+            case .burn: cause = " burn"
+            }
+            let text = "\(kind.emoji) \(kind.name) takes \(n)\(cause) damage"
+            if kind == .hero { return (text, .heroDamage) }
+            switch type {
+            case .fire, .burn: return (text, .fire)
+            case .frost: return (text, .frost)
+            default: return (text, .plain)
+            }
+        case .die(_, let kind, _):
+            return kind == .hero
+                ? ("🕯️ Cinderwick goes out", .heroDamage)
+                : ("\(kind.emoji) \(kind.name) is destroyed", .plain)
+        case .surface(let p, let sf):
+            let at = "(\(p.x),\(p.y))"
+            switch sf {
+            case .fire: return ("🔥 fire takes \(at)", .fire)
+            case .steam: return ("☁️ \(at) boils to steam", .plain)
+            case .water: return ("💧 \(at) floods", .plain)
+            case .ice: return ("🧊 \(at) freezes over", .frost)
+            case .oil: return ("🛢️ oil coats \(at)", .plain)
+            case .none: return ("\(at) clears", .plain)
+            case .vat: return nil
+            }
+        case .frozen(_, let kind):
+            return ("❄️ \(kind.emoji) \(kind.name) freezes solid", .frost)
+        case .status(_, let text):
+            return (text, .plain)
+        case .note(let text):
+            return (text, .plain)
+        case .whiff(let w):
+            return ("\(w) whiffs", .plain)
+        case .moved:
+            return nil
+        }
+    }
+
+    private func appendLogLine(_ text: String, tint: LogTint = .plain) {
+        combatLog.append(LogLine(id: logNextID, text: text, tint: tint))
+        logNextID += 1
+        // Cap by dropping the OLDEST lines — undo marks reference high ids,
+        // so head-trimming never invalidates them.
+        if combatLog.count > 200 { combatLog.removeFirst(combatLog.count - 200) }
+    }
+
+    private func appendLog(_ events: [Event]) {
+        for e in events {
+            if let line = Self.describe(e) { appendLogLine(line.text, tint: line.tint) }
+        }
+    }
+
+    private var combatLogView: some View {
+        ScrollViewReader { proxy in
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 2) {
+                    if combatLog.isEmpty {
+                        Text("The lab log is blank.")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
+                    ForEach(combatLog) { line in
+                        Text(line.text)
+                            .font(line.tint == .separator ? .caption2.weight(.semibold) : .caption2)
+                            .foregroundStyle(logColor(line.tint))
+                            .frame(maxWidth: .infinity,
+                                   alignment: line.tint == .separator ? .center : .leading)
+                            .id(line.id)
+                    }
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 10)
+            }
+            .onChange(of: combatLog.last?.id) { _, newLast in
+                guard let newLast else { return }
+                withAnimation(.easeOut(duration: 0.2)) {
+                    proxy.scrollTo(newLast, anchor: .bottom)
+                }
+            }
+            .onAppear {
+                if let last = combatLog.last?.id { proxy.scrollTo(last, anchor: .bottom) }
+            }
+        }
+        .frame(height: 72)
+        .background(Color.appSecondaryBackground, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Combat log")
+    }
+
+    private func logColor(_ tint: LogTint) -> Color {
+        switch tint {
+        case .plain: return .secondary
+        case .separator: return .secondary.opacity(0.7)
+        case .heroDamage: return .red.opacity(0.85)
+        case .fire: return .orange.opacity(0.85)
+        case .frost: return .cyan.opacity(0.85)
+        }
     }
 
     // MARK: - Action area
@@ -2279,6 +2410,7 @@ struct AthanorGameView: View {
                 // against the pre-retreat state must be invalidated.
                 cancelSelection()
                 undoStack.append(board)
+                undoLogMarks.append(logNextID)
                 let events = Engine.resolve(.spearRetreat, &board)
                 afterCommit(events)
             }
@@ -2380,6 +2512,7 @@ struct AthanorGameView: View {
     private func commitPending() {
         guard let a = pending else { return }
         undoStack.append(board)
+        undoLogMarks.append(logNextID)
         let events = Engine.resolve(a, &board)
         cancelSelection()
         afterCommit(events)
@@ -2387,11 +2520,13 @@ struct AthanorGameView: View {
 
     private func doKindle() {
         undoStack.append(board)
+        undoLogMarks.append(logNextID)
         let events = Engine.resolve(.kindle, &board)
         afterCommit(events)
     }
 
     private func afterCommit(_ events: [Event]) {
+        appendLog(events)
         processEvents(events, playerCaused: true)
         recomputeProjection()
         saveRun()
@@ -2405,6 +2540,12 @@ struct AthanorGameView: View {
     private func undo() {
         guard let prev = undoStack.popLast() else { return }
         board = prev
+        // Truncate the lines the undone action appended, so the log never
+        // narrates a timeline that no longer happened.
+        if let mark = undoLogMarks.popLast() {
+            combatLog.removeAll { $0.id >= mark }
+            logNextID = mark
+        }
         cancelSelection()
         recomputeProjection()
         saveRun()
@@ -2427,7 +2568,7 @@ struct AthanorGameView: View {
         }
         guard playerCaused else { return }
         for e in events {
-            if case .die(_, let emoji, _) = e, emoji == UnitKind.queen.emoji {
+            if case .die(_, let kind, _) = e, kind == .queen {
                 unlockFeat("peerReview", "Feat: Peer Review — Depth-1 clears now offer 2 Precipitates.")
             }
         }
@@ -2579,11 +2720,13 @@ struct AthanorGameView: View {
         guard stage == .player else { return }
         cancelSelection()
         undoStack.removeAll()
+        undoLogMarks.removeAll()
         board.spearRetreatTo = nil
         prePhaseBoard = board   // every mid-phase save persists THIS board
         stage = .enemyAnim
         saveRun()   // stage "enemy": a relaunch replays the phase from here
         GameHaptics.tap()
+        appendLogLine("— the reagents move —", tint: .separator)
         phaseGen += 1
         let gen = phaseGen
         Task { @MainActor in
@@ -2597,6 +2740,7 @@ struct AthanorGameView: View {
                     Engine.resolve(.enemyAct(id), &board)
                 }
                 processEvents(events, playerCaused: false)
+                appendLog(events)   // beat-by-beat: lines land as each enemy acts
                 try? await Task.sleep(nanoseconds: 350_000_000)
             }
             guard gen == phaseGen else { return }
@@ -2605,12 +2749,15 @@ struct AthanorGameView: View {
                 Engine.resolve(.tick, &board)
             }
             processEvents(tickEvents, playerCaused: false)
+            appendLog(tickEvents)
             if board.heroDead { handleDeath(); return }
             if board.enemies.isEmpty { floorCleared(); return }
+            appendLogLine("— Turn \(board.turn + 1) —", tint: .separator)
             let dawn = withAnimation(.easeInOut(duration: 0.22)) {
                 Engine.resolve(.beginPlayerTurn, &board)
             }
             processEvents(dawn, playerCaused: false)
+            appendLog(dawn)
             // Surface the thaw penalty the engine already announces —
             // otherwise the 0-AP turn reads like a bug.
             if dawn.contains(where: { if case .note(let t) = $0 { return t.hasPrefix("you thaw") } else { return false } }) {
@@ -2670,6 +2817,7 @@ struct AthanorGameView: View {
         prePhaseBoard = nil
         cancelSelection()
         GameHaptics.success()
+        appendLogLine("— Depth \(board.depth) cleared —", tint: .separator)
         docentLine = Quips.floorClear(meta.trialNumber)
         rewardPicksLeft = (board.depth == 1 && meta.feats.contains("peerReview")) ? 2 : 1
         rewardOptions = drawPrecipitates()
@@ -2783,11 +2931,14 @@ struct AthanorGameView: View {
             docentLine = Quips.descend(meta.trialNumber, depth: newDepth)
         }
         spawnRemnantIfNeeded()   // after the quip chain so its note survives
+        appendLogLine("— Depth \(newDepth): \(Engine.biome(for: newDepth).title) —", tint: .separator)
         // The new floor dawns through the same engine path as every turn:
         // AP 3, +1 MP regen, kindle cleared, remnant strike, counters reset.
         let dawn = Engine.resolve(.beginPlayerTurn, &board)
         processEvents(dawn, playerCaused: false)
+        appendLog(dawn)
         undoStack.removeAll()
+        undoLogMarks.removeAll()
         cancelSelection()
         stage = .player
         if board.enemies.isEmpty { floorCleared(); return }
@@ -2825,6 +2976,7 @@ struct AthanorGameView: View {
         // "record run" flag was set by the last descend() and is kept.
         GameScores.shared.report(score: board.depth, for: "athanor")
         epitaph = makeEpitaph()
+        appendLogLine("— \(epitaph) —", tint: .separator)
         meta.lastDeathDepth = board.depth
         meta.lastDeathWeapon = board.weapon.rawValue
         meta.runCount += 1
@@ -2910,13 +3062,18 @@ struct AthanorGameView: View {
         overchannelQuipShown = false
         isNewRecord = false
         undoStack.removeAll()
+        undoLogMarks.removeAll()
+        combatLog.removeAll()   // the log is per-run: cleared here, never persisted
+        logNextID = 0
         cancelSelection()
         docentLine = Quips.runStart(meta.trialNumber)
         inspector = "Tap Cinderwick 🕯️ to move. Tap enemies to read their plans."
         spawnRemnantIfNeeded()   // after the quip so its note survives
+        appendLogLine("— Depth 1: \(Engine.biome(for: 1).title) —", tint: .separator)
         // Same floor-entry dawn as descend(): one shared resolve path.
         let dawn = Engine.resolve(.beginPlayerTurn, &board)
         processEvents(dawn, playerCaused: false)
+        appendLog(dawn)
         stage = .player
         if board.enemies.isEmpty { floorCleared(); return }
         recomputeProjection()
@@ -2968,6 +3125,8 @@ struct AthanorGameView: View {
         board = r.board
         rewardPicksLeft = r.rewardPicksLeft
         isNewRecord = r.setRecordThisRun ?? false
+        // The log itself is not persisted — seed it so history has an anchor.
+        appendLogLine("— resumed at Depth \(board.depth) —", tint: .separator)
         docentLine = "The Docent looks up. 'Ah. Trial \(meta.trialNumber) resumes.'"
         switch r.stage {
         case "enemy":

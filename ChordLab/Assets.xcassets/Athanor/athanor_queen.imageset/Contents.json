@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "athanor_queen.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

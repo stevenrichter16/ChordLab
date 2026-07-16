@@ -10,6 +10,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct AthanorGameView: View {
 
@@ -246,6 +247,9 @@ struct AthanorGameView: View {
 
     enum UnitKind: String, Codable {
         case hero, rat, eel, golem, cherub, fungus, crab, sporeling, regret, queen, docent, remnant
+
+        /// Pixel-art asset name; the view falls back to emoji when absent.
+        var spriteAsset: String { "athanor_" + rawValue }
 
         var emoji: String {
             switch self {
@@ -1781,7 +1785,7 @@ struct AthanorGameView: View {
     private struct GhostInfo {
         var dmg: [Pt: Int] = [:]
         var skull: Set<Pt> = []
-        var ghosts: [Pt: (id: Int, emoji: String)] = [:]
+        var ghosts: [Pt: (id: Int, kind: UnitKind)] = [:]
         var surfaces: [Pt: Surface] = [:]
     }
 
@@ -1794,7 +1798,7 @@ struct AthanorGameView: View {
             case .die(let p, _, _): g.skull.insert(p)
             case .moved(let id, let to):
                 if let u = pb.units.first(where: { $0.id == id }) ?? board.units.first(where: { $0.id == id }) {
-                    g.ghosts[to] = (id, u.kind.emoji)
+                    g.ghosts[to] = (id, u.kind)
                 }
             case .surface(let p, let sf): g.surfaces[p] = sf
             default: break
@@ -1956,8 +1960,7 @@ struct AthanorGameView: View {
                     }
                 }
             }
-            Text(u.kind.emoji)
-                .font(.system(size: size * 0.42))
+            unitGlyph(u.kind, size: size)
                 .opacity(u.frozen ? 0.6 : 1)
                 .scaleEffect(animActing == u.id ? 1.25 : 1)
             Text("\(u.hp)")
@@ -1967,6 +1970,20 @@ struct AthanorGameView: View {
                 .background(hpColor(u), in: Capsule())
         }
         .animation(.easeInOut(duration: 0.2), value: animActing)
+    }
+
+    /// Pixel-art sprite when the asset exists; emoji fallback otherwise.
+    /// Nearest-neighbor upscale keeps the 16px art chunky and crisp.
+    @ViewBuilder
+    private func unitGlyph(_ kind: UnitKind, size: CGFloat) -> some View {
+        if let img = UIImage(named: kind.spriteAsset) {
+            Image(uiImage: img)
+                .resizable()
+                .interpolation(.none)
+                .frame(width: size * 0.52, height: size * 0.52)
+        } else {
+            Text(kind.emoji).font(.system(size: size * 0.42))
+        }
     }
 
     private func hpColor(_ u: Unit) -> Color {
@@ -2011,7 +2028,7 @@ struct AthanorGameView: View {
                 // Render unless the tile is occupied by the SAME unit —
                 // swaps (Transpose) ghost onto each other's tiles.
                 if let g0 = ghost.ghosts[p], board.unit(at: p)?.id != g0.id {
-                    Text(g0.emoji).font(.system(size: size * 0.42)).opacity(0.35)
+                    unitGlyph(g0.kind, size: size).opacity(0.35)
                 }
                 if let dmg = ghost.dmg[p] {
                     Text("-\(dmg)")

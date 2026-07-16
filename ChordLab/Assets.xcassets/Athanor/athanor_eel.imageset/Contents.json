@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "athanor_eel.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

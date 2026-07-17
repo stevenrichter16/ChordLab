@@ -107,6 +107,10 @@ struct ReviewMistakesView: View {
     }
 
     private func autoplayStimulus(for question: PracticeQuestion) {
+        // A lingering sequencer from a previous progression question must
+        // never play over the next question's stimulus (mixed-mode queue)
+        audioEngine.stopPlayback()
+
         switch question.sourceMode {
         case .earTraining:
             guard let chord = question.chord else { return }

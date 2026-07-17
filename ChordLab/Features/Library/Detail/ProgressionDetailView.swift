@@ -206,7 +206,11 @@ struct ProgressionDetailView: View {
 
                 let delaySeconds = item.duration / beatsPerSecond
                 if let chord = Chord.parse(item.chordSymbol) {
-                    audioEngine.playChord(chord, duration: delaySeconds * 0.9)
+                    let isLast = index == chordData.count - 1
+                    audioEngine.playChord(
+                        chord,
+                        duration: audioEngine.chordSlotDuration(interval: delaySeconds, isLast: isLast)
+                    )
                 }
 
                 try? await Task.sleep(nanoseconds: UInt64(delaySeconds * 1_000_000_000))

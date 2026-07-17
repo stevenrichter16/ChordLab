@@ -143,6 +143,18 @@ final class TheoryEnhancementsTests: XCTestCase {
         }
     }
 
+    func testChordSlotDurationPolicy() {
+        let audioEngine = AudioEngine()
+
+        // Interior chords stop just short of their slot
+        XCTAssertEqual(audioEngine.chordSlotDuration(interval: 1.0, isLast: false), 0.9, accuracy: 0.0001)
+        XCTAssertEqual(audioEngine.chordSlotDuration(interval: 0.3, isLast: false), 0.27, accuracy: 0.0001)
+
+        // The final chord always gets room to ring, even at fast tempos
+        XCTAssertEqual(audioEngine.chordSlotDuration(interval: 0.3, isLast: true), 1.2, accuracy: 0.0001)
+        XCTAssertEqual(audioEngine.chordSlotDuration(interval: 4.0, isLast: true), 3.6, accuracy: 0.0001)
+    }
+
     // MARK: - Practice question generators
 
     func testEarTrainingQuestionGeneration() {

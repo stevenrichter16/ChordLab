@@ -133,8 +133,15 @@ visualizedChord: Chord?      // For piano highlighting
 
 ## Audio
 - The sampler loads `Resources/Sounds/GeneralUser.sf2` (GeneralUser GS,
-  program 0 piano) at launch; `AudioEngine.isInstrumentLoaded` gates the
+  program 0 piano) asynchronously off the main thread at launch (a sync
+  load stalls cold start ~1s); `AudioEngine.isInstrumentLoaded` gates the
   velocity scaling (sampled piano: 80/70%, sine fallback: 50/40%)
+- **Note-offs are ownership-checked**: every play invocation stamps its MIDI
+  notes in `noteOwners`; a scheduled stop only fires for notes it still owns,
+  so re-triggering a note never gets silenced by an older pending stop
+- **Progression slots go through `chordSlotDuration(interval:isLast:)`**:
+  interior chords stop at 0.9× their slot (clean re-trigger of repeats),
+  the final non-looping chord gets ≥1.2s to ring out
 - License permits bundling (see `Resources/Sounds/GeneralUser-LICENSE.txt`);
   attribution shown in Settings > About
 

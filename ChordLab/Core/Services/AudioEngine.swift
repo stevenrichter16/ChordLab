@@ -30,35 +30,43 @@ final class AudioEngine {
     init() {
         setupAudioEngine()
         setupAudioSession()
-        loadInstrument()
+        loadInstrumentAsync()
     }
 
     // MARK: - Instrument
 
-    /// Loads the bundled GeneralUser GS piano into the sampler.
-    /// Without a sound bank, AVAudioUnitSampler falls back to a thin sine tone.
-    private func loadInstrument() {
-        // Synchronized folders may bundle resources flat or with structure;
-        // check both locations before giving up
-        let url = Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2")
-            ?? Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2", subdirectory: "Resources/Sounds")
-            ?? Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2", subdirectory: "Sounds")
+    /// Loads the bundled GeneralUser GS piano into the sampler off the main
+    /// thread — parsing the 31 MB bank synchronously would stall cold launch.
+    /// Playback falls back to the sampler's default tone until
+    /// `isInstrumentLoaded` flips; `playChord` reads the flag at play time.
+    private func loadInstrumentAsync() {
+        let sampler = samplerNode
 
-        guard let url else {
-            print("GeneralUser.sf2 not found in bundle - using default sampler tone")
-            return
-        }
+        Task.detached(priority: .userInitiated) { [weak self] in
+            // Synchronized folders may bundle resources flat or with
+            // structure; check both locations before giving up
+            let url = Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2")
+                ?? Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2", subdirectory: "Resources/Sounds")
+                ?? Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2", subdirectory: "Sounds")
 
-        do {
-            try samplerNode.loadSoundBankInstrument(
-                at: url,
-                program: 0, // Acoustic Grand Piano
-                bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
-                bankLSB: UInt8(kAUSampler_DefaultBankLSB)
-            )
-            isInstrumentLoaded = true
-        } catch {
-            print("Failed to load SoundFont: \(error)")
+            guard let url else {
+                print("GeneralUser.sf2 not found in bundle - using default sampler tone")
+                return
+            }
+
+            do {
+                try sampler.loadSoundBankInstrument(
+                    at: url,
+                    program: 0, // Acoustic Grand Piano
+                    bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
+                    bankLSB: UInt8(kAUSampler_DefaultBankLSB)
+                )
+                await MainActor.run { [weak self] in
+                    self?.isInstrumentLoaded = true
+                }
+            } catch {
+                print("Failed to load SoundFont: \(error)")
+            }
         }
     }
     
@@ -111,26 +119,37 @@ final class AudioEngine {
     }
         
     // MARK: - Note Playback
-    
+
+    // Ownership ledger for scheduled note-offs: each play invocation claims
+    // its MIDI notes with a generation stamp, and a pending note-off only
+    // fires for notes it still owns. Re-triggering a note therefore cancels
+    // the older stop instead of being silenced by it (the replay-cutoff bug).
+    private var noteOwners: [UInt8: Int] = [:]
+    private var playbackGeneration = 0
+
     func playNote(_ note: Note, velocity: UInt8 = 80, duration: Double = 1.0) {
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }
         }
-        
+
         let noteNumber = UInt8(note.pitch.midiNoteNumber)
-        
+        playbackGeneration += 1
+        let generation = playbackGeneration
+        noteOwners[noteNumber] = generation
+
         samplerNode.startNote(noteNumber, withVelocity: velocity, onChannel: 0)
-        
+
         if duration > 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-                self?.samplerNode.stopNote(noteNumber, onChannel: 0)
+                guard let self, self.noteOwners[noteNumber] == generation else { return }
+                self.samplerNode.stopNote(noteNumber, onChannel: 0)
             }
         }
     }
-    
+
     // MARK: - Chord Playback
-    
+
     func playChord(_ chord: Chord, velocity: UInt8 = 80, duration: Double = 0.5) {
         if !engine.isRunning {
             start()
@@ -138,46 +157,50 @@ final class AudioEngine {
         }
 
         let notes = voicedNotes(for: chord)
+        let noteNumbers = notes.map { UInt8($0.pitch.midiNoteNumber) }
 
-        // Play all notes with slight timing offset and adjusted velocities
-        for (index, note) in notes.enumerated() {
-            // Scale velocity down as chords get denser. The raw sine fallback
-            // needs a much heavier cut than the sampled piano to avoid mud.
-            let noteCount = notes.count
-            let scalePercent: Int
-            if isInstrumentLoaded {
-                scalePercent = noteCount <= 3 ? 80 : 70
-            } else {
-                scalePercent = noteCount <= 3 ? 50 : 40
-            }
+        playbackGeneration += 1
+        let generation = playbackGeneration
+        for noteNumber in noteNumbers {
+            noteOwners[noteNumber] = generation
+        }
 
-            let calculated = Int(velocity) * scalePercent / 100
-            let adjustedVelocity = UInt8(min(calculated, 127))
-            
-            // Add micro-delay between notes (like guitar strumming)
-            let delay = Double(index) * 0.015  // 15ms between each note for more separation
-            
+        // Scale velocity down as chords get denser. The raw sine fallback
+        // needs a much heavier cut than the sampled piano to avoid mud.
+        let scalePercent: Int
+        if isInstrumentLoaded {
+            scalePercent = notes.count <= 3 ? 80 : 70
+        } else {
+            scalePercent = notes.count <= 3 ? 50 : 40
+        }
+        let adjustedVelocity = UInt8(min(Int(velocity) * scalePercent / 100, 127))
+
+        // Play all notes with a micro-delay between them (like guitar strumming)
+        for (index, noteNumber) in noteNumbers.enumerated() {
+            let delay = Double(index) * 0.015  // 15ms between each note
+
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-                self?.playNote(note, velocity: adjustedVelocity, duration: 0)
+                guard let self, self.noteOwners[noteNumber] == generation else { return }
+                self.samplerNode.startNote(noteNumber, withVelocity: adjustedVelocity, onChannel: 0)
             }
         }
-        
-        // Schedule note off
+
+        // Schedule note-offs, honoring ownership
         if duration > 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + duration) { [weak self] in
-                self?.stopChordNotes(chord)
+                guard let self else { return }
+
+                for noteNumber in noteNumbers where self.noteOwners[noteNumber] == generation {
+                    self.samplerNode.stopNote(noteNumber, onChannel: 0)
+                }
+
+                if self.playbackGeneration == generation {
+                    self.isPlaying = false
+                }
             }
         }
-        
-        isPlaying = true
-    }
-    
-    private func stopChordNotes(_ chord: Chord) {
-        for note in voicedNotes(for: chord) {
-            samplerNode.stopNote(UInt8(note.pitch.midiNoteNumber), onChannel: 0)
-        }
 
-        isPlaying = false
+        isPlaying = true
     }
 
     /// Ascending close voicing starting at the base octave.
@@ -200,12 +223,23 @@ final class AudioEngine {
         }
     }
     
+    /// Note-off length for a chord occupying `interval` seconds of a
+    /// progression. Interior chords stop just short of the next slot so an
+    /// identical repeated chord re-triggers cleanly; the final chord of a
+    /// non-looping pass gets room to ring out instead of being clipped.
+    func chordSlotDuration(interval: TimeInterval, isLast: Bool) -> TimeInterval {
+        isLast ? max(interval * 0.9, 1.2) : interval * 0.9
+    }
+
     // MARK: - Control
-    
+
     func stopAllNotes() {
         for noteNumber in UInt8(0)...UInt8(127) {
             samplerNode.stopNote(noteNumber, onChannel: 0)
         }
+        // Orphan every pending scheduled note-off so it can't silence
+        // notes started after this point
+        noteOwners.removeAll()
         isPlaying = false
     }
     
@@ -294,11 +328,10 @@ class AudioSequencer {
         
         let item = progression[currentIndex]
         let interval = (60.0 / tempo) * item.duration
+        let isLast = currentIndex == progression.count - 1 && !isLooping
+        let duration = audioEngine?.chordSlotDuration(interval: interval, isLast: isLast) ?? interval * 0.9
 
-        // Stop the chord just before the next one starts: a repeated chord
-        // re-triggers the same MIDI notes, and a stop scheduled past the
-        // re-trigger would silence the new chord almost immediately
-        audioEngine?.playChord(item.chord, velocity: UInt8(item.velocity), duration: interval * 0.9)
+        audioEngine?.playChord(item.chord, velocity: UInt8(item.velocity), duration: duration)
 
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
             self?.currentIndex += 1

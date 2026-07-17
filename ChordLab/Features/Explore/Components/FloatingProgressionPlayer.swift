@@ -591,9 +591,15 @@ struct FloatingProgressionPlayer: View {
         // Also set as selected chord to update the display
         theoryEngine.selectedChord = progression[index]
         
-        // Stop just before the next chord so repeated chords re-trigger cleanly
+        // Stop just before the next chord so repeated chords re-trigger
+        // cleanly; the final chord of a non-looping pass rings out
         let interval = 60.0 / Double(tempo) // Convert BPM to seconds
-        audioEngine.playChord(progression[index], velocity: 80, duration: interval * 0.9)
+        let isLast = index == progression.count - 1 && !isLooping
+        audioEngine.playChord(
+            progression[index],
+            velocity: 80,
+            duration: audioEngine.chordSlotDuration(interval: interval, isLast: isLast)
+        )
 
         playbackTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             currentPlayIndex = (currentPlayIndex ?? 0) + 1

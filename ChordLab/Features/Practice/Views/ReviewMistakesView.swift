@@ -34,7 +34,8 @@ struct ReviewMistakesView: View {
                         if isCorrect {
                             try? dataManager.resolveMissedQuestion(
                                 prompt: question.prompt,
-                                correctAnswer: question.correctAnswer
+                                correctAnswer: question.correctAnswer,
+                                chordSymbol: question.chord?.formattedSymbol
                             )
                         }
                     },

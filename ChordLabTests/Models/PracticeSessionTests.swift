@@ -79,17 +79,19 @@ final class PracticeSessionTests: XCTestCase {
     func testPracticeModeEnumeration() {
         let modes = PracticeSession.PracticeMode.allCases
         
-        XCTAssertEqual(modes.count, 4)
+        XCTAssertEqual(modes.count, 5)
         XCTAssertTrue(modes.contains(.earTraining))
         XCTAssertTrue(modes.contains(.chordRecognition))
         XCTAssertTrue(modes.contains(.progressionChallenge))
         XCTAssertTrue(modes.contains(.theoryQuiz))
-        
+        XCTAssertTrue(modes.contains(.review))
+
         // Test raw values
         XCTAssertEqual(PracticeSession.PracticeMode.earTraining.rawValue, "Ear Training")
         XCTAssertEqual(PracticeSession.PracticeMode.chordRecognition.rawValue, "Chord Recognition")
         XCTAssertEqual(PracticeSession.PracticeMode.progressionChallenge.rawValue, "Progression Challenge")
         XCTAssertEqual(PracticeSession.PracticeMode.theoryQuiz.rawValue, "Theory Quiz")
+        XCTAssertEqual(PracticeSession.PracticeMode.review.rawValue, "Review")
     }
     
     func testPracticeDifficultyEnumeration() {

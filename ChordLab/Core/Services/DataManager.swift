@@ -278,12 +278,17 @@ final class DataManager {
     // MARK: - Missed Questions (review queue)
 
     /// Queues a wrongly-answered question for later review.
-    /// Deduplicates on (prompt, correct answer): repeat misses bump the counter.
+    /// Deduplicates on (prompt, correct answer, stimulus chord): repeat misses
+    /// bump the counter. The chord is part of the key because ear-training
+    /// questions share one prompt across many different chords.
     func recordMissedQuestion(from question: PracticeQuestion, mode: PracticeSession.PracticeMode) throws {
         let all = try context.fetch(FetchDescriptor<MissedQuestion>())
+        let chordSymbol = question.chord?.formattedSymbol
 
         if let existing = all.first(where: {
-            $0.prompt == question.prompt && $0.correctAnswer == question.correctAnswer
+            $0.prompt == question.prompt
+                && $0.correctAnswer == question.correctAnswer
+                && $0.chordSymbol == chordSymbol
         }) {
             existing.timesMissed += 1
             existing.lastMissedAt = Date()
@@ -317,9 +322,12 @@ final class DataManager {
     }
 
     /// Removes a question from the review queue after a correct review answer
-    func resolveMissedQuestion(prompt: String, correctAnswer: String) throws {
+    func resolveMissedQuestion(prompt: String, correctAnswer: String, chordSymbol: String?) throws {
         let all = try context.fetch(FetchDescriptor<MissedQuestion>())
-        for item in all where item.prompt == prompt && item.correctAnswer == correctAnswer {
+        for item in all
+        where item.prompt == prompt
+            && item.correctAnswer == correctAnswer
+            && item.chordSymbol == chordSymbol {
             context.delete(item)
         }
         try context.save()

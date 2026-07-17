@@ -344,7 +344,12 @@ struct PracticeGameView<Stimulus: View>: View {
 
     private func start() {
         questions = generator(questionCount, difficulty)
-        guard !questions.isEmpty else { return }
+        // A depleted source (e.g. the review queue after clearing every
+        // question) has nothing left to play — leave instead of no-opping
+        guard !questions.isEmpty else {
+            dismiss()
+            return
+        }
 
         currentIndex = 0
         selectedAnswerIndex = nil

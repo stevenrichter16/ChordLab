@@ -51,10 +51,47 @@ final class MissedQuestionTests: XCTestCase {
         try dataManager.recordMissedQuestion(from: question, mode: .theoryQuiz)
         try dataManager.recordMissedQuestion(from: makeQuestion(prompt: "Another question"), mode: .theoryQuiz)
 
-        try dataManager.resolveMissedQuestion(prompt: question.prompt, correctAnswer: question.correctAnswer)
+        try dataManager.resolveMissedQuestion(
+            prompt: question.prompt,
+            correctAnswer: question.correctAnswer,
+            chordSymbol: question.chord?.formattedSymbol
+        )
 
         XCTAssertEqual(try dataManager.missedQuestionCount(), 1)
         XCTAssertEqual(try dataManager.getMissedQuestions(limit: 10).first?.prompt, "Another question")
+    }
+
+    func testSamePromptDifferentChordsQueueSeparately() throws {
+        let dataManager = DataManager(inMemory: true)
+
+        // Ear training reuses one prompt across many chords; each chord
+        // must keep its own queue entry
+        let cMajor = PracticeQuestion(
+            prompt: "Listen to the chord. What quality is it?",
+            chord: Chord(.C, type: .major),
+            options: ["Major", "Minor"],
+            correctIndex: 0
+        )
+        let fSharpMajor = PracticeQuestion(
+            prompt: "Listen to the chord. What quality is it?",
+            chord: Chord(NoteClass(.F, accidental: .sharp), type: .major),
+            options: ["Major", "Minor"],
+            correctIndex: 0
+        )
+
+        try dataManager.recordMissedQuestion(from: cMajor, mode: .earTraining)
+        try dataManager.recordMissedQuestion(from: fSharpMajor, mode: .earTraining)
+
+        XCTAssertEqual(try dataManager.missedQuestionCount(), 2)
+
+        try dataManager.resolveMissedQuestion(
+            prompt: cMajor.prompt,
+            correctAnswer: cMajor.correctAnswer,
+            chordSymbol: cMajor.chord?.formattedSymbol
+        )
+
+        XCTAssertEqual(try dataManager.missedQuestionCount(), 1)
+        XCTAssertEqual(try dataManager.getMissedQuestions(limit: 10).first?.chordSymbol, "F♯")
     }
 
     func testQueueOrdersOldestMissFirst() throws {

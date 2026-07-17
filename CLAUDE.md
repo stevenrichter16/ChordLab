@@ -157,7 +157,7 @@ UserData.completedLessons    // persisted ids; DataManager.markLessonCompleted i
 2. **Progression analysis UI**: surface analyzeProgression (patterns/cadences) in the player and Library detail
 
 ## Testing Strategy
-- Unit tests for all services (87 passing)
+- Unit tests for all services
 - UI tests for critical flows
 - Manual testing checklist for each feature
 - Performance profiling for smooth 60fps

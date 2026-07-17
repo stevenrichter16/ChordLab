@@ -149,6 +149,10 @@ struct FloatingProgressionPlayer: View {
             // a sheet never fires this view's onDisappear, so stop here
             if isPlaying {
                 stopPlayback()
+                // A playback timer that came due between the halt request
+                // and this observer firing may have just started a chord —
+                // silence it so nothing rings under the new surface
+                audioEngine.stopAllNotes()
             }
         }
     }

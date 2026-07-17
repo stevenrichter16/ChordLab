@@ -79,60 +79,62 @@ extension TheoryEngine {
     func analyzeProgression(_ chords: [Chord]) -> ProgressionAnalysis {
         var patterns: [ProgressionPattern] = []
         var cadenceType: CadenceType?
-        
+
         // Compare bare degrees so seventh-chord numerals ("ii7", "V7",
         // "Imaj7") match the same patterns as their triad forms
-        if chords.count >= 3 {
-            // Check for ii-V-I
-            for i in 0..<(chords.count - 2) {
-                let baseNumerals = [
-                    baseNumeral(getRomanNumeral(for: chords[i].description)),
-                    baseNumeral(getRomanNumeral(for: chords[i + 1].description)),
-                    baseNumeral(getRomanNumeral(for: chords[i + 2].description))
-                ]
+        let romanNumerals = chords.map { getRomanNumeral(for: $0.description) }
+        let base = romanNumerals.map(baseNumeral)
 
-                if baseNumerals == ["ii", "V", "I"] {
-                    patterns.append(.iiVI)
-                }
+        // Whole-form shapes first so they win the primary-pattern slot
+        if base == ["I", "I", "I", "I", "IV", "IV", "I", "I", "V", "IV", "I", "V"] {
+            patterns.append(.blues)
+        }
+
+        if base.count >= 8,
+           Array(base.prefix(8)) == ["I", "V", "vi", "iii", "IV", "I", "IV", "V"] {
+            patterns.append(.pachelbel)
+        }
+
+        if base.count >= 4 {
+            let firstFour = Array(base.prefix(4))
+            if firstFour == ["I", "vi", "IV", "V"] {
+                patterns.append(.IviIVV)
+            } else if firstFour == ["I", "V", "vi", "IV"] {
+                patterns.append(.IVivIV)
             }
+        }
 
-            // Check for I-vi-IV-V
-            if chords.count >= 4 {
-                let firstFour = Array(chords.prefix(4))
-                let baseNumerals = firstFour.map { baseNumeral(getRomanNumeral(for: $0.description)) }
-
-                if baseNumerals == ["I", "vi", "IV", "V"] {
-                    patterns.append(.IviIVV)
+        // ii-V-I anywhere in the progression
+        if base.count >= 3 {
+            for i in 0..<(base.count - 2) {
+                if base[i] == "ii" && base[i + 1] == "V" && base[i + 2] == "I" {
+                    patterns.append(.iiVI)
                 }
             }
         }
 
-        // Check cadence (last two chords)
-        if chords.count >= 2 {
-            let lastTwo = chords.suffix(2)
-            let lastBaseNumerals = lastTwo.map { baseNumeral(getRomanNumeral(for: $0.description)) }
-
-            switch lastBaseNumerals {
-            case ["V", "I"]:
+        // Cadence from the last two chords; any stop on V is a half cadence
+        if base.count >= 2 {
+            switch (base[base.count - 2], base[base.count - 1]) {
+            case ("V", "I"):
                 cadenceType = .authentic
-            case ["IV", "I"]:
+            case ("IV", "I"):
                 cadenceType = .plagal
-            case ["V", "vi"]:
+            case ("V", "vi"):
                 cadenceType = .deceptive
+            case (_, "V"):
+                cadenceType = .half
             default:
                 break
             }
         }
-        
+
         // Calculate harmonic rhythm
         let harmonicRhythm = Double(chords.count) / 4.0 // Chords per measure (assuming 4/4)
-        
+
         // Determine the primary pattern
         let primaryPattern = patterns.first ?? .other
-        
-        // Get roman numerals for all chords
-        let romanNumerals = chords.map { getRomanNumeral(for: $0.description) }
-        
+
         return ProgressionAnalysis(
             chords: chords,
             romanNumerals: romanNumerals,

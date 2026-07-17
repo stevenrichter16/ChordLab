@@ -254,6 +254,37 @@ final class TheoryEnhancementsTests: XCTestCase {
         XCTAssertEqual(analysis.cadence, .authentic)
     }
 
+    func testChordOverloadDetectsGlossaryPatterns() {
+        // I-V-vi-IV (Axis of Awesome) badges as its own pattern
+        let axis = theoryEngine.analyzeProgression([
+            Chord(.C, type: .major), Chord(.G, type: .major),
+            Chord(.A, type: .minor), Chord(.F, type: .major)
+        ])
+        XCTAssertEqual(axis.pattern, .IVivIV)
+
+        // Ending on V is a half cadence
+        let hang = theoryEngine.analyzeProgression([
+            Chord(.C, type: .major), Chord(.F, type: .major), Chord(.G, type: .major)
+        ])
+        XCTAssertEqual(hang.cadence, .half)
+
+        // Pachelbel's eight-chord loop
+        let canon = theoryEngine.analyzeProgression([
+            Chord(.C, type: .major), Chord(.G, type: .major),
+            Chord(.A, type: .minor), Chord(.E, type: .minor),
+            Chord(.F, type: .major), Chord(.C, type: .major),
+            Chord(.F, type: .major), Chord(.G, type: .major)
+        ])
+        XCTAssertEqual(canon.pattern, .pachelbel)
+        XCTAssertEqual(canon.cadence, .half)
+
+        // The 12-bar form (all-triad rendering)
+        let blues = [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4].map { degree in
+            theoryEngine.getDiatonicChordsWithAnalysis()[degree].chord
+        }
+        XCTAssertEqual(theoryEngine.analyzeProgression(blues).pattern, .blues)
+    }
+
     func testChordSuggestionsAfterDominantSeventh() {
         let suggestions = theoryEngine.getChordSuggestions(after: ["G7"])
         XCTAssertEqual(suggestions.map { $0.formattedSymbol }, ["C", "Am"])

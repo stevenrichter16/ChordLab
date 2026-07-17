@@ -49,6 +49,10 @@ extension TheoryEngine {
     
     /// Load a SavedProgression into the current context
     func loadProgression(_ progression: SavedProgression) {
+        // A deliberately loaded progression must not be captioned as a
+        // restored draft on the next Explore visit
+        draftWasRestored = false
+
         // Update current key and scale
         setKey(progression.key, scaleType: progression.scale)
         

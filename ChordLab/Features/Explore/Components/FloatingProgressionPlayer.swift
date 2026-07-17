@@ -53,6 +53,7 @@ struct FloatingProgressionPlayer: View {
     @State private var dragOffset = CGSize.zero
     @State private var position = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 200)
     @State private var showingSaveSheet = false
+    @State private var showingGlossary = false
     @State private var showingViewMenu = false
     
     // Tap-hold reorder state
@@ -79,6 +80,23 @@ struct FloatingProgressionPlayer: View {
         index < theoryEngine.currentProgression.count
             ? theoryEngine.currentProgression[index].duration
             : 1.0
+    }
+
+    // Live analysis of the working progression (nil when empty; cheap at
+    // the <=16 chords a timeline realistically holds)
+    private var progressionAnalysis: ProgressionAnalysis? {
+        progression.isEmpty ? nil : theoryEngine.analyzeProgression(progression)
+    }
+
+    // Up to two theory-guided next-chord ideas for the ghost chips
+    private var suggestedNextChords: [Chord] {
+        guard !progression.isEmpty else { return [] }
+        return Array(
+            theoryEngine.getChordSuggestions(
+                after: progression.map { $0.description },
+                limit: 3
+            ).prefix(2)
+        )
     }
     
     var body: some View {
@@ -125,6 +143,13 @@ struct FloatingProgressionPlayer: View {
             // Playback is driven by a Timer that outlives this view; without
             // this, audio keeps advancing after the user switches tabs
             stopPlayback()
+        }
+        .onChange(of: theoryEngine.playbackHaltToken) { _, _ in
+            // Another surface (the glossary sheet) is taking over audio;
+            // a sheet never fires this view's onDisappear, so stop here
+            if isPlaying {
+                stopPlayback()
+            }
         }
     }
     
@@ -390,9 +415,18 @@ struct FloatingProgressionPlayer: View {
                     Capsule()
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 40, height: 5)
-                    
+
                     Spacer()
-                    
+
+                    // Progression glossary (famous progressions to audition/add)
+                    Button(action: { showingGlossary = true }) {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 15))
+                            .foregroundColor(.appPrimary)
+                    }
+                    .padding(.trailing, 12)
+                    .accessibilityLabel("Progression glossary")
+
                     // Ellipsis menu
                     Menu {
                         ForEach(PlayerViewState.allCases, id: \.self) { state in
@@ -543,6 +577,7 @@ struct FloatingProgressionPlayer: View {
                                         chord: chord,
                                         index: index,
                                         beats: beats(at: index),
+                                        numeral: theoryEngine.getRomanNumeral(for: chord.description),
                                         isPlaying: currentPlayIndex == index,
                                         isSelected: selectedChordIndex == index,
                                         onRemove: { removeChord(at: index) },
@@ -562,6 +597,20 @@ struct FloatingProgressionPlayer: View {
                                         }
                                     )
                                     .id(index)
+                                }
+
+                                // Ghost chips: theory-guided next-chord ideas;
+                                // tap auditions the chord and appends it
+                                ForEach(suggestedNextChords, id: \.description) { chord in
+                                    SuggestionChip(chord: chord) {
+                                        audioEngine.playChord(chord, velocity: 60, duration: 0.8)
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            theoryEngine.addChordToProgression(chord)
+                                        }
+
+                                        let feedback = UIImpactFeedbackGenerator(style: .light)
+                                        feedback.impactOccurred()
+                                    }
                                 }
                             }
                         }
@@ -607,7 +656,41 @@ struct FloatingProgressionPlayer: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
-                
+
+                // Live analysis strip: named pattern, cadence, one-tap resolve
+                if let analysis = progressionAnalysis {
+                    HStack(spacing: 8) {
+                        if analysis.pattern != .other {
+                            AnalysisBadge(icon: "sparkles", text: analysis.pattern.rawValue, tint: .appPrimary)
+                        }
+
+                        if let cadence = analysis.cadence {
+                            AnalysisBadge(icon: "flag.checkered", text: "\(cadence.rawValue) cadence", tint: .green)
+                        }
+
+                        Spacer()
+
+                        Menu {
+                            Button("Authentic (V7 → I)") { resolve(.authentic) }
+                            Button("Plagal (IV → I)") { resolve(.plagal) }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.down.right.circle")
+                                    .font(.system(size: 12))
+                                Text("Resolve")
+                                    .font(.caption.weight(.semibold))
+                            }
+                            .foregroundColor(.appPrimary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(Color.appPrimary.opacity(0.12)))
+                        }
+                        .accessibilityLabel("Resolve progression with a cadence")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
+                }
+
 //                // Hint for reordering
 //                if progression.count > 1 && selectedChordIndex == nil {
 //                    Text("Hold to reorder")
@@ -642,6 +725,9 @@ struct FloatingProgressionPlayer: View {
                 currentKey: theoryEngine.currentKey,
                 tempo: tempo
             )
+        }
+        .sheet(isPresented: $showingGlossary) {
+            GlossaryView()
         }
     }
     
@@ -766,6 +852,15 @@ struct FloatingProgressionPlayer: View {
     private func adjustTempo(_ change: Int) {
         theoryEngine.currentProgressionTempo = max(60, min(200, theoryEngine.currentProgressionTempo + change))
     }
+
+    private func resolve(_ cadence: TheoryEngine.ResolutionCadence) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            theoryEngine.appendResolution(cadence)
+        }
+
+        let feedback = UIImpactFeedbackGenerator(style: .light)
+        feedback.impactOccurred()
+    }
     
     private func removeChord(at index: Int) {
         theoryEngine.removeFromProgression(at: index)
@@ -833,6 +928,62 @@ struct FloatingProgressionPlayer: View {
         }
     }
     
+}
+
+// MARK: - Analysis Badge
+
+struct AnalysisBadge: View {
+    let icon: String
+    let text: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+            Text(text)
+                .font(.caption2.weight(.semibold))
+                .lineLimit(1)
+        }
+        .foregroundColor(tint)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(tint.opacity(0.12)))
+    }
+}
+
+// MARK: - Suggestion Chip
+
+/// Dashed "ghost" cell offering a theory-guided next chord
+struct SuggestionChip: View {
+    let chord: Chord
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 4) {
+                Image(systemName: "plus")
+                    .font(.system(size: 11, weight: .semibold))
+                Text(chord.formattedSymbol)
+                    .font(.system(size: 14, weight: .semibold))
+            }
+            .foregroundColor(.appPrimary.opacity(0.75))
+            .frame(width: 52, height: 72)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.appPrimary.opacity(0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(
+                        Color.appPrimary.opacity(0.45),
+                        style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Add suggested chord \(chord.formattedSymbol)")
+    }
 }
 
 // MARK: - Chord Move Arrows
@@ -1013,6 +1164,7 @@ struct ChordTimelineItem: View {
     let chord: Chord
     let index: Int
     var beats: Double = 1.0
+    var numeral: String? = nil
     let isPlaying: Bool
     let isSelected: Bool
     let onRemove: () -> Void
@@ -1026,14 +1178,37 @@ struct ChordTimelineItem: View {
     private var beatCount: Int { max(Int(beats.rounded()), 1) }
     private var cellWidth: CGFloat { 60 + CGFloat(max(beats - 1, 0)) * 18 }
 
+    // Same function-color language as DiatonicChordGrid
+    private var numeralColor: Color {
+        guard let numeral else { return .secondary }
+        switch theoryEngine.determineFunction(romanNumeral: numeral) {
+        case .tonic, .submediant:
+            return .blue
+        case .subdominant, .supertonic:
+            return .green
+        case .dominant, .leadingTone:
+            return .orange
+        default:
+            return .secondary
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Upper region: chord symbol, remove button, preview/reorder gestures
             ZStack {
-                Text(chord.formattedSymbol)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(isPlaying ? .white : .primary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 1) {
+                    if let numeral {
+                        Text(numeral)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundColor(isPlaying ? .white.opacity(0.85) : numeralColor)
+                    }
+
+                    Text(chord.formattedSymbol)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(isPlaying ? .white : .primary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 VStack {
                     HStack {

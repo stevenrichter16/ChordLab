@@ -22,6 +22,7 @@ struct ChordVisualizerView: View {
     @State private var diatonicSevenths: [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] = []
     @State private var cachedChordToneRoles: [NoteClass: ChordToneRole] = [:]
     @State private var playingChordNotes: Set<String> = []  // Track which chord notes are playing
+    @State private var showingGlossary = false
     
     // Progression builder states
     @State private var holdTimer: Timer? = nil
@@ -50,15 +51,30 @@ struct ChordVisualizerView: View {
                 // Key selector with chord type toggle
                 HStack(alignment: .bottom) {
                     KeySelector(selectedKey: $selectedKey)
-                    
+
                     Spacer()
-                    
+
+                    // Progression glossary — famous progressions to
+                    // audition and add, most useful before building
+                    Button(action: { showingGlossary = true }) {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 15))
+                            .foregroundColor(.appPrimary)
+                            .frame(width: 34, height: 30)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.appPrimary.opacity(0.1))
+                            )
+                    }
+                    .accessibilityLabel("Progression glossary")
+                    .padding(.trailing, 8)
+
                     // Minimalist chord type toggle
                     VStack(alignment: .trailing, spacing: 8) {
                         Text("Type")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
+
                         MinimalistChordToggle(selectedChordType: $selectedChordType)
                     }
                 }
@@ -179,6 +195,9 @@ struct ChordVisualizerView: View {
                 }
             }
         )
+        .sheet(isPresented: $showingGlossary) {
+            GlossaryView()
+        }
         .onAppear {
             // When a progression was loaded or restored, follow its key so
             // the grid, numerals, and enharmonics match what's in the player

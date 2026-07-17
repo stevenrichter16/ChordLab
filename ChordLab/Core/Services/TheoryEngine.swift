@@ -29,6 +29,15 @@ final class TheoryEngine {
     // Set when a persisted draft was restored at launch, so the player can
     // show a one-time "Draft restored" caption
     var draftWasRestored = false
+
+    // Changes whenever another surface (e.g. the glossary sheet) is about to
+    // take over audio; the floating player observes this and stops its loop.
+    // Needed because a sheet does not fire the covered view's onDisappear.
+    var playbackHaltToken = UUID()
+
+    func requestPlaybackHalt() {
+        playbackHaltToken = UUID()
+    }
     
     // Analysis settings
     var showRomanNumerals = true
@@ -756,6 +765,31 @@ final class TheoryEngine {
         currentProgression[index].duration = next
     }
     
+    /// The two one-tap endings offered by the player's Resolve menu
+    enum ResolutionCadence {
+        case authentic   // V7 -> I
+        case plagal      // IV -> I
+    }
+
+    /// Appends a cadence in the current key: the approach chord for 2 beats,
+    /// then the tonic held for 4. Uses the diatonic analysis arrays so the
+    /// spelling is correct in every key (e.g. E#° never appears here, but
+    /// flat keys keep their flats).
+    func appendResolution(_ cadence: ResolutionCadence) {
+        let triads = getDiatonicChordsWithAnalysis()
+        guard triads.count == 7 else { return }
+
+        switch cadence {
+        case .authentic:
+            let sevenths = getSeventhChordsWithAnalysis()
+            guard sevenths.count == 7 else { return }
+            addChordToProgression(sevenths[4].chord, duration: 2)  // V7
+        case .plagal:
+            addChordToProgression(triads[3].chord, duration: 2)    // IV
+        }
+        addChordToProgression(triads[0].chord, duration: 4)        // I
+    }
+
     func reorderProgression(from sourceIndex: Int, to destinationIndex: Int) {
         guard sourceIndex < currentProgression.count,
               destinationIndex <= currentProgression.count,

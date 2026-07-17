@@ -293,6 +293,40 @@ final class TheoryEnhancementsTests: XCTestCase {
         theoryEngine.cycleChordDuration(at: 99)
     }
 
+    // MARK: - Cadence resolution
+
+    func testAppendAuthenticResolution() {
+        theoryEngine.setKey("C", scaleType: "major")
+        theoryEngine.addChordToProgression(Chord(.C, type: .major))
+
+        theoryEngine.appendResolution(.authentic)
+
+        XCTAssertEqual(
+            theoryEngine.currentProgression.map { $0.chord.formattedSymbol },
+            ["C", "G7", "C"]
+        )
+        XCTAssertEqual(theoryEngine.currentProgression.map(\.duration), [1.0, 2.0, 4.0])
+
+        // The appended ending should analyze as an authentic cadence
+        let analysis = theoryEngine.analyzeProgression(theoryEngine.currentProgression.map { $0.chord })
+        XCTAssertEqual(analysis.cadence, .authentic)
+    }
+
+    func testAppendPlagalResolution() {
+        theoryEngine.setKey("C", scaleType: "major")
+
+        theoryEngine.appendResolution(.plagal)
+
+        XCTAssertEqual(
+            theoryEngine.currentProgression.map { $0.chord.formattedSymbol },
+            ["F", "C"]
+        )
+        XCTAssertEqual(theoryEngine.currentProgression.map(\.duration), [2.0, 4.0])
+
+        let analysis = theoryEngine.analyzeProgression(theoryEngine.currentProgression.map { $0.chord })
+        XCTAssertEqual(analysis.cadence, .plagal)
+    }
+
     func testDurationsRoundTripThroughSaveAndLoad() {
         theoryEngine.addChordToProgression(Chord(.C, type: .major), duration: 2.0)
         theoryEngine.addChordToProgression(Chord(.G, type: .dom7), duration: 4.0)

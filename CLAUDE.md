@@ -14,7 +14,7 @@ ChordLab/
 │   └── Extensions/    # Tonic+Extensions, Color+Theme, View+Modifiers
 ├── Features/
 │   ├── Learn/         # ✅ ScalePianoView, KeyScaleSelector, 10 interactive lessons
-│   ├── Explore/       # ✅ ChordVisualizerView, FloatingProgressionPlayer
+│   ├── Explore/       # ✅ ChordVisualizerView, FloatingProgressionPlayer, Glossary/
 │   ├── Library/       # ✅ Saved progressions: search/sort, rename/duplicate/delete
 │   ├── Builder/       # 📋 TODO: Drag-drop progression builder
 │   ├── Practice/      # ✅ Ear training, chord recognition, progressions, quiz
@@ -90,11 +90,32 @@ key.preferredAccidental // .sharp or .flat
 ```swift
 FloatingProgressionPlayer
 ├── MinimalChordTimelineItem    // Borderless design for intermediate view
-├── ChordTimelineItem           // Standard bordered design
+├── ChordTimelineItem           // Standard bordered design; function-colored
+│                               // roman numeral above the symbol (numeral param)
+├── SuggestionChip              // Dashed ghost cell after the timeline: tap to
+│                               // audition + append a suggested next chord
+├── AnalysisBadge               // Capsule for the analysis strip
 ├── ChordMoveArrows            // Reorder UI
 ├── SaveProgressionSheet        // Save dialog
 └── PlayerViewState enum        // State management
 ```
+
+### Analysis strip & resolve (expanded view)
+- Under the timeline: pattern badge (analyzeProgression, hidden for .other),
+  cadence badge, and a Resolve menu — Authentic appends V7(2 beats)+I(4),
+  Plagal appends IV(2)+I(4) via `TheoryEngine.appendResolution(_:)`
+
+### Progression Glossary (Features/Explore/Glossary/)
+- `GlossaryLibrary.all`: 13 degree-based famous progressions (pop/rock/jazz/
+  classical/blues/cadences); `GlossaryProgression.playbackChords(in:)` renders
+  them in the CURRENT key via the diatonic analysis arrays
+- `GlossaryView` sheet: entry points are book buttons in ChordVisualizerView's
+  header and the expanded player header; per-chord chips play single chords,
+  play button runs a cancellable Task loop (one entry at a time), Add appends
+  chords+durations to the WIP (adopts suggestedTempo only when WIP was empty)
+- Audio handoff: `TheoryEngine.playbackHaltToken` (bumped by
+  `requestPlaybackHalt()`); the player observes it via .onChange and stops —
+  needed because sheets never fire the covered view's onDisappear
 
 ## TheoryEngine Key Methods
 ```swift
@@ -173,7 +194,8 @@ UserData.completedLessons    // persisted ids; DataManager.markLessonCompleted i
 
 ## Next Implementation Tasks
 1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar) — or fold analysis into Explore's player instead
-2. **Progression analysis UI**: surface analyzeProgression (patterns/cadences) in the player and Library detail
+2. **Library analysis**: surface analyzeProgression (patterns/cadences) in Library detail (player strip done)
+3. **Glossary v2**: borrowed/secondary chords in entries, minor-key variants
 
 ## Testing Strategy
 - Unit tests for all services

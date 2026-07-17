@@ -17,13 +17,18 @@ struct PracticeQuestion: Identifiable {
     let options: [String]
     let correctIndex: Int
 
+    /// The mode this question originally came from. Set on reconstructed
+    /// review questions so the review session can pick the right stimulus.
+    let sourceMode: PracticeSession.PracticeMode?
+
     init(
         prompt: String,
         keyName: String = "C",
         chord: Chord? = nil,
         progression: [Chord] = [],
         options: [String],
-        correctIndex: Int
+        correctIndex: Int,
+        sourceMode: PracticeSession.PracticeMode? = nil
     ) {
         self.prompt = prompt
         self.keyName = keyName
@@ -31,6 +36,7 @@ struct PracticeQuestion: Identifiable {
         self.progression = progression
         self.options = options
         self.correctIndex = correctIndex
+        self.sourceMode = sourceMode
     }
 
     var correctAnswer: String {

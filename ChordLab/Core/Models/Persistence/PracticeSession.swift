@@ -25,6 +25,7 @@ final class PracticeSession {
         case chordRecognition = "Chord Recognition"
         case progressionChallenge = "Progression Challenge"
         case theoryQuiz = "Theory Quiz"
+        case review = "Review"
     }
     
     enum PracticeDifficulty: String, Codable, CaseIterable {

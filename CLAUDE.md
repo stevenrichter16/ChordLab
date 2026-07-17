@@ -31,9 +31,14 @@ PracticeGameView<Stimulus>       // Generic session container: setup -> question
 ├── EarTrainingView              // Chord quality by ear (auto-plays, replay button)
 ├── ChordRecognitionView         // Name the chord shown on ChordPianoView
 ├── ProgressionChallengeView     // Identify 4-chord Roman numeral patterns by ear
-└── TheoryQuizView               // Roman numerals, functions, chord tones
+├── TheoryQuizView               // Roman numerals, functions, chord tones
+└── ReviewMistakesView           // Replays MissedQuestion queue (mode .review,
+                                 // no difficulty picker); correct answer resolves,
+                                 // wrong answer re-queues via lastMissedAt bump
 // Results are saved via DataManager.recordPracticeSession which also
-// advances first_practice / streak / ear_training_pro achievements
+// advances first_practice / streak / ear_training_pro achievements.
+// Every wrong answer (practice + lesson quizzes) feeds the MissedQuestion
+// queue via recordMissedQuestion (deduped on prompt + correct answer)
 ```
 
 ## Key Tonic API Patterns
@@ -141,10 +146,15 @@ UserData.completedLessons    // persisted ids; DataManager.markLessonCompleted i
 // theory_expert achievement target is synced to LessonLibrary.all.count on Learn appear
 ```
 
+## Onboarding & Icon
+- First-run walkthrough (`OnboardingView`) presents as a fullScreenCover
+  gated by @AppStorage("hasCompletedOnboarding")
+- App icon: generated light/dark/tinted 1024px PNGs in AppIcon.appiconset
+  (chord-tone dots over piano keys, matching the root/third/fifth colors)
+
 ## Next Implementation Tasks
-1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar)
-2. **Polish**: App icon, onboarding
-3. **Lessons**: Spaced-repetition review of missed quiz questions
+1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar) — or fold analysis into Explore's player instead
+2. **Progression analysis UI**: surface analyzeProgression (patterns/cadences) in the player and Library detail
 
 ## Testing Strategy
 - Unit tests for all services (87 passing)

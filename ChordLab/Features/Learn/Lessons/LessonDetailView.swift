@@ -181,12 +181,17 @@ struct LessonDetailView: View {
     private func selectQuizAnswer(_ index: Int) {
         guard selectedAnswer == nil else { return }
 
-        let isCorrect = index == lesson.quiz[quizIndex].correctIndex
+        let question = lesson.quiz[quizIndex]
+        let isCorrect = index == question.correctIndex
         withAnimation(.easeInOut(duration: 0.25)) {
             selectedAnswer = index
             if isCorrect {
                 quizCorrect += 1
             }
+        }
+
+        if !isCorrect {
+            try? dataManager.recordMissedQuestion(from: question, mode: .theoryQuiz)
         }
 
         let feedback = UINotificationFeedbackGenerator()

@@ -14,7 +14,8 @@ struct ContentView: View {
     @Environment(TheoryEngine.self) private var theoryEngine
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(AppState.self) private var appState
-    
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+
     var body: some View {
         @Bindable var appState = appState
         
@@ -77,6 +78,14 @@ struct ContentView: View {
             // Honor the persisted sound preference from the first frame
             if let userData = try? dataManager.getOrCreateUserData(), !userData.soundEnabled {
                 audioEngine.setVolume(0)
+            }
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { !hasCompletedOnboarding },
+            set: { hasCompletedOnboarding = !$0 }
+        )) {
+            OnboardingView {
+                hasCompletedOnboarding = true
             }
         }
     }

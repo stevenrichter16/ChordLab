@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import Tonic
 
 @Observable
 @MainActor
@@ -24,7 +25,8 @@ final class DataManager {
                 ChordHistory.self,
                 SavedProgression.self,
                 PracticeSession.self,
-                Achievement.self
+                Achievement.self,
+                MissedQuestion.self
             ])
             
             let configuration = ModelConfiguration(
@@ -273,6 +275,56 @@ final class DataManager {
         return streak
     }
     
+    // MARK: - Missed Questions (review queue)
+
+    /// Queues a wrongly-answered question for later review.
+    /// Deduplicates on (prompt, correct answer): repeat misses bump the counter.
+    func recordMissedQuestion(from question: PracticeQuestion, mode: PracticeSession.PracticeMode) throws {
+        let all = try context.fetch(FetchDescriptor<MissedQuestion>())
+
+        if let existing = all.first(where: {
+            $0.prompt == question.prompt && $0.correctAnswer == question.correctAnswer
+        }) {
+            existing.timesMissed += 1
+            existing.lastMissedAt = Date()
+        } else {
+            let missed = MissedQuestion(
+                prompt: question.prompt,
+                options: question.options,
+                correctIndex: question.correctIndex,
+                keyName: question.keyName,
+                chordSymbol: question.chord?.formattedSymbol,
+                progressionSymbols: question.progression.map { $0.formattedSymbol },
+                mode: mode
+            )
+            context.insert(missed)
+        }
+
+        try context.save()
+    }
+
+    /// Oldest-missed first, so review naturally spaces out repeats
+    func getMissedQuestions(limit: Int) throws -> [MissedQuestion] {
+        var descriptor = FetchDescriptor<MissedQuestion>(
+            sortBy: [SortDescriptor(\.lastMissedAt, order: .forward)]
+        )
+        descriptor.fetchLimit = limit
+        return try context.fetch(descriptor)
+    }
+
+    func missedQuestionCount() throws -> Int {
+        try context.fetchCount(FetchDescriptor<MissedQuestion>())
+    }
+
+    /// Removes a question from the review queue after a correct review answer
+    func resolveMissedQuestion(prompt: String, correctAnswer: String) throws {
+        let all = try context.fetch(FetchDescriptor<MissedQuestion>())
+        for item in all where item.prompt == prompt && item.correctAnswer == correctAnswer {
+            context.delete(item)
+        }
+        try context.save()
+    }
+
     // MARK: - Achievements
     
     func getAllAchievements() throws -> [Achievement] {
@@ -340,6 +392,7 @@ final class DataManager {
         try context.delete(model: SavedProgression.self)
         try context.delete(model: PracticeSession.self)
         try context.delete(model: Achievement.self)
+        try context.delete(model: MissedQuestion.self)
         
         try context.save()
         

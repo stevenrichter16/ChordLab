@@ -13,8 +13,10 @@ struct PracticeGameView<Stimulus: View>: View {
     let accentColor: Color
     let instructions: String
     let difficultyDetails: [PracticeSession.PracticeDifficulty: String]
+    let showsDifficultyPicker: Bool
     let generator: (Int, PracticeSession.PracticeDifficulty) -> [PracticeQuestion]
     let onQuestionShown: ((PracticeQuestion) -> Void)?
+    let onAnswered: ((PracticeQuestion, Bool) -> Void)?
     let stimulus: (PracticeQuestion) -> Stimulus
 
     @Environment(DataManager.self) private var dataManager
@@ -41,16 +43,20 @@ struct PracticeGameView<Stimulus: View>: View {
         accentColor: Color,
         instructions: String,
         difficultyDetails: [PracticeSession.PracticeDifficulty: String] = [:],
+        showsDifficultyPicker: Bool = true,
         generator: @escaping (Int, PracticeSession.PracticeDifficulty) -> [PracticeQuestion],
         onQuestionShown: ((PracticeQuestion) -> Void)? = nil,
+        onAnswered: ((PracticeQuestion, Bool) -> Void)? = nil,
         @ViewBuilder stimulus: @escaping (PracticeQuestion) -> Stimulus
     ) {
         self.mode = mode
         self.accentColor = accentColor
         self.instructions = instructions
         self.difficultyDetails = difficultyDetails
+        self.showsDifficultyPicker = showsDifficultyPicker
         self.generator = generator
         self.onQuestionShown = onQuestionShown
+        self.onAnswered = onAnswered
         self.stimulus = stimulus
     }
 
@@ -88,6 +94,7 @@ struct PracticeGameView<Stimulus: View>: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
+                if showsDifficultyPicker {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Difficulty")
                         .font(.headline)
@@ -135,6 +142,7 @@ struct PracticeGameView<Stimulus: View>: View {
                     }
                 }
                 .padding(.horizontal)
+                }
 
                 Button(action: start) {
                     Text("Start")
@@ -351,13 +359,20 @@ struct PracticeGameView<Stimulus: View>: View {
     private func selectAnswer(_ index: Int) {
         guard selectedAnswerIndex == nil, currentIndex < questions.count else { return }
 
-        let isCorrect = index == questions[currentIndex].correctIndex
+        let question = questions[currentIndex]
+        let isCorrect = index == question.correctIndex
         withAnimation(.easeInOut(duration: 0.25)) {
             selectedAnswerIndex = index
             if isCorrect {
                 correctCount += 1
             }
         }
+
+        // Wrong answers feed the review queue; repeats just bump the counter
+        if !isCorrect {
+            try? dataManager.recordMissedQuestion(from: question, mode: mode)
+        }
+        onAnswered?(question, isCorrect)
 
         let feedback = UINotificationFeedbackGenerator()
         feedback.notificationOccurred(isCorrect ? .success : .error)
@@ -412,6 +427,7 @@ struct PracticeGameView<Stimulus: View>: View {
         case .chordRecognition: return "pianokeys.inverse"
         case .progressionChallenge: return "square.stack.3d.up.fill"
         case .theoryQuiz: return "questionmark.circle.fill"
+        case .review: return "arrow.counterclockwise.circle.fill"
         }
     }
 

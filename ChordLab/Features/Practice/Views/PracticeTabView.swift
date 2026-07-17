@@ -13,6 +13,7 @@ struct PracticeTabView: View {
 
     @State private var currentStreak = 0
     @State private var recentSessions: [PracticeSession] = []
+    @State private var missedCount = 0
 
     var body: some View {
         ScrollView {
@@ -82,6 +83,18 @@ struct PracticeTabView: View {
                     }
                 }
 
+                // Review queue
+                if missedCount > 0 {
+                    PracticeModeCard(
+                        title: "Review Mistakes",
+                        subtitle: "\(missedCount) question\(missedCount == 1 ? "" : "s") waiting for another try",
+                        icon: "arrow.counterclockwise",
+                        color: .indigo
+                    ) {
+                        ReviewMistakesView()
+                    }
+                }
+
                 // Recent Scores
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Recent Scores")
@@ -121,6 +134,7 @@ struct PracticeTabView: View {
     private func loadPracticeData() {
         currentStreak = (try? dataManager.getCurrentPracticeStreak()) ?? 0
         recentSessions = (try? dataManager.getRecentPracticeSessions(limit: 5)) ?? []
+        missedCount = (try? dataManager.missedQuestionCount()) ?? 0
     }
 }
 

@@ -14,6 +14,7 @@ struct ContentView: View {
     @Environment(TheoryEngine.self) private var theoryEngine
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(AppState.self) private var appState
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
@@ -78,6 +79,18 @@ struct ContentView: View {
             // Honor the persisted sound preference from the first frame
             if let userData = try? dataManager.getOrCreateUserData(), !userData.soundEnabled {
                 audioEngine.setVolume(0)
+            }
+
+            // Bring back the unsaved progression from the last session
+            if theoryEngine.currentProgression.isEmpty,
+               (try? dataManager.loadDraftProgression(into: theoryEngine)) == true {
+                theoryEngine.draftWasRestored = true
+            }
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Snapshot the draft whenever the app leaves the foreground
+            if newPhase == .background || newPhase == .inactive {
+                try? dataManager.saveDraftProgression(from: theoryEngine)
             }
         }
         .fullScreenCover(isPresented: Binding(

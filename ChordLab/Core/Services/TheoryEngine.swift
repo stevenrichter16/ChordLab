@@ -24,7 +24,11 @@ final class TheoryEngine {
     // Progression building
     var currentProgression: [PlaybackChord] = []
     var savedProgressions: [LegacyProgression] = []
-    var currentProgressionTempo: Int = 120  // BPM for current progression
+    var currentProgressionTempo: Int = 90  // BPM for current progression (jam-friendly default)
+
+    // Set when a persisted draft was restored at launch, so the player can
+    // show a one-time "Draft restored" caption
+    var draftWasRestored = false
     
     // Analysis settings
     var showRomanNumerals = true
@@ -36,9 +40,9 @@ final class TheoryEngine {
     struct PlaybackChord: Identifiable {
         let id = UUID()
         let chord: Chord
-        let duration: Double
+        var duration: Double   // in beats
         let velocity: Int
-        
+
         init(chord: Chord, duration: Double = 1.0, velocity: Int = 80) {
             self.chord = chord
             self.duration = duration
@@ -273,6 +277,23 @@ final class TheoryEngine {
         }
     }
 
+    /// Strips quality suffixes down to the bare degree for pattern matching:
+    /// "ii7" -> "ii", "Imaj7" -> "I", "viiø7"/"vii°7" -> "vii°", "V7" -> "V".
+    /// Accidental prefixes are preserved ("♭VII7" -> "♭VII").
+    func baseNumeral(_ numeral: String) -> String {
+        var base = numeral
+        for suffix in ["maj7", "ø7", "°7", "7", "ø", "+"] {
+            if base.hasSuffix(suffix) {
+                base = String(base.dropLast(suffix.count))
+                if suffix == "ø7" || suffix == "°7" || suffix == "ø" {
+                    base += "°"   // diminished quality survives the strip
+                }
+                break
+            }
+        }
+        return base
+    }
+
     public func determineFunction(romanNumeral: String) -> ChordFunction {
         // Secondary dominants (V/V) and accidental-prefixed numerals (♭III) are non-diatonic
         if romanNumeral.contains("/") { return .chromatic }
@@ -315,7 +336,7 @@ final class TheoryEngine {
     }
     
     private func getCommonProgressions(romanNumeral: String) -> [String] {
-        switch romanNumeral.uppercased() {
+        switch baseNumeral(romanNumeral).uppercased() {
         case "I": return ["I - IV - V - I", "I - vi - IV - V", "I - V - vi - IV"]
         case "II": return ["ii - V - I", "I - ii - V", "IV - ii - V - I"]
         case "IV": return ["IV - V - I", "I - IV - I", "IV - iv - I"]
@@ -360,8 +381,10 @@ final class TheoryEngine {
     }
     
     private func identifyPattern(romanNumerals: [String]) -> ProgressionPattern {
-        let pattern = romanNumerals.joined(separator: "-")
-        
+        // Compare bare degrees so seventh-chord numerals ("ii7-V7-Imaj7")
+        // match the same patterns as their triad forms
+        let pattern = romanNumerals.map(baseNumeral).joined(separator: "-")
+
         switch pattern {
         case "I-vi-IV-V":
             return .popRock
@@ -378,13 +401,13 @@ final class TheoryEngine {
     
     private func identifyCadence(romanNumerals: [String]) -> CadenceType? {
         guard romanNumerals.count >= 2 else { return nil }
-        
-        let lastTwo = romanNumerals.suffix(2)
+
+        let lastTwo = romanNumerals.suffix(2).map(baseNumeral)
         let penultimate = lastTwo.first!
         let final = lastTwo.last!
-        
+
         switch (penultimate, final) {
-        case ("V", "I"), ("V7", "I"):
+        case ("V", "I"):
             return .authentic
         case ("IV", "I"):
             return .plagal
@@ -408,25 +431,29 @@ final class TheoryEngine {
         guard let lastChord = progression.last else {
             return Array(getDiatonicChords().prefix(limit))
         }
-        
-        let romanNumeral = getRomanNumeral(for: lastChord)
+
+        let romanNumeral = baseNumeral(getRomanNumeral(for: lastChord))
         var suggestions: [Chord] = []
-        
+
         // Add common next chords based on current chord
         switch romanNumeral.uppercased() {
         case "I":
-            suggestions = getDiatonicChords().filter { chord in
-                ["IV", "V", "vi", "ii"].contains(getRomanNumeral(for: chord.description).uppercased())
-            }
+            suggestions = diatonicChords(withBaseNumerals: ["IV", "V", "VI", "II"])
         case "V":
-            suggestions = getDiatonicChords().filter { chord in
-                ["I", "vi"].contains(getRomanNumeral(for: chord.description).uppercased())
-            }
+            suggestions = diatonicChords(withBaseNumerals: ["I", "VI"])
         default:
             suggestions = getDiatonicChords()
         }
-        
+
         return Array(suggestions.prefix(limit))
+    }
+
+    /// Diatonic triads whose (uppercased) bare degree is in `numerals`,
+    /// preserving diatonic order
+    private func diatonicChords(withBaseNumerals numerals: [String]) -> [Chord] {
+        getDiatonicChords().filter { chord in
+            numerals.contains(baseNumeral(getRomanNumeral(for: chord.description)).uppercased())
+        }
     }
     
     // MARK: - Helper Methods
@@ -712,7 +739,21 @@ final class TheoryEngine {
     
     func clearProgression() {
         currentProgression.removeAll()
-        currentProgressionTempo = 120  // Reset to default
+        currentProgressionTempo = 90  // Reset to default
+    }
+
+    /// Cycles a chord's length through 1 -> 2 -> 4 beats.
+    /// Off-grid legacy values snap to the next step up.
+    func cycleChordDuration(at index: Int) {
+        guard currentProgression.indices.contains(index) else { return }
+
+        let next: Double
+        switch currentProgression[index].duration {
+        case ..<2: next = 2
+        case ..<4: next = 4
+        default: next = 1
+        }
+        currentProgression[index].duration = next
     }
     
     func reorderProgression(from sourceIndex: Int, to destinationIndex: Int) {

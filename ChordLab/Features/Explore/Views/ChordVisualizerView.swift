@@ -180,6 +180,12 @@ struct ChordVisualizerView: View {
             }
         )
         .onAppear {
+            // When a progression was loaded or restored, follow its key so
+            // the grid, numerals, and enharmonics match what's in the player
+            if !theoryEngine.currentProgression.isEmpty {
+                selectedKey = theoryEngine.currentKey
+            }
+
             updateChords()
             // Ensure audio engine is ready
             if !audioEngine.isPlaying {

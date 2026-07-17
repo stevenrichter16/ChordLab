@@ -46,7 +46,10 @@ struct FloatingProgressionPlayer: View {
     @State private var isPlaying = false
     @State private var currentPlayIndex: Int? = nil
     @State private var playbackTimer: Timer? = nil
-    @State private var isLooping = false
+    @State private var countInRemaining: Int? = nil
+    @State private var showRestoredCaption = false
+    @AppStorage("progressionLoopEnabled") private var isLooping = true
+    @AppStorage("metronomeEnabled") private var metronomeEnabled = false
     @State private var dragOffset = CGSize.zero
     @State private var position = CGPoint(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height - 200)
     @State private var showingSaveSheet = false
@@ -57,7 +60,7 @@ struct FloatingProgressionPlayer: View {
     @State private var showArrows = false
     @State private var arrowDismissTimer: Timer?
     @State private var showBPMSlider = false
-    @State private var sliderBPM: Double = 120
+    @State private var sliderBPM: Double = 90
     
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(TheoryEngine.self) private var theoryEngine
@@ -71,6 +74,12 @@ struct FloatingProgressionPlayer: View {
     private var tempo: Int {
         theoryEngine.currentProgressionTempo
     }
+
+    private func beats(at index: Int) -> Double {
+        index < theoryEngine.currentProgression.count
+            ? theoryEngine.currentProgression[index].duration
+            : 1.0
+    }
     
     var body: some View {
         Group {
@@ -83,9 +92,34 @@ struct FloatingProgressionPlayer: View {
                 expandedView
             }
         }
+        .overlay(alignment: .top) {
+            if showRestoredCaption {
+                Text("Draft restored")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.appSecondaryBackground))
+                    .overlay(Capsule().strokeBorder(Color.appBorder, lineWidth: 1))
+                    .offset(y: -30)
+                    .transition(.opacity)
+            }
+        }
         .position(x: position.x + dragOffset.width, y: position.y + dragOffset.height)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: viewState)
         .animation(.spring(response: 0.3, dampingFraction: 0.8), value: dragOffset)
+        .onAppear {
+            if theoryEngine.draftWasRestored {
+                theoryEngine.draftWasRestored = false
+                withAnimation { showRestoredCaption = true }
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                    withAnimation(.easeOut(duration: 0.4)) {
+                        showRestoredCaption = false
+                    }
+                }
+            }
+        }
         .onDisappear {
             arrowDismissTimer?.invalidate()
             // Playback is driven by a Timer that outlives this view; without
@@ -108,7 +142,12 @@ struct FloatingProgressionPlayer: View {
             .clipShape(Circle())
             .accessibilityLabel(isPlaying ? "Stop progression" : "Play progression")
 
-            if !progression.isEmpty {
+            if let count = countInRemaining {
+                Text("Starting in \(count)…")
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.appPrimary)
+                    .frame(maxWidth: .infinity)
+            } else if !progression.isEmpty {
                 Text(progressionString)
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
                     .foregroundColor(.primary)
@@ -119,7 +158,15 @@ struct FloatingProgressionPlayer: View {
                     .font(.system(size: 14))
                     .foregroundColor(.secondary)
             }
-            
+
+            // Loop toggle (visible in the state playback usually starts from)
+            Button(action: { isLooping.toggle() }) {
+                Image(systemName: "repeat")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(isLooping ? .appPrimary : .secondary.opacity(0.5))
+            }
+            .accessibilityLabel(isLooping ? "Disable loop" : "Enable loop")
+
             // Ellipsis menu
             Menu {
                 ForEach(PlayerViewState.allCases, id: \.self) { state in
@@ -172,7 +219,18 @@ struct FloatingProgressionPlayer: View {
                 .background(isPlaying ? Color.red : Color.appPrimary)
                 .cornerRadius(16, corners: [.topLeft, .bottomLeft])
                 .accessibilityLabel(isPlaying ? "Stop progression" : "Play progression")
-                
+
+                // Loop toggle column
+                Button(action: { isLooping.toggle() }) {
+                    Image(systemName: "repeat")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(isLooping ? .white : .secondary)
+                        .frame(width: 36)
+                        .frame(maxHeight: .infinity)
+                }
+                .background(isLooping ? Color.appPrimary.opacity(0.75) : Color.appTertiaryBackground)
+                .accessibilityLabel(isLooping ? "Disable loop" : "Enable loop")
+
                 // Timeline
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -189,6 +247,7 @@ struct FloatingProgressionPlayer: View {
                                     MinimalChordTimelineItem(
                                         chord: chord,
                                         index: index,
+                                        beats: beats(at: index),
                                         isPlaying: currentPlayIndex == index,
                                         isSelected: selectedChordIndex == index,
                                         onRemove: { removeChord(at: index) },
@@ -203,7 +262,7 @@ struct FloatingProgressionPlayer: View {
                                     )
                                     .id(index)
                                 }
-                                
+
                                 // Spacer to ensure last chord is visible
                                 Color.clear
                                     .frame(width: 44, height: 1)
@@ -213,6 +272,16 @@ struct FloatingProgressionPlayer: View {
                         .frame(maxHeight: .infinity)
                     }
                     .background(Color.appTertiaryBackground.opacity(0.3))
+                    .overlay {
+                        if let count = countInRemaining {
+                            Text("\(count)")
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
+                                .foregroundColor(.appPrimary)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(Color.appSecondaryBackground.opacity(0.88))
+                                .transition(.opacity)
+                        }
+                    }
                     .onChange(of: selectedChordIndex) { _, newIndex in
                         if let index = newIndex {
                             withAnimation {
@@ -379,7 +448,18 @@ struct FloatingProgressionPlayer: View {
                     .background(isLooping ? Color.appPrimary : Color.appTertiaryBackground)
                     .clipShape(Circle())
                     .accessibilityLabel(isLooping ? "Disable loop" : "Enable loop")
-                    
+
+                    // Metronome click track toggle
+                    Button(action: { metronomeEnabled.toggle() }) {
+                        Image(systemName: "metronome")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(metronomeEnabled ? .white : .secondary)
+                    }
+                    .frame(width: 30, height: 30)
+                    .background(metronomeEnabled ? Color.appPrimary : Color.appTertiaryBackground)
+                    .clipShape(Circle())
+                    .accessibilityLabel(metronomeEnabled ? "Disable metronome" : "Enable metronome")
+
                     Spacer()
                     
                     // BPM Button
@@ -462,6 +542,7 @@ struct FloatingProgressionPlayer: View {
                                     ChordTimelineItem(
                                         chord: chord,
                                         index: index,
+                                        beats: beats(at: index),
                                         isPlaying: currentPlayIndex == index,
                                         isSelected: selectedChordIndex == index,
                                         onRemove: { removeChord(at: index) },
@@ -472,6 +553,12 @@ struct FloatingProgressionPlayer: View {
                                                 showArrows = true
                                                 startArrowDismissTimer()
                                             }
+                                        },
+                                        onCycleDuration: {
+                                            theoryEngine.cycleChordDuration(at: index)
+
+                                            let feedback = UIImpactFeedbackGenerator(style: .light)
+                                            feedback.impactOccurred()
                                         }
                                     )
                                     .id(index)
@@ -481,7 +568,7 @@ struct FloatingProgressionPlayer: View {
                         .padding(.horizontal)
                         .padding(.vertical, 12)
                     }
-                    .frame(height: 84)
+                    .frame(height: 96)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color.appTertiaryBackground.opacity(0.5))
@@ -496,6 +583,19 @@ struct FloatingProgressionPlayer: View {
                                 }
                             }
                     )
+                    .overlay {
+                        if let count = countInRemaining {
+                            Text("\(count)")
+                                .font(.system(size: 44, weight: .bold, design: .rounded))
+                                .foregroundColor(.appPrimary)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.appSecondaryBackground.opacity(0.9))
+                                )
+                                .transition(.opacity)
+                        }
+                    }
                     .contentShape(Rectangle())
                     .onChange(of: selectedChordIndex) { _, newIndex in
                         if let index = newIndex {
@@ -538,7 +638,7 @@ struct FloatingProgressionPlayer: View {
         )
         .sheet(isPresented: $showingSaveSheet) {
             SaveProgressionSheet(
-                chords: progression,
+                playbackChords: theoryEngine.currentProgression,
                 currentKey: theoryEngine.currentKey,
                 tempo: tempo
             )
@@ -566,15 +666,40 @@ struct FloatingProgressionPlayer: View {
     
     private func startPlayback() {
         guard !progression.isEmpty else { return }
-        
+
         isPlaying = true
-        currentPlayIndex = 0
-        playNextChord()
+
+        // Looping is jam mode: give the player a downbeat to come in on
+        if isLooping {
+            countInRemaining = 4
+            tickCountIn()
+        } else {
+            currentPlayIndex = 0
+            playNextChord()
+        }
     }
-    
+
+    private func tickCountIn() {
+        guard isPlaying, let remaining = countInRemaining else { return }
+
+        guard remaining > 0 else {
+            countInRemaining = nil
+            currentPlayIndex = 0
+            playNextChord()
+            return
+        }
+
+        audioEngine.playClick()
+
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: 60.0 / Double(tempo), repeats: false) { _ in
+            countInRemaining = remaining - 1
+            tickCountIn()
+        }
+    }
+
     private func playNextChord() {
         guard isPlaying, let index = currentPlayIndex else { return }
-        
+
         if index >= progression.count {
             if isLooping {
                 currentPlayIndex = 0
@@ -584,35 +709,55 @@ struct FloatingProgressionPlayer: View {
             }
             return
         }
-        
+
         // Highlight the chord on piano
         theoryEngine.visualizedChord = progression[index]
-        
+
         // Also set as selected chord to update the display
         theoryEngine.selectedChord = progression[index]
-        
+
+        // Honor the chord's length in beats
+        let beats = index < theoryEngine.currentProgression.count
+            ? theoryEngine.currentProgression[index].duration
+            : 1.0
+        let beatInterval = 60.0 / Double(tempo)
+        let interval = beatInterval * beats
+
         // Stop just before the next chord so repeated chords re-trigger
         // cleanly; the final chord of a non-looping pass rings out
-        let interval = 60.0 / Double(tempo) // Convert BPM to seconds
         let isLast = index == progression.count - 1 && !isLooping
         audioEngine.playChord(
             progression[index],
             velocity: 80,
-            duration: audioEngine.chordSlotDuration(interval: interval, isLast: isLast)
+            duration: audioEngine.chordSlotDuration(interval: interval, isLast: isLast),
+            includeBass: audioEngine.bassDoublingEnabled
         )
+
+        // Optional click track, aligned to this slot's beats
+        if metronomeEnabled {
+            for beat in 1..<max(Int(beats.rounded()), 1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(beat) * beatInterval) {
+                    if isPlaying {
+                        audioEngine.playClick()
+                    }
+                }
+            }
+            audioEngine.playClick()
+        }
 
         playbackTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             currentPlayIndex = (currentPlayIndex ?? 0) + 1
             playNextChord()
         }
     }
-    
+
     private func stopPlayback() {
         isPlaying = false
         currentPlayIndex = nil
+        countInRemaining = nil
         playbackTimer?.invalidate()
         playbackTimer = nil
-        
+
         // Clear the visualized chord and selected chord
         theoryEngine.visualizedChord = nil
         theoryEngine.selectedChord = nil
@@ -735,14 +880,17 @@ struct ChordMoveArrows: View {
 struct MinimalChordTimelineItem: View {
     let chord: Chord
     let index: Int
+    var beats: Double = 1.0
     let isPlaying: Bool
     let isSelected: Bool
     let onRemove: () -> Void
     let onLongPress: () -> Void
-    
+
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(TheoryEngine.self) private var theoryEngine
     @State private var isTapped = false
+
+    private var beatCount: Int { max(Int(beats.rounded()), 1) }
     
     var body: some View {
         ZStack {
@@ -790,16 +938,26 @@ struct MinimalChordTimelineItem: View {
                 .padding(.top, 4)
                 
                 Spacer()
-                
+
                 // Chord symbol
                 Text(chord.formattedSymbol)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(isPlaying ? .white : .primary)
-                
+
                 Spacer()
+
+                // Passive beat dots (duration is edited in the expanded view)
+                HStack(spacing: 3) {
+                    ForEach(0..<beatCount, id: \.self) { _ in
+                        Circle()
+                            .fill(isPlaying ? Color.white.opacity(0.85) : Color.secondary.opacity(0.5))
+                            .frame(width: 3, height: 3)
+                    }
+                }
+                .padding(.bottom, 4)
             }
         }
-        .frame(width: 60)
+        .frame(width: 60 + CGFloat(max(beats - 1, 0)) * 12)
         .frame(maxHeight: .infinity)
         .contentShape(Rectangle())
         .scaleEffect(x: isPlaying ? 1.05 : (isTapped ? 0.95 : 1.0))
@@ -854,95 +1012,119 @@ struct MinimalChordTimelineItem: View {
 struct ChordTimelineItem: View {
     let chord: Chord
     let index: Int
+    var beats: Double = 1.0
     let isPlaying: Bool
     let isSelected: Bool
     let onRemove: () -> Void
     let onLongPress: () -> Void
-    
+    var onCycleDuration: () -> Void = {}
+
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(TheoryEngine.self) private var theoryEngine
     @State private var isTapped = false
-    
+
+    private var beatCount: Int { max(Int(beats.rounded()), 1) }
+    private var cellWidth: CGFloat { 60 + CGFloat(max(beats - 1, 0)) * 18 }
+
     var body: some View {
-        ZStack {
-            // Center the chord symbol
-            Text(chord.formattedSymbol)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(isPlaying ? .white : .primary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Position X button in top right
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: onRemove) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(isPlaying ? .white.opacity(0.8) : .secondary)
+        VStack(spacing: 0) {
+            // Upper region: chord symbol, remove button, preview/reorder gestures
+            ZStack {
+                Text(chord.formattedSymbol)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(isPlaying ? .white : .primary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: onRemove) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(isPlaying ? .white.opacity(0.8) : .secondary)
+                                .frame(width: 28, height: 28)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Remove \(chord.formattedSymbol)")
                     }
-                    .accessibilityLabel("Remove \(chord.formattedSymbol)")
+                    Spacer()
                 }
-                Spacer()
             }
-            .padding(6)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                // Play the chord when tapped (only if not selected)
+                if !isSelected {
+                    // Set the visualized chord to highlight on piano
+                    theoryEngine.visualizedChord = chord
+
+                    // Also set as selected chord to update the display
+                    theoryEngine.selectedChord = chord
+
+                    // Play the chord
+                    audioEngine.playChord(chord, velocity: 60, duration: 0.8)
+
+                    withAnimation(.easeInOut(duration: 0.1)) {
+                        isTapped = true
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(.easeInOut(duration: 0.1)) {
+                            isTapped = false
+                        }
+                    }
+
+                    // Clear the visualized chord after a delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        if theoryEngine.visualizedChord == chord {
+                            withAnimation(.easeOut(duration: 0.3)) {
+                                theoryEngine.visualizedChord = nil
+                            }
+                        }
+                    }
+                }
+            }
+            .onLongPressGesture(minimumDuration: 0.5) {
+                onLongPress()
+
+                // Haptic feedback
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+            }
+
+            // Duration band: full-width target cycling 1 -> 2 -> 4 beats
+            Button(action: onCycleDuration) {
+                HStack(spacing: 3) {
+                    ForEach(0..<beatCount, id: \.self) { _ in
+                        Circle()
+                            .fill(isPlaying ? Color.white : Color.appPrimary.opacity(0.8))
+                            .frame(width: 4, height: 4)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .frame(height: 20)
+            .background(isPlaying ? Color.white.opacity(0.18) : Color.appTertiaryBackground.opacity(0.7))
+            .accessibilityLabel("Duration: \(beatCount) beat\(beatCount == 1 ? "" : "s")")
+            .accessibilityHint("Double tap to change")
         }
-        .frame(width: 60, height: 60)
+        .frame(width: cellWidth, height: 72)
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(isPlaying ? Color.appPrimary : (isTapped ? Color.appPrimary.opacity(0.8) : Color.appSecondaryBackground))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(isPlaying ? Color.clear : Color.appBorder, lineWidth: 1)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(isSelected ? Color.green: Color.appBorder, lineWidth: isSelected ? 3 : 1)
-                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(isSelected ? Color.green : Color.appBorder, lineWidth: isSelected ? 3 : 1)
         )
         .scaleEffect(isPlaying ? 1.05 : (isTapped ? 0.95 : 1.0))
         .opacity(isSelected ? 0.8 : 1.0)  // Dim when selected
         .animation(.easeInOut(duration: 0.2), value: isPlaying)
         .animation(.easeInOut(duration: 0.1), value: isTapped)
         .animation(.easeInOut(duration: 0.2), value: isSelected)
-        .onTapGesture {
-            // Play the chord when tapped (only if not selected)
-            if !isSelected {
-                // Set the visualized chord to highlight on piano
-                theoryEngine.visualizedChord = chord
-                
-                // Also set as selected chord to update the display
-                theoryEngine.selectedChord = chord
-                
-                // Play the chord
-                audioEngine.playChord(chord, velocity: 60, duration: 0.8)
-                
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isTapped = true
-                }
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    withAnimation(.easeInOut(duration: 0.1)) {
-                        isTapped = false
-                    }
-                }
-                
-                // Clear the visualized chord after a delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    if theoryEngine.visualizedChord == chord {
-                        withAnimation(.easeOut(duration: 0.3)) {
-                            theoryEngine.visualizedChord = nil
-                        }
-                    }
-                }
-            }
-        }
-        .onLongPressGesture(minimumDuration: 0.5) {
-            onLongPress()
-            
-            // Haptic feedback
-            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-            impactFeedback.impactOccurred()
-        }
+        .animation(.easeInOut(duration: 0.2), value: beats)
     }
 }
 

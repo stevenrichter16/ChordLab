@@ -143,6 +143,62 @@ final class DataManager {
         try context.save()
     }
     
+    // MARK: - Progression Draft
+
+    /// Snapshots the current in-memory progression so it survives restarts.
+    /// An empty progression clears the stored draft.
+    func saveDraftProgression(from engine: TheoryEngine) throws {
+        let userData = try getOrCreateUserData()
+
+        if engine.currentProgression.isEmpty {
+            userData.draftProgressionData = nil
+        } else {
+            let draft = ProgressionDraft(
+                chordSymbols: engine.currentProgression.map { $0.chord.formattedSymbol },
+                durations: engine.currentProgression.map { $0.duration },
+                key: engine.currentKey,
+                scale: engine.currentScaleType,
+                tempo: engine.currentProgressionTempo,
+                savedAt: Date()
+            )
+            userData.draftProgressionData = try? JSONEncoder().encode(draft)
+        }
+
+        userData.modifiedAt = Date()
+        try context.save()
+    }
+
+    /// Restores a saved draft into the engine; returns true when something
+    /// was restored. Drafts older than 7 days are discarded so a weeks-old
+    /// experiment doesn't ambush the user.
+    @discardableResult
+    func loadDraftProgression(into engine: TheoryEngine) throws -> Bool {
+        let userData = try getOrCreateUserData()
+
+        guard let data = userData.draftProgressionData,
+              let draft = try? JSONDecoder().decode(ProgressionDraft.self, from: data),
+              !draft.chordSymbols.isEmpty else { return false }
+
+        guard Date().timeIntervalSince(draft.savedAt) < 7 * 24 * 3600 else {
+            userData.draftProgressionData = nil
+            try context.save()
+            return false
+        }
+
+        engine.setKey(draft.key, scaleType: draft.scale)
+        engine.currentProgressionTempo = draft.tempo
+        engine.currentProgression = draft.chordSymbols.enumerated().compactMap { index, symbol in
+            Chord.parse(symbol).map { chord in
+                TheoryEngine.PlaybackChord(
+                    chord: chord,
+                    duration: index < draft.durations.count ? max(draft.durations[index], 0.25) : 1.0
+                )
+            }
+        }
+
+        return !engine.currentProgression.isEmpty
+    }
+
     // MARK: - Lessons
 
     func getCompletedLessonIDs() throws -> Set<String> {

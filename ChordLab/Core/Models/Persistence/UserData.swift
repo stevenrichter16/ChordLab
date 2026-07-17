@@ -18,6 +18,7 @@ final class UserData {
     var completedLessons: [String] = []
     var practiceRemindersEnabled: Bool = true
     var soundEnabled: Bool = true
+    var draftProgressionData: Data?   // JSON-encoded ProgressionDraft
     var createdAt: Date = Date()
     var modifiedAt: Date = Date()
     
@@ -29,4 +30,15 @@ final class UserData {
         self.createdAt = Date()
         self.modifiedAt = Date()
     }
+}
+
+/// Codable snapshot of the in-progress (unsaved) progression, so a draft
+/// survives app restarts
+struct ProgressionDraft: Codable {
+    var chordSymbols: [String]
+    var durations: [Double]
+    var key: String
+    var scale: String
+    var tempo: Int
+    var savedAt: Date
 }

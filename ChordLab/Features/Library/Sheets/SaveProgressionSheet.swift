@@ -14,9 +14,13 @@ struct SaveProgressionSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(TheoryEngine.self) private var theoryEngine
     
-    let chords: [Chord]
+    let playbackChords: [TheoryEngine.PlaybackChord]
     let currentKey: String
     let tempo: Int
+
+    private var chords: [Chord] {
+        playbackChords.map { $0.chord }
+    }
     
     @State private var progressionName = ""
     @State private var selectedTags: Set<String> = []
@@ -151,7 +155,7 @@ struct SaveProgressionSheet: View {
     private func saveProgression() {
         // Create the progression using TheoryEngine
         let progression = theoryEngine.createProgressionData(
-            from: chords,
+            from: playbackChords,
             name: progressionName,
             tempo: tempo
         )
@@ -201,14 +205,14 @@ struct TagButton: View {
 
 #Preview {
     SaveProgressionSheet(
-        chords: [
-            Chord(.C, type: .major),
-            Chord(.F, type: .major),
-            Chord(.G, type: .major),
-            Chord(.C, type: .major)
+        playbackChords: [
+            TheoryEngine.PlaybackChord(chord: Chord(.C, type: .major)),
+            TheoryEngine.PlaybackChord(chord: Chord(.F, type: .major), duration: 2.0),
+            TheoryEngine.PlaybackChord(chord: Chord(.G, type: .major)),
+            TheoryEngine.PlaybackChord(chord: Chord(.C, type: .major), duration: 4.0)
         ],
         currentKey: "C",
-        tempo: 120
+        tempo: 90
     )
     .environment(TheoryEngine())
     .environment(DataManager(inMemory: true))

@@ -215,6 +215,138 @@ final class TheoryEnhancementsTests: XCTestCase {
         }
     }
 
+    // MARK: - Base numerals & progression analysis
+
+    func testBaseNumeralStripsQualitySuffixes() {
+        XCTAssertEqual(theoryEngine.baseNumeral("ii7"), "ii")
+        XCTAssertEqual(theoryEngine.baseNumeral("V7"), "V")
+        XCTAssertEqual(theoryEngine.baseNumeral("Imaj7"), "I")
+        XCTAssertEqual(theoryEngine.baseNumeral("IVmaj7"), "IV")
+        XCTAssertEqual(theoryEngine.baseNumeral("viiø7"), "vii°")
+        XCTAssertEqual(theoryEngine.baseNumeral("vii°7"), "vii°")
+        XCTAssertEqual(theoryEngine.baseNumeral("vii°"), "vii°")
+        XCTAssertEqual(theoryEngine.baseNumeral("♭VII7"), "♭VII")
+        XCTAssertEqual(theoryEngine.baseNumeral("I+"), "I")
+        XCTAssertEqual(theoryEngine.baseNumeral("ii"), "ii")
+        XCTAssertEqual(theoryEngine.baseNumeral("I"), "I")
+    }
+
+    func testSeventhChordProgressionAnalysisBySymbols() {
+        let analysis = theoryEngine.analyzeProgression(["Dm7", "G7", "Cmaj7"])
+        XCTAssertEqual(analysis.pattern, .iiVI)
+        XCTAssertEqual(analysis.cadence, .authentic)
+    }
+
+    func testSeventhChordProgressionAnalysisByChords() {
+        let chords = [
+            Chord(.D, type: .min7),
+            Chord(.G, type: .dom7),
+            Chord(.C, type: .maj7)
+        ]
+        let analysis = theoryEngine.analyzeProgression(chords)
+        XCTAssertEqual(analysis.pattern, .iiVI)
+        XCTAssertEqual(analysis.cadence, .authentic)
+    }
+
+    func testTriadProgressionAnalysisUnchanged() {
+        let analysis = theoryEngine.analyzeProgression(["Dm", "G", "C"])
+        XCTAssertEqual(analysis.pattern, .iiVI)
+        XCTAssertEqual(analysis.cadence, .authentic)
+    }
+
+    func testChordSuggestionsAfterDominantSeventh() {
+        let suggestions = theoryEngine.getChordSuggestions(after: ["G7"])
+        XCTAssertEqual(suggestions.map { $0.formattedSymbol }, ["C", "Am"])
+    }
+
+    func testChordSuggestionsAfterTonic() {
+        let suggestions = theoryEngine.getChordSuggestions(after: ["C"])
+        XCTAssertEqual(suggestions.map { $0.formattedSymbol }, ["Dm", "F", "G", "Am"])
+    }
+
+    func testAnalyzeChordSeventhHasCommonProgressions() {
+        XCTAssertFalse(theoryEngine.analyzeChord("G7")?.commonProgressions.isEmpty ?? true)
+        XCTAssertFalse(theoryEngine.analyzeChord("Cmaj7")?.commonProgressions.isEmpty ?? true)
+    }
+
+    // MARK: - Chord durations
+
+    func testCycleChordDuration() {
+        theoryEngine.addChordToProgression(Chord(.C, type: .major))
+        XCTAssertEqual(theoryEngine.currentProgression[0].duration, 1.0)
+
+        theoryEngine.cycleChordDuration(at: 0)
+        XCTAssertEqual(theoryEngine.currentProgression[0].duration, 2.0)
+
+        theoryEngine.cycleChordDuration(at: 0)
+        XCTAssertEqual(theoryEngine.currentProgression[0].duration, 4.0)
+
+        theoryEngine.cycleChordDuration(at: 0)
+        XCTAssertEqual(theoryEngine.currentProgression[0].duration, 1.0)
+
+        // Off-grid legacy values snap to the next step up
+        theoryEngine.currentProgression[0].duration = 3.0
+        theoryEngine.cycleChordDuration(at: 0)
+        XCTAssertEqual(theoryEngine.currentProgression[0].duration, 4.0)
+
+        // Out-of-bounds index is a no-op
+        theoryEngine.cycleChordDuration(at: 99)
+    }
+
+    func testDurationsRoundTripThroughSaveAndLoad() {
+        theoryEngine.addChordToProgression(Chord(.C, type: .major), duration: 2.0)
+        theoryEngine.addChordToProgression(Chord(.G, type: .dom7), duration: 4.0)
+
+        let saved = theoryEngine.createProgressionData(
+            from: theoryEngine.currentProgression,
+            name: "Duration test",
+            tempo: 90
+        )
+        XCTAssertEqual(saved.progressionChords.map(\.duration), [2.0, 4.0])
+
+        let fresh = TheoryEngine()
+        fresh.loadProgression(saved)
+        XCTAssertEqual(fresh.currentProgression.map(\.duration), [2.0, 4.0])
+        XCTAssertEqual(fresh.currentProgressionTempo, 90)
+    }
+
+    // MARK: - Draft persistence
+
+    @MainActor
+    func testDraftProgressionRoundTrip() throws {
+        let dataManager = DataManager(inMemory: true)
+
+        let engine = TheoryEngine()
+        engine.setKey("F", scaleType: "major")
+        engine.currentProgressionTempo = 100
+        engine.addChordToProgression(Chord(.F, type: .major), duration: 2.0)
+        engine.addChordToProgression(Chord(NoteClass(.B, accidental: .flat), type: .major))
+        try dataManager.saveDraftProgression(from: engine)
+
+        let restored = TheoryEngine()
+        XCTAssertTrue(try dataManager.loadDraftProgression(into: restored))
+        XCTAssertEqual(restored.currentKey, "F")
+        XCTAssertEqual(restored.currentProgressionTempo, 100)
+        XCTAssertEqual(restored.currentProgression.map(\.duration), [2.0, 1.0])
+        XCTAssertEqual(restored.currentProgression.map { $0.chord.formattedSymbol }, ["F", "B♭"])
+    }
+
+    @MainActor
+    func testEmptyProgressionClearsDraft() throws {
+        let dataManager = DataManager(inMemory: true)
+
+        let engine = TheoryEngine()
+        engine.addChordToProgression(Chord(.C, type: .major))
+        try dataManager.saveDraftProgression(from: engine)
+
+        engine.clearProgression()
+        try dataManager.saveDraftProgression(from: engine)
+
+        let restored = TheoryEngine()
+        XCTAssertFalse(try dataManager.loadDraftProgression(into: restored))
+        XCTAssertTrue(restored.currentProgression.isEmpty)
+    }
+
     // MARK: - Streak counting
 
     @MainActor

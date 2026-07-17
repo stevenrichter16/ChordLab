@@ -15,6 +15,7 @@ struct SettingsView: View {
 
     @State private var soundEnabled = true
     @State private var showingResetConfirmation = false
+    @AppStorage("bassDoublingEnabled") private var bassDoublingEnabled = true
 
     var body: some View {
         @Bindable var appState = appState
@@ -67,13 +68,24 @@ struct SettingsView: View {
                 }
 
                 // Sound Section
-                Section("Sound") {
+                Section {
                     HStack {
                         Label("Sound", systemImage: "speaker.wave.2")
                         Spacer()
                         Toggle("", isOn: $soundEnabled)
                             .labelsHidden()
                     }
+
+                    HStack {
+                        Label("Bass in Progressions", systemImage: "waveform.path")
+                        Spacer()
+                        Toggle("", isOn: $bassDoublingEnabled)
+                            .labelsHidden()
+                    }
+                } header: {
+                    Text("Sound")
+                } footer: {
+                    Text("Doubles each chord's root an octave lower during progression playback.")
                 }
 
                 // Data Section

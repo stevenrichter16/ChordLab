@@ -209,7 +209,8 @@ struct ProgressionDetailView: View {
                     let isLast = index == chordData.count - 1
                     audioEngine.playChord(
                         chord,
-                        duration: audioEngine.chordSlotDuration(interval: delaySeconds, isLast: isLast)
+                        duration: audioEngine.chordSlotDuration(interval: delaySeconds, isLast: isLast),
+                        includeBass: audioEngine.bassDoublingEnabled
                     )
                 }
 

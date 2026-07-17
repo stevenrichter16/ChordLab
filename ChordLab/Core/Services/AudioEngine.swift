@@ -148,16 +148,36 @@ final class AudioEngine {
         }
     }
 
+    /// Short metronome click (system tick sound), kept here so views don't
+    /// need AudioToolbox
+    func playClick() {
+        AudioServicesPlaySystemSound(SystemSoundID(1306))
+    }
+
+    /// User preference: double the progression root an octave down.
+    /// Toggleable in Settings > Sound; defaults to on.
+    var bassDoublingEnabled: Bool {
+        UserDefaults.standard.object(forKey: "bassDoublingEnabled") as? Bool ?? true
+    }
+
     // MARK: - Chord Playback
 
-    func playChord(_ chord: Chord, velocity: UInt8 = 80, duration: Double = 0.5) {
+    func playChord(_ chord: Chord, velocity: UInt8 = 80, duration: Double = 0.5, includeBass: Bool = false) {
         if !engine.isRunning {
             start()
             guard engine.isRunning else { return }
         }
 
         let notes = voicedNotes(for: chord)
-        let noteNumbers = notes.map { UInt8($0.pitch.midiNoteNumber) }
+        var noteNumbers = notes.map { UInt8($0.pitch.midiNoteNumber) }
+
+        // Root doubled an octave below for warmth (progression playback only)
+        if includeBass, let rootNumber = noteNumbers.first, rootNumber >= 12 {
+            let bassNumber = rootNumber - 12
+            if !noteNumbers.contains(bassNumber) {
+                noteNumbers.insert(bassNumber, at: 0)
+            }
+        }
 
         playbackGeneration += 1
         let generation = playbackGeneration
@@ -331,7 +351,12 @@ class AudioSequencer {
         let isLast = currentIndex == progression.count - 1 && !isLooping
         let duration = audioEngine?.chordSlotDuration(interval: interval, isLast: isLast) ?? interval * 0.9
 
-        audioEngine?.playChord(item.chord, velocity: UInt8(item.velocity), duration: duration)
+        audioEngine?.playChord(
+            item.chord,
+            velocity: UInt8(item.velocity),
+            duration: duration,
+            includeBass: audioEngine?.bassDoublingEnabled ?? false
+        )
 
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
             self?.currentIndex += 1

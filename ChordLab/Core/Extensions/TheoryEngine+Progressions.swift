@@ -13,22 +13,23 @@ extension TheoryEngine {
     
     // MARK: - Progression Creation
     
-    /// Create a SavedProgression from current chord array
+    /// Create a SavedProgression from the current playback chords,
+    /// preserving each chord's duration in beats
     func createProgressionData(
-        from chords: [Chord],
+        from playbackChords: [PlaybackChord],
         name: String,
         tempo: Int
     ) -> SavedProgression {
-        // Convert Tonic Chords to our ProgressionChord format
-        let progressionChords = chords.map { chord in
-            let chordSymbol = chord.formattedSymbol
+        // Convert to our persisted ProgressionChord format
+        let progressionChords = playbackChords.map { playback in
+            let chordSymbol = playback.chord.formattedSymbol
             let romanNumeral = getRomanNumeral(for: chordSymbol)
             return ProgressionChord(
                 chordSymbol: chordSymbol,
                 romanNumeral: romanNumeral,
-                noteNames: chord.noteClasses.map { $0.description },
+                noteNames: playback.chord.noteClasses.map { $0.description },
                 function: determineFunction(romanNumeral: romanNumeral).rawValue,
-                duration: 1.0 // Default duration
+                duration: playback.duration
             )
         }
         
@@ -54,14 +55,17 @@ extension TheoryEngine {
         // Update tempo
         currentProgressionTempo = progression.tempo
         
-        // Convert ProgressionChord array back to Tonic Chords
-        let chords = progression.progressionChords.compactMap { progressionChord in
-            Chord.parse(progressionChord.chordSymbol)
-        }
-        
-        // Update current progression
-        currentProgression = chords.map { chord in
-            PlaybackChord(chord: chord, duration: 1.0, velocity: 80)
+        // Convert ProgressionChord array back to playback chords,
+        // keeping each chord's stored duration (clamped to stay positive
+        // so a corrupt value can't stall or race the sequencer)
+        currentProgression = progression.progressionChords.compactMap { progressionChord in
+            Chord.parse(progressionChord.chordSymbol).map { chord in
+                PlaybackChord(
+                    chord: chord,
+                    duration: max(progressionChord.duration, 0.25),
+                    velocity: 80
+                )
+            }
         }
     }
     
@@ -72,41 +76,40 @@ extension TheoryEngine {
         var patterns: [ProgressionPattern] = []
         var cadenceType: CadenceType?
         
-        // Check for common patterns
+        // Compare bare degrees so seventh-chord numerals ("ii7", "V7",
+        // "Imaj7") match the same patterns as their triad forms
         if chords.count >= 3 {
-            let chordSymbols = chords.map { $0.description }
-            
             // Check for ii-V-I
             for i in 0..<(chords.count - 2) {
-                let romanNumerals = [
-                    getRomanNumeral(for: chords[i].description),
-                    getRomanNumeral(for: chords[i + 1].description),
-                    getRomanNumeral(for: chords[i + 2].description)
+                let baseNumerals = [
+                    baseNumeral(getRomanNumeral(for: chords[i].description)),
+                    baseNumeral(getRomanNumeral(for: chords[i + 1].description)),
+                    baseNumeral(getRomanNumeral(for: chords[i + 2].description))
                 ]
-                
-                if romanNumerals == ["ii", "V", "I"] || romanNumerals == ["ii7", "V7", "Imaj7"] {
+
+                if baseNumerals == ["ii", "V", "I"] {
                     patterns.append(.iiVI)
                 }
             }
-            
+
             // Check for I-vi-IV-V
             if chords.count >= 4 {
                 let firstFour = Array(chords.prefix(4))
-                let romanNumerals = firstFour.map { getRomanNumeral(for: $0.description) }
-                
-                if romanNumerals == ["I", "vi", "IV", "V"] {
+                let baseNumerals = firstFour.map { baseNumeral(getRomanNumeral(for: $0.description)) }
+
+                if baseNumerals == ["I", "vi", "IV", "V"] {
                     patterns.append(.IviIVV)
                 }
             }
         }
-        
+
         // Check cadence (last two chords)
         if chords.count >= 2 {
             let lastTwo = chords.suffix(2)
-            let lastRomanNumerals = lastTwo.map { getRomanNumeral(for: $0.description) }
-            
-            switch lastRomanNumerals {
-            case ["V", "I"], ["V7", "I"]:
+            let lastBaseNumerals = lastTwo.map { baseNumeral(getRomanNumeral(for: $0.description)) }
+
+            switch lastBaseNumerals {
+            case ["V", "I"]:
                 cadenceType = .authentic
             case ["IV", "I"]:
                 cadenceType = .plagal

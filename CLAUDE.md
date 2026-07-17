@@ -72,8 +72,18 @@ key.preferredAccidental // .sharp or .flat
 - Drag to reposition (with screen edge bounce-back)
 - Tap chord in timeline to select/visualize
 - Hold chord button to reorder (shows arrows)
-- BPM adjustment (60-200)
+- Per-chord duration: 1/2/4 beats via the bottom band on expanded cells
+  (cycleChordDuration snaps off-grid values); widths scale with beats;
+  durations persist through save/load and drafts
+- Loop defaults ON (@AppStorage progressionLoopEnabled) with toggles in all
+  three views; looping playback starts with a 4-beat count-in (clicks +
+  countdown overlay); optional metronome click track (@AppStorage)
+- Bass doubling on progression playback (root -12 semitones), gated by the
+  bassDoublingEnabled preference in Settings > Sound
+- BPM adjustment (60-200), default 90
 - Save progressions with name/tags
+- Draft auto-persists on scenePhase background/inactive and restores at
+  launch (7-day staleness cutoff, "Draft restored" caption)
 - Playback with visual feedback
 
 ### Component Architecture
@@ -124,7 +134,9 @@ visualizedChord: Chord?      // For piano highlighting
   everywhere a chord is spelled into octaves; per-note comparison folds notes
   after a pitch-class wrap back down an octave (G7 bug)
 - **Roman numerals carry quality suffixes** ("ii7", "V7", "Imaj7", "viiø7");
-  `determineFunction` strips suffixes before matching the degree
+  `determineFunction` strips suffixes before matching the degree, and every
+  pattern/cadence/suggestion matcher compares `baseNumeral()` output so
+  seventh-chord progressions match their triad patterns
 - **NoteClass(String) must cover edge enharmonics** (E#, B#, Cb, Fb) — F#
   major's vii chord is rooted on E#, and a parse failure silently drops
   chords from saved progressions

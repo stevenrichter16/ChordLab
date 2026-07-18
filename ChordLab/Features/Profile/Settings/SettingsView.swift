@@ -82,10 +82,22 @@ struct SettingsView: View {
                         Toggle("", isOn: $bassDoublingEnabled)
                             .labelsHidden()
                     }
+
+                    // Melodic voice for all chord/note playback
+                    Picker(selection: Binding(
+                        get: { audioEngine.currentInstrument },
+                        set: { audioEngine.setInstrument($0) }
+                    )) {
+                        ForEach(AudioEngine.Instrument.allCases) { instrument in
+                            Text(instrument.displayName).tag(instrument)
+                        }
+                    } label: {
+                        Label("Instrument", systemImage: "pianokeys")
+                    }
                 } header: {
                     Text("Sound")
                 } footer: {
-                    Text("Doubles each chord's root an octave lower during progression playback.")
+                    Text("Doubles each chord's root an octave lower during progression playback. Instrument voices come from the bundled GeneralUser GS bank.")
                 }
 
                 // Data Section

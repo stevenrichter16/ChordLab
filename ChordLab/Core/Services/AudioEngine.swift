@@ -22,12 +22,17 @@ final class AudioEngine {
     var currentTempo: Int = 120
     private var currentVolume: Float = 0.7
     private(set) var isInstrumentLoaded = false
+    private(set) var currentInstrument: Instrument
 
     // Playback
     private var sequencer: AudioSequencer?
     private var metronome: Metronome?
 
     init() {
+        currentInstrument = Instrument(
+            rawValue: UserDefaults.standard.integer(forKey: "instrumentProgram")
+        ) ?? .piano
+
         setupAudioEngine()
         setupAudioSession()
         loadInstrumentAsync()
@@ -35,12 +40,48 @@ final class AudioEngine {
 
     // MARK: - Instrument
 
-    /// Loads the bundled GeneralUser GS piano into the sampler off the main
+    /// The melodic voices offered in Settings; raw values are General MIDI
+    /// program numbers, all present in the bundled GeneralUser GS bank
+    enum Instrument: Int, CaseIterable, Identifiable {
+        case piano = 0
+        case electricPiano = 4
+        case vibraphone = 11
+        case nylonGuitar = 24
+        case strings = 48
+
+        var id: Int { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .piano: return "Grand Piano"
+            case .electricPiano: return "Electric Piano"
+            case .vibraphone: return "Vibraphone"
+            case .nylonGuitar: return "Nylon Guitar"
+            case .strings: return "Strings"
+            }
+        }
+    }
+
+    /// Switches the sampler to another General MIDI voice and persists the
+    /// choice. The bank reload happens off the main thread, like at launch.
+    func setInstrument(_ instrument: Instrument) {
+        guard instrument != currentInstrument else { return }
+
+        currentInstrument = instrument
+        UserDefaults.standard.set(instrument.rawValue, forKey: "instrumentProgram")
+
+        // Kill anything sounding so no note sustains across the voice swap
+        stopAllNotes()
+        loadInstrumentAsync()
+    }
+
+    /// Loads the selected GeneralUser GS voice into the sampler off the main
     /// thread — parsing the 31 MB bank synchronously would stall cold launch.
     /// Playback falls back to the sampler's default tone until
     /// `isInstrumentLoaded` flips; `playChord` reads the flag at play time.
     private func loadInstrumentAsync() {
         let sampler = samplerNode
+        let program = UInt8(currentInstrument.rawValue)
 
         Task.detached(priority: .userInitiated) { [weak self] in
             // Synchronized folders may bundle resources flat or with
@@ -57,7 +98,7 @@ final class AudioEngine {
             do {
                 try sampler.loadSoundBankInstrument(
                     at: url,
-                    program: 0, // Acoustic Grand Piano
+                    program: program,
                     bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
                     bankLSB: UInt8(kAUSampler_DefaultBankLSB)
                 )
@@ -227,7 +268,9 @@ final class AudioEngine {
     /// The octave must accumulate across the whole chord: once the pitch class
     /// wraps (e.g. G7 = G-B-D-F, where D wraps past B), every later note stays
     /// in the higher octave instead of folding back down.
-    func voicedNotes(for chord: Chord, baseOctave: Int = 4) -> [Note] {
+    /// Static so non-audio code (MIDI export) shares the exact voicing
+    /// without spinning up an AVAudioEngine.
+    static func voicedNotes(for chord: Chord, baseOctave: Int = 4) -> [Note] {
         var octave = baseOctave
         var previousSemitone: Int?
 
@@ -241,6 +284,10 @@ final class AudioEngine {
             let canonicalNote = noteClass.canonicalNote
             return Note(canonicalNote.letter, accidental: canonicalNote.accidental, octave: octave)
         }
+    }
+
+    func voicedNotes(for chord: Chord, baseOctave: Int = 4) -> [Note] {
+        Self.voicedNotes(for: chord, baseOctave: baseOctave)
     }
     
     /// Note-off length for a chord occupying `interval` seconds of a

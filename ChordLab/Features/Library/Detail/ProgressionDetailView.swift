@@ -25,6 +25,18 @@ struct ProgressionDetailView: View {
 
     private let transposeKeys = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
 
+    // The saved progression as a shareable .mid file (nil if any stored
+    // symbol no longer parses)
+    private var midiExport: MIDIFileExport? {
+        guard let data = MIDIExporter.fileData(
+            progressionChords: progression.progressionChords,
+            tempo: progression.tempo,
+            includeBass: audioEngine.bassDoublingEnabled
+        ) else { return nil }
+
+        return MIDIFileExport(data: data, filename: progression.name)
+    }
+
     // Analyzed with a throwaway engine keyed to the progression, so
     // viewing a detail never mutates the app-wide key
     private var progressionAnalysis: ProgressionAnalysis? {
@@ -179,6 +191,12 @@ struct ProgressionDetailView: View {
                             }
                         } label: {
                             Label("Transpose to…", systemImage: "arrow.up.arrow.down")
+                        }
+
+                        if let export = midiExport {
+                            ShareLink(item: export, preview: SharePreview(progression.name)) {
+                                Label("Export MIDI", systemImage: "square.and.arrow.up")
+                            }
                         }
 
                         Divider()

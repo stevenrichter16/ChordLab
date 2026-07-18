@@ -88,6 +88,13 @@ key.preferredAccidental // .sharp or .flat
   click track (@AppStorage)
 - Bass doubling on progression playback (root -12 semitones), gated by the
   bassDoublingEnabled preference in Settings > Sound
+- Playback styles (@AppStorage progressionPlaybackStyle): block (default)
+  or arpeggio — eighth notes cycling up the voicing over a sustained
+  bass root, scheduled per slot in playArpeggiatedChord
+- MIDI export: dock share button + Library detail menu; MIDIExporter
+  writes format-0 SMF bytes (480 ppq, tempo meta, piano program) using
+  AudioEngine.voicedNotes (now also static) + the bass-doubling rule;
+  MIDIFileExport is the ShareLink Transferable (.mid FileRepresentation)
 - BPM adjustment (60-200), default 90
 - Save progressions with name/tags
 - Draft auto-persists on scenePhase background/inactive and restores at
@@ -182,6 +189,10 @@ visualizedChord: Chord?      // For piano highlighting
 - **Progression slots go through `chordSlotDuration(interval:isLast:)`**:
   interior chords stop at 0.9× their slot (clean re-trigger of repeats),
   the final non-looping chord gets ≥1.2s to ring out
+- **Instrument selection**: `AudioEngine.Instrument` (GM programs 0/4/11/
+  24/48 from the same bank), persisted as "instrumentProgram"; Settings >
+  Sound picker calls `setInstrument` which stops all notes and reloads
+  the bank off-thread
 - License permits bundling (see `Resources/Sounds/GeneralUser-LICENSE.txt`);
   attribution shown in Settings > About
 
@@ -199,10 +210,19 @@ UserData.completedLessons    // persisted ids; DataManager.markLessonCompleted i
 - App icon: generated light/dark/tinted 1024px PNGs in AppIcon.appiconset
   (chord-tone dots over piano keys, matching the root/third/fifth colors)
 
+## Library detail (ProgressionDetailView)
+- Pattern/cadence badges + Transpose to… menu (all 12 keys) via
+  `TheoryEngine.transposedProgressionChords` — numeral degrees re-render
+  through the target key's diatonic sets (throwaway engines, durations
+  kept, legacy chord/numeral columns synced; non-diatonic content alerts
+  instead of guessing)
+- Export MIDI ShareLink in the toolbar menu
+
 ## Next Implementation Tasks
-1. **Builder Tab**: Full drag-drop progression builder with analysis (BuildTabView exists but is not in the tab bar) — or fold analysis into Explore's player instead
-2. **Library analysis**: surface analyzeProgression (patterns/cadences) in Library detail (player strip done)
-3. **Glossary v2**: borrowed/secondary chords in entries, minor-key variants
+1. **Glossary v2**: borrowed/secondary chords in entries, minor-key variants
+2. **Native drag-to-reorder** on dock timeline cells (still long-press + arrows)
+3. **Drums/groove layer**: percussion channel needs a second sampler node
+   (GS percussion bank), deliberately out of scope so far
 
 ## Testing Strategy
 - Unit tests for all services

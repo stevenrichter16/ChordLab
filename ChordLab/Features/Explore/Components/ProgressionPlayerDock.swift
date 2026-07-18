@@ -13,6 +13,14 @@ import SwiftUI
 import Tonic
 import UIKit
 
+/// How the dock renders each chord slot during progression playback
+enum ProgressionPlaybackStyle: String, CaseIterable, Identifiable {
+    case block
+    case arpeggio
+
+    var id: String { rawValue }
+}
+
 struct ProgressionPlayerDock: View {
     @State private var isExpanded = false
     @State private var isPlaying = false
@@ -22,6 +30,7 @@ struct ProgressionPlayerDock: View {
     @State private var showRestoredCaption = false
     @AppStorage("progressionLoopEnabled") private var isLooping = true
     @AppStorage("metronomeEnabled") private var metronomeEnabled = false
+    @AppStorage("progressionPlaybackStyle") private var playbackStyle: ProgressionPlaybackStyle = .block
     @State private var showingSaveSheet = false
     @State private var showingGlossary = false
 
@@ -70,6 +79,18 @@ struct ProgressionPlayerDock: View {
 
     private var progressionString: String {
         progression.map { $0.formattedSymbol }.joined(separator: " - ")
+    }
+
+    // The working progression as a shareable .mid file
+    private var midiExport: MIDIFileExport? {
+        guard !theoryEngine.currentProgression.isEmpty else { return nil }
+
+        let data = MIDIExporter.fileData(
+            chords: theoryEngine.currentProgression.map { ($0.chord, $0.duration) },
+            tempo: tempo,
+            includeBass: audioEngine.bassDoublingEnabled
+        )
+        return MIDIFileExport(data: data, filename: "\(theoryEngine.currentKey) Progression")
     }
 
     var body: some View {
@@ -214,7 +235,7 @@ struct ProgressionPlayerDock: View {
     private var expandedEditor: some View {
         VStack(spacing: 0) {
             // Controls row
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 // BPM Button
                 Button(action: {
                     if showBPMSlider {
@@ -253,6 +274,22 @@ struct ProgressionPlayerDock: View {
                 .clipShape(Circle())
                 .accessibilityLabel(metronomeEnabled ? "Disable metronome" : "Enable metronome")
 
+                // Playback style: block chords or broken-chord arpeggio
+                Menu {
+                    Picker("Playback style", selection: $playbackStyle) {
+                        Text("Block Chords").tag(ProgressionPlaybackStyle.block)
+                        Text("Arpeggio").tag(ProgressionPlaybackStyle.arpeggio)
+                    }
+                } label: {
+                    Image(systemName: "music.quarternote.3")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(playbackStyle == .arpeggio ? .white : .secondary)
+                        .frame(width: 30, height: 30)
+                }
+                .background(playbackStyle == .arpeggio ? Color.appPrimary : Color.appTertiaryBackground)
+                .clipShape(Circle())
+                .accessibilityLabel("Playback style")
+
                 // Progression glossary (famous progressions to audition/add)
                 Button(action: { showingGlossary = true }) {
                     Image(systemName: "book.fill")
@@ -265,6 +302,19 @@ struct ProgressionPlayerDock: View {
                 .accessibilityLabel("Progression glossary")
 
                 Spacer()
+
+                // Share the working progression as a .mid file
+                if let export = midiExport {
+                    ShareLink(item: export, preview: SharePreview("\(theoryEngine.currentKey) progression")) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 14))
+                            .foregroundColor(.appPrimary)
+                            .frame(width: 30, height: 30)
+                            .background(Color.appPrimary.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                    .accessibilityLabel("Export MIDI")
+                }
 
                 // Save button
                 Button(action: { showingSaveSheet = true }) {
@@ -538,12 +588,22 @@ struct ProgressionPlayerDock: View {
         // Stop just before the next chord so repeated chords re-trigger
         // cleanly; the final chord of a non-looping pass rings out
         let isLast = index == progression.count - 1 && !isLooping
-        audioEngine.playChord(
-            progression[index],
-            velocity: 80,
-            duration: audioEngine.chordSlotDuration(interval: interval, isLast: isLast),
-            includeBass: audioEngine.bassDoublingEnabled
-        )
+        switch playbackStyle {
+        case .block:
+            audioEngine.playChord(
+                progression[index],
+                velocity: 80,
+                duration: audioEngine.chordSlotDuration(interval: interval, isLast: isLast),
+                includeBass: audioEngine.bassDoublingEnabled
+            )
+        case .arpeggio:
+            playArpeggiatedChord(
+                progression[index],
+                beats: beats,
+                beatInterval: beatInterval,
+                isLast: isLast
+            )
+        }
 
         // Optional click track, aligned to this slot's beats
         if metronomeEnabled {
@@ -560,6 +620,39 @@ struct ProgressionPlayerDock: View {
         playbackTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             currentPlayIndex = (currentPlayIndex ?? 0) + 1
             playNextChord()
+        }
+    }
+
+    /// Broken-chord rendering of one slot: a sustained bass root (when the
+    /// preference is on) under eighth notes cycling up through the voicing
+    private func playArpeggiatedChord(_ chord: Chord, beats: Double, beatInterval: TimeInterval, isLast: Bool) {
+        let notes = audioEngine.voicedNotes(for: chord)
+        guard !notes.isEmpty else { return }
+
+        if audioEngine.bassDoublingEnabled {
+            let root = notes[0]
+            if root.pitch.midiNoteNumber >= 12 {
+                let slot = beatInterval * beats
+                audioEngine.playNote(
+                    Note(root.letter, accidental: root.accidental, octave: root.octave - 1),
+                    velocity: 66,
+                    duration: audioEngine.chordSlotDuration(interval: slot, isLast: isLast)
+                )
+            }
+        }
+
+        let step = beatInterval / 2
+        let stepCount = max(Int((beats * 2).rounded()), 1)
+
+        for stepIndex in 0..<stepCount {
+            let note = notes[stepIndex % notes.count]
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(stepIndex) * step) {
+                // The slot may have been stopped mid-pattern
+                if isPlaying {
+                    audioEngine.playNote(note, velocity: 72, duration: step * 1.6)
+                }
+            }
         }
     }
 

@@ -94,9 +94,11 @@ extension TheoryEngine {
         target.setKey(targetKey, scaleType: scaleType)
 
         let sourceTriads = source.getDiatonicChordsWithAnalysis()
+        let sourceSevenths = source.getSeventhChordsWithAnalysis()
         let targetTriads = target.getDiatonicChordsWithAnalysis()
         let targetSevenths = target.getSeventhChordsWithAnalysis()
-        guard sourceTriads.count == 7, targetTriads.count == 7, targetSevenths.count == 7 else {
+        guard sourceTriads.count == 7, sourceSevenths.count == 7,
+              targetTriads.count == 7, targetSevenths.count == 7 else {
             return nil
         }
 
@@ -113,7 +115,20 @@ extension TheoryEngine {
                 return nil
             }
 
-            let entry = numeral.contains("7") ? targetSevenths[degree] : targetTriads[degree]
+            let wantsSeventh = numeral.contains("7")
+            let sourceEntry = wantsSeventh ? sourceSevenths[degree] : sourceTriads[degree]
+
+            // The stored chord must BE the source key's diatonic chord at
+            // that degree — an altered quality (C7 as "I7", an augmented
+            // tonic) would otherwise be silently re-qualified to the
+            // target's diatonic quality instead of alerting
+            guard let parsed = Chord.parse(stored.chordSymbol),
+                  parsed.root == sourceEntry.chord.root,
+                  parsed.type == sourceEntry.chord.type else {
+                return nil
+            }
+
+            let entry = wantsSeventh ? targetSevenths[degree] : targetTriads[degree]
             result.append(ProgressionChord(
                 chordSymbol: entry.chord.formattedSymbol,
                 romanNumeral: entry.romanNumeral,

@@ -26,6 +26,10 @@ struct ProgressionPlayerDock: View {
     @State private var isPlaying = false
     @State private var currentPlayIndex: Int? = nil
     @State private var playbackTimer: Timer? = nil
+    // Bumped on every stop: pre-scheduled closures (arpeggio steps,
+    // metronome clicks) compare their captured token so a stop->replay
+    // can't leak the old run's notes into the new one
+    @State private var playbackRunToken = 0
     @State private var countInRemaining: Int? = nil
     @State private var showRestoredCaption = false
     @AppStorage("progressionLoopEnabled") private var isLooping = true
@@ -607,9 +611,10 @@ struct ProgressionPlayerDock: View {
 
         // Optional click track, aligned to this slot's beats
         if metronomeEnabled {
+            let runToken = playbackRunToken
             for beat in 1..<max(Int(beats.rounded()), 1) {
                 DispatchQueue.main.asyncAfter(deadline: .now() + Double(beat) * beatInterval) {
-                    if isPlaying {
+                    if isPlaying && playbackRunToken == runToken {
                         audioEngine.playClick()
                     }
                 }
@@ -643,13 +648,15 @@ struct ProgressionPlayerDock: View {
 
         let step = beatInterval / 2
         let stepCount = max(Int((beats * 2).rounded()), 1)
+        let runToken = playbackRunToken
 
         for stepIndex in 0..<stepCount {
             let note = notes[stepIndex % notes.count]
 
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(stepIndex) * step) {
-                // The slot may have been stopped mid-pattern
-                if isPlaying {
+                // The run may have been stopped (and even restarted on a
+                // different chord) since this step was scheduled
+                if isPlaying && playbackRunToken == runToken {
                     audioEngine.playNote(note, velocity: 72, duration: step * 1.6)
                 }
             }
@@ -660,6 +667,7 @@ struct ProgressionPlayerDock: View {
         isPlaying = false
         currentPlayIndex = nil
         countInRemaining = nil
+        playbackRunToken += 1
         playbackTimer?.invalidate()
         playbackTimer = nil
 

@@ -75,6 +75,14 @@ final class AudioEngine {
         loadInstrumentAsync()
     }
 
+    /// Bank loads run on one serial queue: without it, a slow in-flight
+    /// load (the ~1s launch parse) can finish AFTER a newer selection's
+    /// load and leave the sampler on the wrong voice
+    private static let instrumentLoadQueue = DispatchQueue(
+        label: "com.chordlab.instrument-load",
+        qos: .userInitiated
+    )
+
     /// Loads the selected GeneralUser GS voice into the sampler off the main
     /// thread — parsing the 31 MB bank synchronously would stall cold launch.
     /// Playback falls back to the sampler's default tone until
@@ -83,7 +91,7 @@ final class AudioEngine {
         let sampler = samplerNode
         let program = UInt8(currentInstrument.rawValue)
 
-        Task.detached(priority: .userInitiated) { [weak self] in
+        Self.instrumentLoadQueue.async { [weak self] in
             // Synchronized folders may bundle resources flat or with
             // structure; check both locations before giving up
             let url = Bundle.main.url(forResource: "GeneralUser", withExtension: "sf2")
@@ -102,7 +110,7 @@ final class AudioEngine {
                     bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB),
                     bankLSB: UInt8(kAUSampler_DefaultBankLSB)
                 )
-                await MainActor.run { [weak self] in
+                DispatchQueue.main.async {
                     self?.isInstrumentLoaded = true
                 }
             } catch {

@@ -177,6 +177,12 @@ visualizedChord: Chord?      // For piano highlighting
   chords from saved progressions
 - **Chord.parse normalizes unicode accidentals** so `formattedSymbol` output
   ("B♭m7") round-trips
+- **Precalculated triad/seventh tables are major-only** and keyed by root
+  alone; `get*ChordsWithAnalysis` must gate the fast path on
+  `currentScaleType == "major"` or minor keys silently get major chords
+- **Transposition refuses non-diatonic content**: `transposedProgressionChords`
+  verifies the stored chord IS the source key's diatonic chord at its
+  degree before re-rendering, else returns nil (the detail view alerts)
 
 ## Audio
 - The sampler loads `Resources/Sounds/GeneralUser.sf2` (GeneralUser GS,

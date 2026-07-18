@@ -363,6 +363,21 @@ final class TheoryEnhancementsTests: XCTestCase {
         ))
     }
 
+    func testTransposeFailsForAlteredQuality() {
+        // A dominant seventh on the tonic isn't the diatonic Imaj7 —
+        // re-rendering it as maj7 would silently change the sound
+        let alteredSeventh = [ProgressionChord(chordSymbol: "C7", romanNumeral: "I7")]
+        XCTAssertNil(TheoryEngine.transposedProgressionChords(
+            alteredSeventh, fromKey: "C", toKey: "G", scaleType: "major"
+        ))
+
+        // Same guard for triads: an augmented tonic must not flatten to major
+        let alteredTriad = [ProgressionChord(chordSymbol: "C+", romanNumeral: "I+")]
+        XCTAssertNil(TheoryEngine.transposedProgressionChords(
+            alteredTriad, fromKey: "C", toKey: "G", scaleType: "major"
+        ))
+    }
+
     // MARK: - Cadence resolution
 
     func testAppendAuthenticResolution() {

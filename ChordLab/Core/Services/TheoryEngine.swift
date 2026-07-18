@@ -659,8 +659,11 @@ final class TheoryEngine {
     
     /// Returns all diatonic triads with complete visualization data - FAST version using precalculated data
     func getDiatonicChordsWithAnalysis() -> [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] {
-        // Use precalculated chords if available
-        if let precalcData = precalculatedTriads[currentKey] {
+        // The precalculated tables are keyed by root only and hold MAJOR
+        // chords; consulting them for a minor scale silently returns the
+        // wrong qualities, so non-major always takes the computed path
+        if currentScaleType.lowercased() == "major",
+           let precalcData = precalculatedTriads[currentKey] {
             let romanNumerals = ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
             let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
             let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]
@@ -686,8 +689,9 @@ final class TheoryEngine {
     
     /// Returns all diatonic seventh chords with complete visualization data - FAST version using precalculated data
     func getSeventhChordsWithAnalysis() -> [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] {
-        // Use precalculated chords if available
-        if let precalcData = precalculatedSevenths[currentKey] {
+        // Major-only tables, same as the triad path above
+        if currentScaleType.lowercased() == "major",
+           let precalcData = precalculatedSevenths[currentKey] {
             let romanNumerals = ["Imaj7", "ii7", "iii7", "IVmaj7", "V7", "vi7", "viiø7"]
             let functions: [ChordFunction] = [.tonic, .supertonic, .mediant, .subdominant, .dominant, .submediant, .leadingTone]
             let degreeNames = ["Tonic", "Supertonic", "Mediant", "Subdominant", "Dominant", "Submediant", "Leading Tone"]

@@ -17,62 +17,87 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
+    // Measured height of whichever custom tab bar style is active, so the
+    // content reservation below matches the bar exactly on every device
+    @State private var tabBarHeight: CGFloat = 72
+
     var body: some View {
         @Bindable var appState = appState
-        
-        ZStack {
-            // Main content
-            Group {
-                switch appState.selectedTab {
-                case 0:
-                    NavigationStack {
-                        LearnTabView()
-                    }
-                case 1:
-                    NavigationStack {
-                        ExploreTabView()
-                    }
-                case 2:
-                    NavigationStack {
-                        LibraryTabView()
-                    }
-                case 3:
-                    NavigationStack {
-                        PracticeTabView()
-                    }
-                case 4:
-                    NavigationStack {
-                        ProfileTabView()
-                    }
-                default:
-                    NavigationStack {
-                        LearnTabView()
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            // The custom tab bar is overlaid on the content, so reserve its
-            // height as a safe-area inset: scroll views gain bottom content
-            // inset automatically and the last items can scroll clear of it
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                Color.clear.frame(height: 64)
-            }
 
-            // Custom tab bar overlay
-            VStack {
-                Spacer()
-                
-                switch appState.tabBarStyle {
-                case .compact:
-                    CompactTabBar(selectedTab: $appState.selectedTab)
-                case .ultraCompact:
-                    UltraCompactTabBar(selectedTab: $appState.selectedTab)
-                case .floating:
-                    FloatingTabBar(selectedTab: $appState.selectedTab)
+        GeometryReader { proxy in
+            ZStack {
+                // Main content
+                Group {
+                    switch appState.selectedTab {
+                    case 0:
+                        NavigationStack {
+                            LearnTabView()
+                        }
+                    case 1:
+                        NavigationStack {
+                            ExploreTabView()
+                        }
+                    case 2:
+                        NavigationStack {
+                            LibraryTabView()
+                        }
+                    case 3:
+                        NavigationStack {
+                            PracticeTabView()
+                        }
+                    case 4:
+                        NavigationStack {
+                            ProfileTabView()
+                        }
+                    default:
+                        NavigationStack {
+                            LearnTabView()
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                // The custom tab bar is overlaid on the content, pinned to the
+                // PHYSICAL bottom (it ignores the safe area), so the safe-area
+                // reservation must be the bar's real height minus the device
+                // bottom inset — a fixed value gaps on Face ID phones and
+                // overlaps on inset-less ones, which matters now that the
+                // Explore dock sits directly on this boundary
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    Color.clear
+                        .frame(height: max(tabBarHeight - proxy.safeAreaInsets.bottom, 0))
+                }
+
+                // Custom tab bar overlay
+                VStack {
+                    Spacer()
+
+                    Group {
+                        switch appState.tabBarStyle {
+                        case .compact:
+                            CompactTabBar(selectedTab: $appState.selectedTab)
+                        case .ultraCompact:
+                            UltraCompactTabBar(selectedTab: $appState.selectedTab)
+                        case .floating:
+                            FloatingTabBar(selectedTab: $appState.selectedTab)
+                        }
+                    }
+                    .background(
+                        GeometryReader { barGeometry in
+                            Color.clear.preference(
+                                key: TabBarHeightPreferenceKey.self,
+                                value: barGeometry.size.height
+                            )
+                        }
+                    )
+                }
+                .ignoresSafeArea(.keyboard)
+                .ignoresSafeArea(edges: .bottom)
+            }
+            .onPreferenceChange(TabBarHeightPreferenceKey.self) { height in
+                if height > 0 {
+                    tabBarHeight = height
                 }
             }
-            .ignoresSafeArea(.keyboard)
-            .ignoresSafeArea(edges: .bottom)
         }
         .background(Color.appBackground)
         .onAppear {
@@ -101,6 +126,13 @@ struct ContentView: View {
                 hasCompletedOnboarding = true
             }
         }
+    }
+}
+
+private struct TabBarHeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
 

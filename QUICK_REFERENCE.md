@@ -1,16 +1,17 @@
 # ChordLab Quick Reference
 
-## Current Focus: FloatingProgressionPlayer
-- **File**: `/Features/Explore/Components/FloatingProgressionPlayer.swift`
-- **States**: minimized → intermediate → expanded
-- **Recent Fix**: Ellipsis button opacity (full background + rounded overlay)
+## Current Focus: ProgressionPlayerDock
+- **File**: `/Features/Explore/Components/ProgressionPlayerDock.swift`
+- **States**: mini bar ↔ expanded editor (docked above the tab bar)
+- **Recent Change**: replaced the floating draggable player with the dock
 
 ## Key Files to Know
 ```
 Features/Explore/
 ├── Views/ChordVisualizerView.swift      # Main Explore tab
 ├── Components/
-│   ├── FloatingProgressionPlayer.swift   # Current work
+│   ├── ProgressionPlayerDock.swift       # Current work
+│   ├── ProgressionTimelineComponents.swift # Timeline cells/badges/chips
 │   ├── DiatonicChordGrid.swift          # Chord buttons
 │   ├── ChordPianoView.swift             # Piano visualization
 │   └── SaveProgressionSheet.swift       # Save dialog

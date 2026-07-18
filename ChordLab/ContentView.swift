@@ -17,8 +17,8 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
-    // Measured height of whichever custom tab bar style is active, so the
-    // content reservation below matches the bar exactly on every device
+    // Measured height of the tab bar, so the content reservation below
+    // matches the bar exactly on every device
     @State private var tabBarHeight: CGFloat = 72
 
     var body: some View {

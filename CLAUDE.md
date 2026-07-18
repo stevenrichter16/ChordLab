@@ -14,7 +14,7 @@ ChordLab/
 │   └── Extensions/    # Tonic+Extensions, Color+Theme, View+Modifiers
 ├── Features/
 │   ├── Learn/         # ✅ ScalePianoView, KeyScaleSelector, 10 interactive lessons
-│   ├── Explore/       # ✅ ChordVisualizerView, FloatingProgressionPlayer, Glossary/
+│   ├── Explore/       # ✅ ChordVisualizerView, ProgressionPlayerDock, Glossary/
 │   ├── Library/       # ✅ Saved progressions: search/sort, rename/duplicate/delete
 │   ├── Builder/       # 📋 TODO: Drag-drop progression builder
 │   ├── Practice/      # ✅ Ear training, chord recognition, progressions, quiz
@@ -61,23 +61,31 @@ key.primaryTriads       // diatonic triads
 key.preferredAccidental // .sharp or .flat
 ```
 
-## Recent Implementation: FloatingProgressionPlayer
+## Recent Implementation: ProgressionPlayerDock
 
-### Three View States
-1. **Minimized**: Play button + chord count badge
-2. **Intermediate**: Horizontal timeline with play/ellipsis buttons
-3. **Expanded**: Full controls with BPM, loop, save, timeline
+### Docked bar + in-place editor (replaced the floating widget)
+- Mounted once, via `.safeAreaInset(edge: .bottom)` in ChordVisualizerView,
+  so it sits above the custom tab bar (ContentView reserves its 64pt) and
+  scroll content clears it automatically
+- ALWAYS visible, even with an empty progression (play disabled, hint text,
+  glossary reachable) — this is the discoverability fix
+- Two states: **mini bar** (play/stop, chord readout or count-in text, loop,
+  chevron; tapping the bar toggles) and **expanded editor** that grows out of
+  the bar in place (no sheet/modality, piano stays live): controls row
+  (BPM, metronome, glossary, save, clear), timeline, analysis strip
+- No drag-to-reposition and no PlayerViewState enum anymore; timeline cells
+  live in ProgressionTimelineComponents.swift
 
 ### Key Features
-- Drag to reposition (with screen edge bounce-back)
 - Tap chord in timeline to select/visualize
 - Hold chord button to reorder (shows arrows)
 - Per-chord duration: 1/2/4 beats via the bottom band on expanded cells
   (cycleChordDuration snaps off-grid values); widths scale with beats;
   durations persist through save/load and drafts
-- Loop defaults ON (@AppStorage progressionLoopEnabled) with toggles in all
-  three views; looping playback starts with a 4-beat count-in (clicks +
-  countdown overlay); optional metronome click track (@AppStorage)
+- Loop defaults ON (@AppStorage progressionLoopEnabled, toggle in the bar);
+  looping playback starts with a 4-beat count-in (clicks + countdown overlay
+  on the timeline, "Starting in N…" text in the bar); optional metronome
+  click track (@AppStorage)
 - Bass doubling on progression playback (root -12 semitones), gated by the
   bassDoublingEnabled preference in Settings > Sound
 - BPM adjustment (60-200), default 90
@@ -88,19 +96,18 @@ key.preferredAccidental // .sharp or .flat
 
 ### Component Architecture
 ```swift
-FloatingProgressionPlayer
-├── MinimalChordTimelineItem    // Borderless design for intermediate view
-├── ChordTimelineItem           // Standard bordered design; function-colored
-│                               // roman numeral above the symbol (numeral param)
-├── SuggestionChip              // Dashed ghost cell after the timeline: tap to
-│                               // audition + append a suggested next chord
-├── AnalysisBadge               // Capsule for the analysis strip
-├── ChordMoveArrows            // Reorder UI
-├── SaveProgressionSheet        // Save dialog
-└── PlayerViewState enum        // State management
+ProgressionPlayerDock            // miniBar + expandedEditor, all playback logic
+├── ChordTimelineItem            // Bordered cell; function-colored roman
+│                                // numeral above the symbol (numeral param)
+├── SuggestionChip               // Dashed ghost cell after the timeline: tap to
+│                                // audition + append a suggested next chord
+├── AnalysisBadge                // Capsule for the analysis strip
+├── ChordMoveArrows              // Reorder UI
+└── SaveProgressionSheet         // Save dialog
+// Cells/badges/arrows live in ProgressionTimelineComponents.swift
 ```
 
-### Analysis strip & resolve (expanded view)
+### Analysis strip & resolve (expanded editor)
 - Under the timeline: pattern badge (analyzeProgression, hidden for .other),
   cadence badge, and a Resolve menu — Authentic appends V7(2 beats)+I(4),
   Plagal appends IV(2)+I(4) via `TheoryEngine.appendResolution(_:)`
@@ -109,8 +116,9 @@ FloatingProgressionPlayer
 - `GlossaryLibrary.all`: 13 degree-based famous progressions (pop/rock/jazz/
   classical/blues/cadences); `GlossaryProgression.playbackChords(in:)` renders
   them in the CURRENT key via the diatonic analysis arrays
-- `GlossaryView` sheet: entry points are book buttons in ChordVisualizerView's
-  header and the expanded player header; per-chord chips play single chords,
+- `GlossaryView` sheet: entry points are the book buttons in
+  ChordVisualizerView's header and the dock's expanded controls row;
+  per-chord chips play single chords,
   play button runs a cancellable Task loop (one entry at a time), Add appends
   chords+durations to the WIP (adopts suggestedTempo only when WIP was empty)
 - Audio handoff: `TheoryEngine.playbackHaltToken` (bumped by
@@ -145,10 +153,9 @@ visualizedChord: Chord?      // For piano highlighting
 5. **Removed** print statements from hot paths
 
 ## Current Issues & Solutions
-- **Ellipsis button transparency**: Fixed with full opaque background + rounded overlay
-- **Chord button heights**: Adjusted to 56pt for intermediate view
-- **Drag state management**: Reset on drop with proper cleanup
 - **Timeline selection**: Clears grid selection, updates display
+- (Floating-widget issues — ellipsis transparency, drag state, edge
+  bounce-back — are moot since the dock redesign removed that chrome)
 
 ## Key Invariants (learned the hard way)
 - **Chord voicing must accumulate octaves**: use `AudioEngine.voicedNotes(for:)`

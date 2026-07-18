@@ -29,11 +29,6 @@ struct ChordVisualizerView: View {
     @State private var isHoldingChord = false
     @State private var heldChordIndex: Int? = nil
     
-    // Computed property to check if we should show the progression player
-    private var showProgressionPlayer: Bool {
-        !theoryEngine.currentProgression.isEmpty
-    }
-    
     // Computed property for current chords based on selected type
     private var currentDiatonicChords: [(chord: Chord, romanNumeral: String, function: ChordFunction, degreeName: String)] {
         selectedChordType == .triads ? diatonicTriads : diatonicSevenths
@@ -188,13 +183,12 @@ struct ChordVisualizerView: View {
             }
         }
         .background(Color.appBackground)
-        .overlay(
-            Group {
-                if showProgressionPlayer {
-                    FloatingProgressionPlayer()
-                }
-            }
-        )
+        // Progression player docked above the tab bar; always present so
+        // building a progression is discoverable from the empty state
+        .safeAreaInset(edge: .bottom, spacing: 8) {
+            ProgressionPlayerDock()
+                .padding(.horizontal, 10)
+        }
         .sheet(isPresented: $showingGlossary) {
             GlossaryView()
         }

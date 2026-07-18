@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Environment(AppState.self) private var appState
     @Environment(DataManager.self) private var dataManager
     @Environment(AudioEngine.self) private var audioEngine
     @Environment(\.dismiss) private var dismiss
@@ -18,55 +17,8 @@ struct SettingsView: View {
     @AppStorage("bassDoublingEnabled") private var bassDoublingEnabled = true
 
     var body: some View {
-        @Bindable var appState = appState
-
         NavigationStack {
             List {
-                // Appearance Section
-                Section("Appearance") {
-                    // Tab Bar Style Picker
-                    HStack {
-                        Label("Tab Bar Style", systemImage: "rectangle.bottomthird.inset.filled")
-                        Spacer()
-                        Picker("Tab Bar Style", selection: $appState.tabBarStyle) {
-                            ForEach(TabBarStyle.allCases, id: \.self) { style in
-                                Text(style.rawValue).tag(style)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .labelsHidden()
-                    }
-
-                    // Tab Bar Preview
-                    VStack(spacing: 8) {
-                        Text("Preview")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.appTertiaryBackground)
-                                .frame(height: 80)
-
-                            switch appState.tabBarStyle {
-                            case .compact:
-                                CompactTabBar(selectedTab: .constant(2))
-                                    .scaleEffect(0.8)
-                                    .disabled(true)
-                            case .ultraCompact:
-                                UltraCompactTabBar(selectedTab: .constant(2))
-                                    .scaleEffect(0.8)
-                                    .disabled(true)
-                            case .floating:
-                                FloatingTabBar(selectedTab: .constant(2))
-                                    .scaleEffect(0.8)
-                                    .disabled(true)
-                            }
-                        }
-                    }
-                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
-                }
-
                 // Sound Section
                 Section {
                     HStack {

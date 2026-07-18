@@ -235,7 +235,7 @@ struct GlossaryCard: View {
                         Button(action: { onChipTap(index) }) {
                             VStack(spacing: 2) {
                                 Text(chip.symbol)
-                                    .font(.system(size: 14, weight: .semibold))
+                                    .font(.chordSymbolSmall)
                                     .foregroundColor(isSounding ? .white : .primary)
 
                                 Text(chip.numeral)
@@ -277,7 +277,7 @@ struct GlossaryCard: View {
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: AppRadius.card)
                 .fill(Color.appSecondaryBackground)
         )
     }

@@ -120,16 +120,7 @@ struct DiatonicChordButton: View {
     }
     
     private var functionColor: Color {
-        switch function {
-        case .tonic, .submediant:
-            return .blue
-        case .subdominant, .supertonic:
-            return .green
-        case .dominant, .leadingTone:
-            return .orange
-        default:
-            return .gray
-        }
+        function.color
     }
 }
 

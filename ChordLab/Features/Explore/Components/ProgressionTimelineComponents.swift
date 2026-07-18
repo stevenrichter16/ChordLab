@@ -32,16 +32,7 @@ struct ChordTimelineItem: View {
     // Same function-color language as DiatonicChordGrid
     private var numeralColor: Color {
         guard let numeral else { return .secondary }
-        switch theoryEngine.determineFunction(romanNumeral: numeral) {
-        case .tonic, .submediant:
-            return .blue
-        case .subdominant, .supertonic:
-            return .green
-        case .dominant, .leadingTone:
-            return .orange
-        default:
-            return .secondary
-        }
+        return theoryEngine.determineFunction(romanNumeral: numeral).color
     }
 
     var body: some View {
@@ -56,7 +47,7 @@ struct ChordTimelineItem: View {
                     }
 
                     Text(chord.formattedSymbol)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.chordSymbol)
                         .foregroundColor(isPlaying ? .white : .primary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -137,12 +128,12 @@ struct ChordTimelineItem: View {
         }
         .frame(width: cellWidth, height: 72)
         .background(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: AppRadius.card)
                 .fill(isPlaying ? Color.appPrimary : (isTapped ? Color.appPrimary.opacity(0.8) : Color.appSecondaryBackground))
         )
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.card))
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: AppRadius.card)
                 .strokeBorder(isSelected ? Color.green : Color.appBorder, lineWidth: isSelected ? 3 : 1)
         )
         .scaleEffect(isPlaying ? 1.05 : (isTapped ? 0.95 : 1.0))
@@ -189,16 +180,16 @@ struct SuggestionChip: View {
                 Image(systemName: "plus")
                     .font(.system(size: 11, weight: .semibold))
                 Text(chord.formattedSymbol)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.chordSymbolSmall)
             }
             .foregroundColor(.appPrimary.opacity(0.75))
             .frame(width: 52, height: 72)
             .background(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: AppRadius.card)
                     .fill(Color.appPrimary.opacity(0.05))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 10)
+                RoundedRectangle(cornerRadius: AppRadius.card)
                     .strokeBorder(
                         Color.appPrimary.opacity(0.45),
                         style: StrokeStyle(lineWidth: 1.5, dash: [5, 4])
@@ -243,10 +234,10 @@ struct ChordMoveArrows: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            Capsule()
                 .fill(Color.black.opacity(0.9))
-                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
         )
+        .floatingShadow()
     }
 }
 

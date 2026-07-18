@@ -23,6 +23,23 @@ ChordLab/
     └── Components/    # Piano/, Common/, Charts/
 ```
 
+## Design System (Core/Extensions/DesignSystem.swift + Color+Theme.swift)
+- **Brand accent**: AccentColor asset (indigo-blue, light/dark variants);
+  `Color.appPrimary` reads it and build settings apply it as global tint
+- **Function colors**: `ChordFunction.color` is the ONLY function→color
+  mapping (tonic/submediant blue, subdominant/supertonic green,
+  dominant/leadingTone orange, else gray) — never roll a new switch
+- **Tokens**: AppRadius (chip 8 / card 12 / chrome 20), AppSpacing (4pt
+  grid), `.cardShadow()`/`.floatingShadow()` (scheme-aware opacity),
+  `Animation.appSpring`/`.appSpringSlow`, instrument-chrome fonts
+  (`.chordSymbol`, `.chordSymbolSmall`, `.countdown`, `.monoReadout`)
+- **Typography rule**: semantic Dynamic Type for reading text; fixed
+  sizes only via the chrome font tokens
+- **One tab bar**: FloatingTabBar (material) — Compact/UltraCompact and
+  the TabBarStyle picker were deleted; don't reintroduce style switches
+- **Piano is off-limits for restyling** (user direction): ChordPianoView,
+  PianoKeyView, ScalePianoView, Color+PianoKeys keep their current design
+
 ## Practice Tab Architecture
 ```swift
 PracticeGameView<Stimulus>       // Generic session container: setup -> questions -> results

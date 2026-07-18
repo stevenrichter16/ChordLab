@@ -9,8 +9,10 @@ import SwiftUI
 
 extension Color {
     // MARK: - App Theme Colors
-    
-    static let appPrimary = Color.blue
+
+    /// Brand accent — the AccentColor asset (indigo-blue, tuned per
+    /// scheme), which the build settings also apply as the global tint
+    static let appPrimary = Color("AccentColor")
     static let appSecondary = Color.purple
     static let appAccent = Color.orange
     
@@ -31,12 +33,15 @@ extension Color {
     static let appBorder = Color(.separator)
     
     // MARK: - Music Theory Colors
-    
-    static let tonicColor = Color.green
-    static let subdominantColor = Color.blue
-    static let dominantColor = Color.red
-    static let chromaticColor = Color.orange
-    static let borrowedColor = Color.purple
+    // One palette for harmonic function, shared by the chord grid,
+    // timeline numerals, and anything else that colors by function.
+    // Families: tonic (incl. submediant), subdominant (incl. supertonic),
+    // dominant (incl. leading tone), everything chromatic.
+
+    static let functionTonic = Color.blue
+    static let functionSubdominant = Color.green
+    static let functionDominant = Color.orange
+    static let functionChromatic = Color.gray
     
     // MARK: - Piano Key Colors
     
@@ -73,6 +78,26 @@ extension Color {
     )
 }
 
+// MARK: - Harmonic function color
+
+extension ChordFunction {
+    /// The one true function → color mapping. Views must use this
+    /// instead of rolling their own switch — three copies drifted apart
+    /// once already.
+    var color: Color {
+        switch self {
+        case .tonic, .submediant:
+            return .functionTonic
+        case .subdominant, .supertonic:
+            return .functionSubdominant
+        case .dominant, .leadingTone:
+            return .functionDominant
+        default:
+            return .functionChromatic
+        }
+    }
+}
+
 // MARK: - View Extensions for Theme
 
 extension View {
@@ -88,8 +113,8 @@ extension View {
         self
             .padding(padding)
             .background(Color.cardBackground)
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .cornerRadius(AppRadius.card)
+            .cardShadow()
     }
     
     /// Apply subtle background styling

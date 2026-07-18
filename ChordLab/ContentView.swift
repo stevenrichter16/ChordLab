@@ -71,24 +71,15 @@ struct ContentView: View {
                 VStack {
                     Spacer()
 
-                    Group {
-                        switch appState.tabBarStyle {
-                        case .compact:
-                            CompactTabBar(selectedTab: $appState.selectedTab)
-                        case .ultraCompact:
-                            UltraCompactTabBar(selectedTab: $appState.selectedTab)
-                        case .floating:
-                            FloatingTabBar(selectedTab: $appState.selectedTab)
-                        }
-                    }
-                    .background(
-                        GeometryReader { barGeometry in
-                            Color.clear.preference(
-                                key: TabBarHeightPreferenceKey.self,
-                                value: barGeometry.size.height
-                            )
-                        }
-                    )
+                    FloatingTabBar(selectedTab: $appState.selectedTab)
+                        .background(
+                            GeometryReader { barGeometry in
+                                Color.clear.preference(
+                                    key: TabBarHeightPreferenceKey.self,
+                                    value: barGeometry.size.height
+                                )
+                            }
+                        )
                 }
                 .ignoresSafeArea(.keyboard)
                 .ignoresSafeArea(edges: .bottom)

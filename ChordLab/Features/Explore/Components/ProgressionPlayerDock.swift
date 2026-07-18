@@ -107,15 +107,15 @@ struct ProgressionPlayerDock: View {
             miniBar
         }
         .background(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: AppRadius.chrome)
                 .fill(Color.appSecondaryBackground)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.chrome))
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: AppRadius.chrome)
                 .strokeBorder(Color.appBorder, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.2), radius: 12, y: 4)
+        .floatingShadow()
         .overlay(alignment: .top) {
             if showRestoredCaption {
                 Text("Draft restored")
@@ -129,7 +129,7 @@ struct ProgressionPlayerDock: View {
                     .transition(.opacity)
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: isExpanded)
+        .animation(.appSpringSlow, value: isExpanded)
         .onAppear {
             if theoryEngine.draftWasRestored {
                 theoryEngine.draftWasRestored = false
@@ -192,12 +192,12 @@ struct ProgressionPlayerDock: View {
 
             if let count = countInRemaining {
                 Text("Starting in \(count)…")
-                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .font(.monoReadout)
                     .foregroundColor(.appPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else if !progression.isEmpty {
                 Text(progressionString)
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .font(.monoReadout)
                     .foregroundColor(.primary)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -262,7 +262,7 @@ struct ProgressionPlayerDock: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
-                    RoundedRectangle(cornerRadius: 15)
+                    Capsule()
                         .fill(showBPMSlider ? Color.appPrimary : Color.appTertiaryBackground)
                 )
                 .accessibilityLabel("Tempo: \(tempo) beats per minute")
@@ -403,7 +403,7 @@ struct ProgressionPlayerDock: View {
                             ForEach(suggestedNextChords, id: \.description) { chord in
                                 SuggestionChip(chord: chord) {
                                     audioEngine.playChord(chord, velocity: 60, duration: 0.8)
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    withAnimation(.appSpring) {
                                         theoryEngine.addChordToProgression(chord)
                                     }
 
@@ -418,12 +418,12 @@ struct ProgressionPlayerDock: View {
                 }
                 .frame(height: 96)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: AppRadius.card)
                         .fill(Color.appTertiaryBackground.opacity(0.5))
                         .onTapGesture {
                             // Only handle tap if arrows are showing
                             if showArrows {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                withAnimation(.appSpring) {
                                     selectedChordIndex = nil
                                     showArrows = false
                                     arrowDismissTimer?.invalidate()
@@ -434,11 +434,11 @@ struct ProgressionPlayerDock: View {
                 .overlay {
                     if let count = countInRemaining {
                         Text("\(count)")
-                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .font(.countdown)
                             .foregroundColor(.appPrimary)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                             .background(
-                                RoundedRectangle(cornerRadius: 10)
+                                RoundedRectangle(cornerRadius: AppRadius.card)
                                     .fill(Color.appSecondaryBackground.opacity(0.9))
                             )
                             .transition(.opacity)
@@ -510,7 +510,7 @@ struct ProgressionPlayerDock: View {
     // MARK: - Actions
 
     private func toggleExpanded() {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+        withAnimation(.appSpringSlow) {
             isExpanded.toggle()
         }
 
@@ -677,7 +677,7 @@ struct ProgressionPlayerDock: View {
     }
 
     private func resolve(_ cadence: TheoryEngine.ResolutionCadence) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+        withAnimation(.appSpring) {
             theoryEngine.appendResolution(cadence)
         }
 
@@ -724,7 +724,7 @@ struct ProgressionPlayerDock: View {
         guard targetIndex >= 0 && targetIndex < progression.count else { return }
 
         // Perform move
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+        withAnimation(.appSpring) {
             theoryEngine.reorderProgression(from: index, to: targetIndex + (direction == .left ? 0 : 1))
 
             // Update selected index to follow the chord
@@ -743,7 +743,7 @@ struct ProgressionPlayerDock: View {
         arrowDismissTimer?.invalidate()
         arrowDismissTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
             DispatchQueue.main.async {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                withAnimation(.appSpring) {
                     self.selectedChordIndex = nil
                     self.showArrows = false
                 }

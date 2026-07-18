@@ -83,17 +83,23 @@ struct SettingsView: View {
                             .labelsHidden()
                     }
 
-                    // Melodic voice for all chord/note playback
+                    // Melodic voice for all chord/note playback; pushed as
+                    // a categorized list rather than one 20-item menu
                     Picker(selection: Binding(
                         get: { audioEngine.currentInstrument },
                         set: { audioEngine.setInstrument($0) }
                     )) {
-                        ForEach(AudioEngine.Instrument.allCases) { instrument in
-                            Text(instrument.displayName).tag(instrument)
+                        ForEach(AudioEngine.Instrument.Category.allCases, id: \.self) { category in
+                            Section(category.rawValue) {
+                                ForEach(AudioEngine.Instrument.allCases.filter { $0.category == category }) { instrument in
+                                    Text(instrument.displayName).tag(instrument)
+                                }
+                            }
                         }
                     } label: {
                         Label("Instrument", systemImage: "pianokeys")
                     }
+                    .pickerStyle(.navigationLink)
                 } header: {
                     Text("Sound")
                 } footer: {

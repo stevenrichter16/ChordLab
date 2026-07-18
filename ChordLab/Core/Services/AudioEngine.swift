@@ -41,23 +41,87 @@ final class AudioEngine {
     // MARK: - Instrument
 
     /// The melodic voices offered in Settings; raw values are General MIDI
-    /// program numbers, all present in the bundled GeneralUser GS bank
+    /// program numbers, all present in the bundled GeneralUser GS bank.
+    /// Curated to polyphonic-friendly voices — chords on a solo wind
+    /// program sound broken, so those stay out.
     enum Instrument: Int, CaseIterable, Identifiable {
+        // Keys
         case piano = 0
         case electricPiano = 4
+        case harpsichord = 6
+        case clavinet = 7
+        // Bells & mallets
+        case celesta = 8
         case vibraphone = 11
+        case marimba = 12
+        // Organs
+        case drawbarOrgan = 16
+        case rockOrgan = 18
+        case churchOrgan = 19
+        case accordion = 21
+        // Guitars
         case nylonGuitar = 24
+        case steelGuitar = 25
+        case jazzGuitar = 26
+        // Ensemble
         case strings = 48
+        case choir = 52
+        // Synths
+        case squareLead = 80
+        case sawLead = 81
+        case warmPad = 89
+        case polysynth = 90
 
         var id: Int { rawValue }
+
+        enum Category: String, CaseIterable {
+            case keys = "Keys"
+            case mallets = "Bells & Mallets"
+            case organs = "Organs"
+            case guitars = "Guitars"
+            case ensemble = "Ensemble"
+            case synths = "Synths"
+        }
+
+        var category: Category {
+            switch self {
+            case .piano, .electricPiano, .harpsichord, .clavinet:
+                return .keys
+            case .celesta, .vibraphone, .marimba:
+                return .mallets
+            case .drawbarOrgan, .rockOrgan, .churchOrgan, .accordion:
+                return .organs
+            case .nylonGuitar, .steelGuitar, .jazzGuitar:
+                return .guitars
+            case .strings, .choir:
+                return .ensemble
+            case .squareLead, .sawLead, .warmPad, .polysynth:
+                return .synths
+            }
+        }
 
         var displayName: String {
             switch self {
             case .piano: return "Grand Piano"
             case .electricPiano: return "Electric Piano"
+            case .harpsichord: return "Harpsichord"
+            case .clavinet: return "Clavinet"
+            case .celesta: return "Celesta"
             case .vibraphone: return "Vibraphone"
+            case .marimba: return "Marimba"
+            case .drawbarOrgan: return "Drawbar Organ"
+            case .rockOrgan: return "Rock Organ"
+            case .churchOrgan: return "Church Organ"
+            case .accordion: return "Accordion"
             case .nylonGuitar: return "Nylon Guitar"
+            case .steelGuitar: return "Steel Guitar"
+            case .jazzGuitar: return "Jazz Guitar"
             case .strings: return "Strings"
+            case .choir: return "Choir"
+            case .squareLead: return "Square Lead"
+            case .sawLead: return "Saw Lead"
+            case .warmPad: return "Warm Pad"
+            case .polysynth: return "Polysynth"
             }
         }
     }

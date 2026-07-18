@@ -195,10 +195,12 @@ visualizedChord: Chord?      // For piano highlighting
 - **Progression slots go through `chordSlotDuration(interval:isLast:)`**:
   interior chords stop at 0.9× their slot (clean re-trigger of repeats),
   the final non-looping chord gets ≥1.2s to ring out
-- **Instrument selection**: `AudioEngine.Instrument` (GM programs 0/4/11/
-  24/48 from the same bank), persisted as "instrumentProgram"; Settings >
-  Sound picker calls `setInstrument` which stops all notes and reloads
-  the bank off-thread
+- **Instrument selection**: `AudioEngine.Instrument` — 20 GM voices in six
+  categories (keys/mallets/organs/guitars/ensemble/synths, all from the
+  same bank; solo winds excluded as chord-hostile), persisted as
+  "instrumentProgram"; Settings > Sound navigationLink picker calls
+  `setInstrument` which stops all notes and reloads the bank on a serial
+  queue off-thread
 - License permits bundling (see `Resources/Sounds/GeneralUser-LICENSE.txt`);
   attribution shown in Settings > About
 

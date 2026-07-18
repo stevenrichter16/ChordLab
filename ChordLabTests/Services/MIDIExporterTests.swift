@@ -101,15 +101,28 @@ final class MIDIExporterTests: XCTestCase {
     }
 
     func testInstrumentCatalog() {
-        // Raw values are General MIDI program numbers
+        // Spot-check raw values against General MIDI program numbers
         XCTAssertEqual(AudioEngine.Instrument.piano.rawValue, 0)
-        XCTAssertEqual(AudioEngine.Instrument.electricPiano.rawValue, 4)
-        XCTAssertEqual(AudioEngine.Instrument.vibraphone.rawValue, 11)
-        XCTAssertEqual(AudioEngine.Instrument.nylonGuitar.rawValue, 24)
-        XCTAssertEqual(AudioEngine.Instrument.strings.rawValue, 48)
+        XCTAssertEqual(AudioEngine.Instrument.harpsichord.rawValue, 6)
+        XCTAssertEqual(AudioEngine.Instrument.drawbarOrgan.rawValue, 16)
+        XCTAssertEqual(AudioEngine.Instrument.churchOrgan.rawValue, 19)
+        XCTAssertEqual(AudioEngine.Instrument.jazzGuitar.rawValue, 26)
+        XCTAssertEqual(AudioEngine.Instrument.choir.rawValue, 52)
+        XCTAssertEqual(AudioEngine.Instrument.sawLead.rawValue, 81)
+        XCTAssertEqual(AudioEngine.Instrument.polysynth.rawValue, 90)
 
-        for instrument in AudioEngine.Instrument.allCases {
-            XCTAssertFalse(instrument.displayName.isEmpty)
+        let all = AudioEngine.Instrument.allCases
+        XCTAssertGreaterThanOrEqual(all.count, 20)
+
+        // Program numbers must be valid GM programs and unique
+        XCTAssertEqual(Set(all.map(\.rawValue)).count, all.count)
+        XCTAssertTrue(all.allSatisfy { (0..<128).contains($0.rawValue) })
+
+        // Every instrument is named and every category has voices
+        XCTAssertTrue(all.allSatisfy { !$0.displayName.isEmpty })
+        for category in AudioEngine.Instrument.Category.allCases {
+            XCTAssertFalse(all.filter { $0.category == category }.isEmpty,
+                           "Category \(category.rawValue) has no instruments")
         }
     }
 }

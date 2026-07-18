@@ -73,6 +73,58 @@ extension TheoryEngine {
         }
     }
     
+    // MARK: - Transposition
+
+    /// Re-renders a saved progression into a new key by mapping each chord's
+    /// roman-numeral degree through the target key's diatonic sets, so the
+    /// spelling always follows the destination key (F# major gets E#°, flat
+    /// keys keep their flats) and durations are preserved. Returns nil when
+    /// any chord has no diatonic degree in the source key (borrowed or
+    /// chromatic chords can't be re-rendered this way yet).
+    static func transposedProgressionChords(
+        _ storedChords: [ProgressionChord],
+        fromKey sourceKey: String,
+        toKey targetKey: String,
+        scaleType: String = "major"
+    ) -> [ProgressionChord]? {
+        // Throwaway engines so transposing never touches app-wide key state
+        let source = TheoryEngine()
+        source.setKey(sourceKey, scaleType: scaleType)
+        let target = TheoryEngine()
+        target.setKey(targetKey, scaleType: scaleType)
+
+        let sourceTriads = source.getDiatonicChordsWithAnalysis()
+        let targetTriads = target.getDiatonicChordsWithAnalysis()
+        let targetSevenths = target.getSeventhChordsWithAnalysis()
+        guard sourceTriads.count == 7, targetTriads.count == 7, targetSevenths.count == 7 else {
+            return nil
+        }
+
+        let sourceBases = sourceTriads.map { source.baseNumeral($0.romanNumeral) }
+
+        var result: [ProgressionChord] = []
+        for stored in storedChords {
+            // Legacy rows may lack a numeral; derive it from the symbol
+            let numeral = stored.romanNumeral.isEmpty
+                ? source.getRomanNumeral(for: stored.chordSymbol)
+                : stored.romanNumeral
+
+            guard let degree = sourceBases.firstIndex(of: source.baseNumeral(numeral)) else {
+                return nil
+            }
+
+            let entry = numeral.contains("7") ? targetSevenths[degree] : targetTriads[degree]
+            result.append(ProgressionChord(
+                chordSymbol: entry.chord.formattedSymbol,
+                romanNumeral: entry.romanNumeral,
+                noteNames: entry.chord.noteClasses.map { $0.description },
+                function: entry.function.rawValue,
+                duration: stored.duration
+            ))
+        }
+        return result
+    }
+
     // MARK: - Progression Analysis
     
     /// Analyze a progression for patterns and characteristics

@@ -324,6 +324,45 @@ final class TheoryEnhancementsTests: XCTestCase {
         theoryEngine.cycleChordDuration(at: 99)
     }
 
+    // MARK: - Transposition
+
+    func testTransposeProgressionToNewKey() {
+        let stored = [
+            ProgressionChord(chordSymbol: "C", romanNumeral: "I", duration: 2),
+            ProgressionChord(chordSymbol: "Am", romanNumeral: "vi"),
+            ProgressionChord(chordSymbol: "Dm7", romanNumeral: "ii7"),
+            ProgressionChord(chordSymbol: "G7", romanNumeral: "V7", duration: 4)
+        ]
+
+        let transposed = TheoryEngine.transposedProgressionChords(
+            stored, fromKey: "C", toKey: "G", scaleType: "major"
+        )
+
+        XCTAssertEqual(transposed?.map(\.chordSymbol), ["G", "Em", "Am7", "D7"])
+        XCTAssertEqual(transposed?.map(\.romanNumeral), ["I", "vi", "ii7", "V7"])
+        XCTAssertEqual(transposed?.map(\.duration), [2.0, 1.0, 1.0, 4.0])
+    }
+
+    func testTransposeDerivesNumeralFromSymbolWhenMissing() {
+        // Legacy rows carry only the chord symbol
+        let stored = [ProgressionChord(chordSymbol: "F")]
+
+        let transposed = TheoryEngine.transposedProgressionChords(
+            stored, fromKey: "C", toKey: "D", scaleType: "major"
+        )
+
+        XCTAssertEqual(transposed?.map(\.chordSymbol), ["G"])
+        XCTAssertEqual(transposed?.map(\.romanNumeral), ["IV"])
+    }
+
+    func testTransposeFailsForChromaticChord() {
+        let stored = [ProgressionChord(chordSymbol: "Ab", romanNumeral: "bVI")]
+
+        XCTAssertNil(TheoryEngine.transposedProgressionChords(
+            stored, fromKey: "C", toKey: "G", scaleType: "major"
+        ))
+    }
+
     // MARK: - Cadence resolution
 
     func testAppendAuthenticResolution() {

@@ -20,8 +20,22 @@ struct ProgressionDetailView: View {
     @State private var currentPlayIndex: Int? = nil
     @State private var showingRenameAlert = false
     @State private var showingDeleteConfirmation = false
+    @State private var showingTransposeError = false
     @State private var newName = ""
-    
+
+    private let transposeKeys = ["C", "Db", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
+
+    // Analyzed with a throwaway engine keyed to the progression, so
+    // viewing a detail never mutates the app-wide key
+    private var progressionAnalysis: ProgressionAnalysis? {
+        let chords = progression.progressionChords.compactMap { Chord.parse($0.chordSymbol) }
+        guard chords.count >= 2 else { return nil }
+
+        let engine = TheoryEngine()
+        engine.setKey(progression.key, scaleType: progression.scale)
+        return engine.analyzeProgression(chords)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -48,6 +62,20 @@ struct ProgressionDetailView: View {
                                             .foregroundColor(.appPrimary)
                                             .cornerRadius(12)
                                     }
+                                }
+                            }
+                        }
+
+                        // What the progression is, in theory terms
+                        if let analysis = progressionAnalysis,
+                           analysis.pattern != .other || analysis.cadence != nil {
+                            HStack(spacing: 8) {
+                                if analysis.pattern != .other {
+                                    AnalysisBadge(icon: "sparkles", text: analysis.pattern.rawValue, tint: .appPrimary)
+                                }
+
+                                if let cadence = analysis.cadence {
+                                    AnalysisBadge(icon: "flag.checkered", text: "\(cadence.rawValue) cadence", tint: .green)
                                 }
                             }
                         }
@@ -141,6 +169,18 @@ struct ProgressionDetailView: View {
                             duplicateProgression()
                         }
 
+                        // Re-render the whole progression into another key
+                        Menu {
+                            ForEach(transposeKeys, id: \.self) { key in
+                                Button(key) {
+                                    transpose(to: key)
+                                }
+                                .disabled(key == progression.key)
+                            }
+                        } label: {
+                            Label("Transpose to…", systemImage: "arrow.up.arrow.down")
+                        }
+
                         Divider()
 
                         Button("Delete", systemImage: "trash", role: .destructive) {
@@ -167,6 +207,11 @@ struct ProgressionDetailView: View {
                     deleteProgression()
                 }
                 Button("Cancel", role: .cancel) { }
+            }
+            .alert("Couldn't Transpose", isPresented: $showingTransposeError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("This progression contains chords outside its key, which can't be re-rendered into a new key yet.")
             }
         }
     }
@@ -254,6 +299,28 @@ struct ProgressionDetailView: View {
         modelContext.delete(progression)
         try? modelContext.save()
         dismiss()
+    }
+
+    private func transpose(to newKey: String) {
+        guard newKey != progression.key else { return }
+
+        guard let transposed = TheoryEngine.transposedProgressionChords(
+            progression.progressionChords,
+            fromKey: progression.key,
+            toKey: newKey,
+            scaleType: progression.scale
+        ) else {
+            showingTransposeError = true
+            return
+        }
+
+        progression.progressionChords = transposed
+        // Keep the legacy columns consistent with the re-rendered chords
+        progression.chords = transposed.map { $0.chordSymbol }
+        progression.romanNumerals = transposed.map { $0.romanNumeral }
+        progression.key = newKey
+        progression.dateModified = Date()
+        try? modelContext.save()
     }
 
     private func loadInVisualizer() {

@@ -678,7 +678,7 @@ enum LessonLibrary {
             ),
             LessonPage(
                 title: "The Great Descents",
-                body: "Some famous progressions exist to harmonize a falling bass line. Pachelbel's Canon walks downward — C, G, Am, Em, F, C, F, G traces a mostly-stepwise descent — and that staircase is why it feels so inevitable.\n\nThe same trick powers countless ballads: choose a bass line that descends by step, then harmonize each note with a diatonic chord that contains it.\n\nOpen Pachelbel in the Progression Glossary and listen for the staircase underneath the prettiness. The chords are following the bass, not the other way around.",
+                body: "Some famous progressions exist to harmonize a falling line. Pachelbel's Canon — C, G, Am, Em, F, C, F, G — was written to carry the stepwise descent C–B–A–G–F–E: in the original, inverted chords put those notes in the bass, one stair per chord.\n\nChordLab plays chords in root position, so here you'll hear the descent as bolder strides — roots falling in fourths (C down to G, A down to E) — same downward gravity, bigger steps. Both versions feel inevitable because the harmony is following a line.\n\nThe trick powers countless ballads: choose a descending line first, then harmonize each note with a diatonic chord that contains it. The chords follow the line, not the other way around.",
                 demoChords: ["C", "G", "Am", "Em"]
             ),
             LessonPage(

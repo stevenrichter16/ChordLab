@@ -278,7 +278,10 @@ struct LessonPageView: View {
     let accentColor: Color
 
     @Environment(AudioEngine.self) private var audioEngine
-    @State private var demoSymbol: String? = nil
+    // Active demo tracked by INDEX, not symbol: pages may legitimately
+    // revisit a chord (e.g. the C -> G -> C round trip), and index
+    // identity keeps ForEach stable and highlights only the tapped chip
+    @State private var demoIndex: Int? = nil
     @State private var demoChord: Chord? = nil
 
     var body: some View {
@@ -305,12 +308,12 @@ struct LessonPageView: View {
                         )
 
                         HStack(spacing: 10) {
-                            ForEach(page.demoChords, id: \.self) { symbol in
+                            ForEach(Array(page.demoChords.enumerated()), id: \.offset) { index, symbol in
                                 DemoChordButton(
                                     symbol: symbol,
                                     accentColor: accentColor,
-                                    isActive: demoSymbol == symbol,
-                                    action: { playDemo(symbol) }
+                                    isActive: demoIndex == index,
+                                    action: { playDemo(symbol, at: index) }
                                 )
                             }
                         }
@@ -324,11 +327,11 @@ struct LessonPageView: View {
         }
     }
 
-    private func playDemo(_ symbol: String) {
+    private func playDemo(_ symbol: String, at index: Int) {
         guard let chord = Chord.parse(symbol) else { return }
 
         withAnimation(.easeInOut(duration: 0.2)) {
-            demoSymbol = symbol
+            demoIndex = index
             demoChord = chord
         }
         audioEngine.playChord(chord, velocity: 80, duration: 1.2)

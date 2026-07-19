@@ -2,8 +2,10 @@
 //  FloatingTabBar.swift
 //  ChordLab
 //
-//  The app's custom material tab bar, pinned to the physical bottom
-//  of the screen (ContentView reserves its measured height)
+//  The app's custom material tab bar. It sits IN the layout as the last
+//  row of ContentView's VStack — its item row respects the bottom safe
+//  area (above the home indicator) while the material background bleeds
+//  down to the physical screen edge.
 //
 
 import SwiftUI
@@ -22,33 +24,33 @@ struct FloatingTabBar: View {
     ]
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Glass effect background with tab items
-            HStack(spacing: 0) {
-                ForEach(0..<tabs.count, id: \.self) { index in
-                    FloatingTabItem(
-                        icon: tabs[index].icon,
-                        label: tabs[index].label,
-                        isSelected: selectedTab == index,
-                        namespace: animation,
-                        action: {
-                            withAnimation(.appSpring) {
-                                selectedTab = index
+        HStack(spacing: 0) {
+            ForEach(0..<tabs.count, id: \.self) { index in
+                FloatingTabItem(
+                    icon: tabs[index].icon,
+                    label: tabs[index].label,
+                    isSelected: selectedTab == index,
+                    namespace: animation,
+                    action: {
+                        withAnimation(.appSpring) {
+                            selectedTab = index
 
-                                // Haptic feedback
-                                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                                impactFeedback.impactOccurred()
-                            }
+                            // Haptic feedback
+                            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                            impactFeedback.impactOccurred()
                         }
-                    )
-                }
+                    }
+                )
             }
-            .padding(.horizontal, 4)
-            .padding(.vertical, 8)
-            .background(
-                .ultraThinMaterial,
-                in: Rectangle()
-            )
+        }
+        .padding(.horizontal, 4)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .background {
+            // Glass chrome extending under the home indicator
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea(edges: .bottom)
         }
         .overlay(
             Rectangle()
@@ -56,7 +58,6 @@ struct FloatingTabBar: View {
                 .foregroundColor(Color.white.opacity(0.2)),
             alignment: .top
         )
-        .shadow(color: .black.opacity(0.15), radius: 20, y: -5)
     }
 }
 

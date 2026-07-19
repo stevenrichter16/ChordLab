@@ -184,10 +184,14 @@ struct ChordVisualizerView: View {
         }
         .background(Color.appBackground)
         // Progression player docked above the tab bar; always present so
-        // building a progression is discoverable from the empty state
+        // building a progression is discoverable from the empty state.
+        // The tab bar is in-flow below this view's frame, so the inset
+        // anchors to the true content bottom; the padding floats the dock
+        // slightly off the bar.
         .safeAreaInset(edge: .bottom, spacing: 8) {
             ProgressionPlayerDock()
                 .padding(.horizontal, 10)
+                .padding(.bottom, 8)
         }
         .sheet(isPresented: $showingGlossary) {
             GlossaryView()

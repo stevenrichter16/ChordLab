@@ -81,9 +81,11 @@ key.preferredAccidental // .sharp or .flat
 ## Recent Implementation: ProgressionPlayerDock
 
 ### Docked bar + in-place editor (replaced the floating widget)
-- Mounted once, via `.safeAreaInset(edge: .bottom)` in ChordVisualizerView,
-  so it sits above the custom tab bar (ContentView reserves its 64pt) and
-  scroll content clears it automatically
+- Mounted once, via `.safeAreaInset(edge: .bottom)` in ChordVisualizerView;
+  the tab bar is IN-FLOW below the tab content (ContentView VStack), so
+  the content frame ends at the bar's top and NOTHING can render behind
+  the bar — never reintroduce overlay + measured-height reservations
+  (that scheme put the dock underneath the bar on device)
 - ALWAYS visible, even with an empty progression (play disabled, hint text,
   glossary reachable) — this is the discoverability fix
 - Two states: **mini bar** (play/stop, chord readout or count-in text, loop,

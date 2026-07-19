@@ -18,7 +18,13 @@ enum LessonLibrary {
         seventhChords,
         cadences,
         commonProgressions,
-        circleOfFifths
+        circleOfFifths,
+        // Progression workshop: applied lessons on BUILDING progressions
+        progressionFoundations,
+        harmonicRhythm,
+        loopsVsJourneys,
+        bassMotion,
+        finishingProgressions
     ]
 
     static func lesson(withID id: String) -> Lesson? {
@@ -46,6 +52,11 @@ enum LessonLibrary {
                 title: "Intervals",
                 body: "An interval is the distance between two notes, counted by letter names: C to D is a second, C to E is a third, C to G is a fifth.\n\nIntervals also have qualities — major, minor, and perfect — based on their exact size in half steps. A major third (4 half steps) sounds bright; a minor third (3 half steps) sounds darker.\n\nStack a couple of thirds and you get a chord — tap the one below to hear a major third and a minor third working together.",
                 demoChords: ["C"]
+            ),
+            LessonPage(
+                title: "Consonance & Dissonance",
+                body: "Intervals aren't just distances — they have personalities. A perfect fifth (7 half steps) is so stable that rock power chords are built from nothing else. The tritone (6 half steps) is so restless that medieval theorists nicknamed it \"the devil in music.\"\n\nConsonant intervals (thirds, fifths, sixths) blend; dissonant ones (seconds, sevenths, the tritone) rub and want to move. Music breathes by traveling between the two — all tension, then release.\n\nEvery chord you'll ever build is a bundle of intervals, and its personality is the sum of theirs. Tap C, then B° — one is all consonance, the other hides a tritone. Count the tension.",
+                demoChords: ["C", "B°"]
             )
         ],
         quiz: [
@@ -90,6 +101,11 @@ enum LessonLibrary {
                 title: "The Major Sound",
                 body: "Major triads sound bright, stable, and resolved — the musical equivalent of a smile. Most happy-sounding songs lean heavily on them.\n\nTrain your ear: play each of these major triads and notice they share the same character even though they start on different notes.\n\nThat shared character is the quality of the chord — and recognizing quality by ear is a superpower you can build in the Practice tab.",
                 demoChords: ["C", "G", "D", "A"]
+            ),
+            LessonPage(
+                title: "Inversions & Voicings",
+                body: "C–E–G doesn't have to appear in that exact order. Play E–G–C, or G–C–E, and it's still C major — just inverted. Pianists use inversions to glide between chords with minimal hand movement; that smoothness is called voice leading.\n\nChordLab plays chords in close root position so the root–third–fifth color coding always lines up, but listen to real recordings and you'll notice the bass note isn't always the root.\n\nWhat never changes is the recipe: if the notes boil down to root, major third, and perfect fifth, it's a major triad no matter how they're stacked. Quality lives in the notes, not the order.",
+                demoChords: ["C", "G"]
             )
         ],
         quiz: [
@@ -139,6 +155,11 @@ enum LessonLibrary {
                 title: "Augmented Triads",
                 body: "Stack two major thirds and you get an augmented triad: C–E–G♯. It sounds dreamlike and unresolved, like a question mark.\n\nAugmented chords are rare in everyday songs but beloved in film scores and jazz for their floating quality.\n\nIts symbol is a plus sign: C+.",
                 demoChords: ["C+"]
+            ),
+            LessonPage(
+                title: "Where Each Quality Lives",
+                body: "The four qualities are not equally common, and each has a natural habitat. In every major key, three diatonic chords are major (I, IV, V), three are minor (ii, iii, vi), exactly one is diminished (vii°) — and augmented doesn't occur diatonically at all.\n\nThat ratio explains a lot of music: major and minor carry the story, diminished appears in passing for spice, and augmented is a special effect saved for moments that should tilt.\n\nA practical tip for later: B° shares three of its notes with G7, so the diminished chord often stands in for the dominant. Play them back to back and hear the family resemblance.",
+                demoChords: ["B°", "G7", "C+"]
             )
         ],
         quiz: [
@@ -186,6 +207,11 @@ enum LessonLibrary {
             LessonPage(
                 title: "Scale Degrees",
                 body: "Each note of the scale has a number (1–7) and a name that hints at its job:\n\n1 Tonic — home. 2 Supertonic. 3 Mediant. 4 Subdominant. 5 Dominant — the strongest pull back to home. 6 Submediant. 7 Leading tone — leans hungrily into the tonic.\n\nThese names matter because chords built on each degree inherit the same jobs — that's the next lesson."
+            ),
+            LessonPage(
+                title: "The Relative Minor",
+                body: "Every major key has a shadow. Take the same seven notes but treat the sixth degree as home, and you get the relative minor: C major's notes, started from A, give A minor. Same key signature, completely different mood.\n\nThis is why the vi chord feels like a second home inside a major key, and why so many songs drift between a bright chorus and a moody verse without ever changing key signature — they're just leaning on different ends of the same scale.\n\nPlay C, then Am. Same family, different gravity. When you build progressions later, this pair is your brightness dial.",
+                demoChords: ["C", "Am"]
             )
         ],
         quiz: [
@@ -235,6 +261,11 @@ enum LessonLibrary {
                 title: "Why Numerals Matter",
                 body: "Numerals describe a song's shape independently of its key. \"I–IV–V\" is the same move in C major (C–F–G) as it is in E major (E–A–B).\n\nLearn a progression once as numerals and you own it in all twelve keys.\n\nThis is exactly what the Explore tab shows under every chord — now you can read it.",
                 demoChords: ["C", "F", "G"]
+            ),
+            LessonPage(
+                title: "Reading Real Charts",
+                body: "Numerals grow suffixes as chords get richer: ii7 is the minor seventh built on the second degree, V7 is the dominant seventh, Imaj7 is the major seventh on home. ChordLab writes them exactly this way on the timeline and in the analysis strip.\n\nThis isn't academic — Nashville session players record entire albums from numeral charts. When the singer wants a different key, nobody rewrites anything; the numbers already work everywhere.\n\nTest yourself before tapping: in C major, what numeral is Em? What about B°? Now tap them and check the labels your ear gave you.",
+                demoChords: ["Em", "B°"]
             )
         ],
         quiz: [
@@ -279,6 +310,11 @@ enum LessonLibrary {
                 title: "The Families",
                 body: "Each function is a family, not a single chord:\n\nTonic family: I and vi (and iii). Subdominant family: IV and ii. Dominant family: V and vii°.\n\nFamily members can substitute for each other — swap Am for C, or Dm for F, and the phrase keeps its shape with a fresh color. This is the number-one songwriting trick.",
                 demoChords: ["Am", "Dm", "B°"]
+            ),
+            LessonPage(
+                title: "Predicting the Next Chord",
+                body: "Functions make harmony predictable in the best way. Tonic can go anywhere. Subdominant usually moves to dominant, or slips back home. Dominant almost always resolves to tonic.\n\nThat's the grammar of harmony: T → S → D → T. Most progressions you'll ever write are sentences in that grammar — and the suggestion chips in the Explore dock speak it fluently when they offer your next chord.\n\nBreak the grammar on purpose (dominant falling back to subdominant, like G to F) and you get the rule-bending float that blues and pop use constantly. Know the rule, then choose when to bend it.",
+                demoChords: ["C", "F", "G7", "C"]
             )
         ],
         quiz: [
@@ -323,6 +359,11 @@ enum LessonLibrary {
                 title: "The Dominant Seventh",
                 body: "The dominant seventh deserves special attention: it only occurs naturally on the fifth degree, so hearing one instantly tells your ear where home is.\n\nIts internal tritone (between the 3rd and 7th) resolves outward by half steps straight into the tonic chord.\n\nG7 to C is harmony's strongest one-two punch. Play it below.",
                 demoChords: ["G7", "Cmaj7"]
+            ),
+            LessonPage(
+                title: "When to Use Sevenths",
+                body: "Sevenths are a dial, not an upgrade. Folk and punk mostly stay with plain triads; jazz and R&B live in sevenths; pop mixes freely — triads in the big chorus, sevenths in the verse for intimacy.\n\nEasy experiment: build any triad progression in Explore, then flip the Type toggle to 7ths and audition the same degrees. Same skeleton, new wardrobe.\n\nOne caution: V7 is hungrier than plain V — the added tritone demands resolution. Use the seventh where you want that hunger, and the plain triad where you want the pull gentler. Compare them below.",
+                demoChords: ["G", "G7"]
             )
         ],
         quiz: [
@@ -366,6 +407,11 @@ enum LessonLibrary {
                 title: "Deceptive & Half",
                 body: "The deceptive cadence, V → vi, sets up the expected homecoming and then sidesteps to the relative minor. Your ear leans for C and lands on Am. Sneaky, and beautiful.\n\nThe half cadence simply stops on V — a comma that leaves the phrase hanging, begging for more.\n\nPlay G7 then Am to hear the deception.",
                 demoChords: ["G7", "Am"]
+            ),
+            LessonPage(
+                title: "Cadences in the Wild",
+                body: "Once you can name them, you'll hear cadences everywhere: authentic at final choruses, plagal in gospel amens and indie outros, half cadences at every pre-chorus that leaves you leaning forward, deceptive at the bridge where a ballad refuses to end.\n\nIn ChordLab, the dock's analysis strip names your cadence automatically as you build, and the Resolve menu can append an authentic (V7 → I) or plagal (IV → I) ending with one tap, spelled correctly for your key.\n\nTry this: write a short phrase, then end it four different ways and listen to what each ending does to the story. Endings are a choice, not a default.",
+                demoChords: ["G7", "C", "F", "Am"]
             )
         ],
         quiz: [
@@ -410,6 +456,11 @@ enum LessonLibrary {
                 title: "ii – V – I",
                 body: "Jazz's favorite move: ii–V–I. The subdominant ii sets up the dominant V, which resolves to I — three functions in a row, usually as seventh chords.\n\nIn C major: Dm7, G7, Cmaj7. Play them in order and you'll recognize the sound of every jazz standard's turnaround.\n\nThe Practice tab's Progression Challenge will train you to spot all of these by ear.",
                 demoChords: ["Dm7", "G7", "Cmaj7"]
+            ),
+            LessonPage(
+                title: "The 12-Bar Blues",
+                body: "The granddaddy of progression forms: twelve bars of just I, IV, and V in a fixed arrangement — four bars of I, two of IV, two of I, then the V–IV–I–V turnaround.\n\nIt's the chassis under blues, early rock and roll, and jump jazz. Learn to play a 12-bar in any key and you can sit in with a band anywhere on Earth — the form is a universal handshake among musicians.\n\nYou don't have to build it by hand: open the Progression Glossary (the book icon in Explore) and add the 12-Bar Blues entry to your timeline with one tap, then listen for the form's three-act shape.",
+                demoChords: ["C", "F", "G"]
             )
         ],
         quiz: [
@@ -455,6 +506,11 @@ enum LessonLibrary {
                 title: "Using the Circle",
                 body: "The circle is practical, not just pretty:\n\nA key's V chord is one step clockwise; its IV chord is one step counterclockwise — your three most important chords are always adjacent.\n\nModulating to a neighboring key sounds smooth; jumping across the circle sounds dramatic. Composers navigate by this map constantly — and now you can too.",
                 demoChords: ["F", "C", "G"]
+            ),
+            LessonPage(
+                title: "Transposing With the Circle",
+                body: "Transposing — moving a song to a new key — is just sliding around the circle. Every chord keeps its numeral; only the letter names rotate.\n\nChordLab does this mechanically for you: open any saved progression in the Library and choose Transpose to re-render it in a new key. Watch the numerals stay put while the chord names change — that's the circle at work.\n\nWhy bother? Singers have ranges, guitars love E and A, horn sections love flat keys. One song, twelve costumes. Play the home chords of three neighboring keys below and hear how gently the ground shifts.",
+                demoChords: ["F", "C", "G", "D"]
             )
         ],
         quiz: [
@@ -472,6 +528,224 @@ enum LessonLibrary {
                 prompt: "F major has how many flats?",
                 options: ["0", "2", "3", "1"],
                 correctIndex: 3
+            )
+        ]
+    )
+
+    // MARK: - 11. Progression Workshop: Foundations
+
+    private static let progressionFoundations = Lesson(
+        id: "progression-foundations",
+        title: "Workshop: Root Motion",
+        subtitle: "The engine that drives progressions",
+        icon: "gearshape.2",
+        color: .mint,
+        pages: [
+            LessonPage(
+                title: "Start and End at Home",
+                body: "Nearly every progression treats the I chord as bookends: start there to establish home, end there — or deliberately don't — to control how finished the music feels.\n\nThe simplest complete progression is a round trip: home, somewhere else, tension, home. Even one stop counts: C → G → C is already a song.\n\nBuild it right now. In Explore, hold C to add it to the dock, then G, then C again, and press play. Everything in this workshop grows from that trip.",
+                demoChords: ["C", "G", "C"]
+            ),
+            LessonPage(
+                title: "Motion by Fifths",
+                body: "The strongest chord change moves the root down a fifth (or up a fourth — same landing note). V → I is this move. So are ii → V and vi → ii.\n\nChain them and you get harmony's conveyor belt: vi → ii → V → I, each chord falling a fifth into the next. Jazz calls this running the circle, and it's why those progressions feel inevitable.\n\nPlay the chain below and notice how each chord hands its momentum forward — nothing sounds parked until the last one.",
+                demoChords: ["Am", "Dm", "G", "C"]
+            ),
+            LessonPage(
+                title: "Motion by Steps & Thirds",
+                body: "Stepwise root motion (IV → V, or iii → IV) feels like walking — steady and purposeful. It builds the classic climb to home: IV → V → I.\n\nMotion by thirds (I → vi, C → Am) barely feels like motion at all, because the two chords share two of their three notes. That near-stillness is perfect for smooth mood shifts.\n\nMix the three motions and your progression gets a gait: fifths for power, steps for drive, thirds for glide. Listen for all three in the sequence below.",
+                demoChords: ["F", "G", "C", "Am"]
+            )
+        ],
+        quiz: [
+            PracticeQuestion(
+                prompt: "The strongest root motion between two chords is…",
+                options: ["up a step", "down a third", "down a fifth", "staying on the same root"],
+                correctIndex: 2
+            ),
+            PracticeQuestion(
+                prompt: "Which progression is a chain of falling fifths?",
+                options: ["I – IV – I – V", "vi – ii – V – I", "I – iii – IV – ii", "I – V – vi – iii"],
+                correctIndex: 1
+            ),
+            PracticeQuestion(
+                prompt: "C and Am sound so smooth together because…",
+                options: ["they share two notes", "they're both major", "the bass leaps an octave", "they're both dominant chords"],
+                correctIndex: 0
+            )
+        ]
+    )
+
+    // MARK: - 12. Progression Workshop: Harmonic Rhythm
+
+    private static let harmonicRhythm = Lesson(
+        id: "harmonic-rhythm",
+        title: "Workshop: Harmonic Rhythm",
+        subtitle: "How long each chord breathes",
+        icon: "metronome",
+        color: .orange,
+        pages: [
+            LessonPage(
+                title: "The Other Rhythm",
+                body: "Melodies have rhythm — and so does harmony. Harmonic rhythm is how often the chords change: every beat, every bar, every two bars.\n\nSlow harmonic rhythm (one chord held for bars at a time) feels spacious and anthemic — think stadium choruses. Fast harmonic rhythm (a new chord every beat) feels busy, theatrical, ornate.\n\nThe same four chords at different paces are different songs. Chord choice is only half of writing a progression; chord length is the other half."
+            ),
+            LessonPage(
+                title: "Uneven Lengths Tell Stories",
+                body: "Progressions get their shape when chords have different lengths. A classic move: two quick chords, then one long one — setup, setup, arrival.\n\nThe jazz turnaround does exactly this: ii7 and V7 take two beats each, then Imaj7 stretches across four. The landing feels earned because the approach was brisk.\n\nIn the dock's expanded editor, the dotted band at the bottom of each chord cell cycles its length through 1, 2, and 4 beats — and the cell widens to show it. Sculpt with it: try making your last chord the longest.",
+                demoChords: ["Dm7", "G7", "Cmaj7"]
+            ),
+            LessonPage(
+                title: "Tempo Is a Material",
+                body: "The same progression at 70 BPM is a ballad; at 140 it's a banger. Tempo doesn't just make music faster — it changes what the harmony means.\n\nThat's why glossary entries carry suggested tempos: Pachelbel arrives slow and stately, the 12-bar arrives at a strut. When you add one to an empty timeline, ChordLab adopts its tempo; the BPM pill overrides it anytime.\n\nA useful pairing rule: slow tempos tolerate faster chord changes, and fast tempos want fewer, longer chords. When a progression feels cluttered, slow the changes before you slow the song."
+            )
+        ],
+        quiz: [
+            PracticeQuestion(
+                prompt: "Harmonic rhythm means…",
+                options: ["the drummer's pattern", "how often the chords change", "the melody's note lengths", "the time signature"],
+                correctIndex: 1
+            ),
+            PracticeQuestion(
+                prompt: "A short–short–LONG chord pattern usually creates…",
+                options: ["a key change", "random tension", "silence", "a sense of earned arrival"],
+                correctIndex: 3
+            ),
+            PracticeQuestion(
+                prompt: "In the dock, tapping the band at the bottom of a chord cell…",
+                options: ["cycles its length through 1, 2, and 4 beats", "deletes the chord", "transposes the progression", "toggles the metronome"],
+                correctIndex: 0
+            )
+        ]
+    )
+
+    // MARK: - 13. Progression Workshop: Loops vs. Journeys
+
+    private static let loopsVsJourneys = Lesson(
+        id: "loops-vs-journeys",
+        title: "Workshop: Loops vs. Journeys",
+        subtitle: "Two shapes every progression takes",
+        icon: "arrow.triangle.2.circlepath",
+        color: .pink,
+        pages: [
+            LessonPage(
+                title: "The Loop",
+                body: "A loop is a progression designed to circle forever. It deliberately avoids a strong cadence so the last bar flows straight back into the first.\n\nI–V–vi–IV is the champion: it touches home mid-cycle but never lands hard enough to stop. That's why it can run underneath an entire song without wearing out.\n\nPlay through the loop below twice without pausing and notice how the F chord leans back into C — the seam is designed to be invisible.",
+                demoChords: ["C", "G", "Am", "F"]
+            ),
+            LessonPage(
+                title: "Rotations",
+                body: "Keep the same four chords but start the cycle somewhere else, and you get a different song. vi–IV–I–V opens on the minor chord — instant melancholy — even though it contains exactly the same chords as I–V–vi–IV.\n\nWhy? Listeners assume the first thing they hear is home. The starting chord sets the loop's center of gravity before the theory gets a vote.\n\nPlay this rotation and compare it with the previous page. Same ingredients, different weather.",
+                demoChords: ["Am", "F", "C", "G"]
+            ),
+            LessonPage(
+                title: "The Journey",
+                body: "A journey progression goes somewhere and ends. It moves through subdominant territory, peaks on a dominant, and cadences home. Looped verses plus a journey pre-chorus that cadences into the chorus — that's the architecture of half the songs on the charts.\n\nTo turn a loop into a journey, break the cycle: stretch the final chord longer, swap it for V, or use the dock's Resolve menu to append a proper ending.\n\nLoop for energy. Journey for arrival. Good songs need both, and now you can build both.",
+                demoChords: ["F", "G", "C"]
+            )
+        ],
+        quiz: [
+            PracticeQuestion(
+                prompt: "A loop keeps circling because it avoids…",
+                options: ["the tonic chord", "minor chords", "repetition", "a strong cadence"],
+                correctIndex: 3
+            ),
+            PracticeQuestion(
+                prompt: "vi–IV–I–V compared with I–V–vi–IV is…",
+                options: ["the same chords, rotated to start elsewhere", "a different key", "all minor chords", "an authentic cadence"],
+                correctIndex: 0
+            ),
+            PracticeQuestion(
+                prompt: "Listeners tend to hear the loop's first chord as…",
+                options: ["a mistake", "the dominant", "home", "a passing chord"],
+                correctIndex: 2
+            )
+        ]
+    )
+
+    // MARK: - 14. Progression Workshop: Bass Lines
+
+    private static let bassMotion = Lesson(
+        id: "bass-motion",
+        title: "Workshop: Bass Lines",
+        subtitle: "The line your progression walks on",
+        icon: "arrow.down.right.circle",
+        color: .brown,
+        pages: [
+            LessonPage(
+                title: "The Lowest Voice Leads",
+                body: "Listeners track the bass more closely than any other voice — it's the floor the harmony stands on. In root-position progressions the bass simply plays the chord roots, which means your root motion IS your bass line.\n\nChordLab reinforces this with bass doubling (Settings → Sound): every progression chord sounds its root an octave down, like a pianist's left hand.\n\nReplay the falling-fifths chain below, but this time listen only to the bottom of the sound. That striding, purposeful walk is what fifth-motion looks like from the floor.",
+                demoChords: ["Am", "Dm", "G", "C"]
+            ),
+            LessonPage(
+                title: "The Great Descents",
+                body: "Some famous progressions exist to harmonize a falling bass line. Pachelbel's Canon walks downward — C, G, Am, Em, F, C, F, G traces a mostly-stepwise descent — and that staircase is why it feels so inevitable.\n\nThe same trick powers countless ballads: choose a bass line that descends by step, then harmonize each note with a diatonic chord that contains it.\n\nOpen Pachelbel in the Progression Glossary and listen for the staircase underneath the prettiness. The chords are following the bass, not the other way around.",
+                demoChords: ["C", "G", "Am", "Em"]
+            ),
+            LessonPage(
+                title: "Writing From the Bass Up",
+                body: "Try composing backwards. Pick a singable bass path first — say C, down to A, down to F, up to G — then choose the diatonic chords rooted on those notes: C, Am, F, G. The bass line just wrote the '50s doo-wop progression for you.\n\nAlmost any bass path you can hum implies a progression, which is why great progressions feel melodic even before there's a melody.\n\nYour turn: choose four scale notes in Explore, add their diatonic chords to the dock, and listen to your invented bass line stand up and walk.",
+                demoChords: ["C", "Am", "F", "G"]
+            )
+        ],
+        quiz: [
+            PracticeQuestion(
+                prompt: "In a root-position progression, the bass line is…",
+                options: ["always the note C", "the melody, doubled", "the chord roots in order", "improvised"],
+                correctIndex: 2
+            ),
+            PracticeQuestion(
+                prompt: "Pachelbel's Canon is built around…",
+                options: ["a single held chord", "a descending bass line", "a drum groove", "the blues scale"],
+                correctIndex: 1
+            ),
+            PracticeQuestion(
+                prompt: "ChordLab's bass doubling plays…",
+                options: ["each chord's root an octave lower", "a fifth above the melody", "a percussion track", "the next chord early"],
+                correctIndex: 0
+            )
+        ]
+    )
+
+    // MARK: - 15. Progression Workshop: Finishing
+
+    private static let finishingProgressions = Lesson(
+        id: "finishing-progressions",
+        title: "Workshop: Finishing Touches",
+        subtitle: "Endings, color, and shipping it",
+        icon: "checkmark.seal",
+        color: .green,
+        pages: [
+            LessonPage(
+                title: "Choose Your Ending",
+                body: "The last two chords decide how finished your progression feels. V7 → I says \"the end.\" IV → I says \"amen.\" V → vi says \"to be continued.\" Stopping on V says \"lean in — there's more.\"\n\nThe dock's Resolve menu writes the strong endings for you, spelled correctly for your key, giving the approach chord 2 beats and the landing 4 so the ending breathes.\n\nAudition several endings on the same phrase and choose with your ears, not the rulebook. The right ending depends on what happens next in the song.",
+                demoChords: ["G7", "C", "F", "Am"]
+            ),
+            LessonPage(
+                title: "The Color Pass",
+                body: "Once the skeleton works, make a color pass. Swap in family members — vi for I somewhere, ii for IV — to freshen the palette without changing the shape. Upgrade chosen moments to sevenths: verse chords to m7 for intimacy, the final V to V7 for maximum pull.\n\nThe test after every swap: does home still feel like home? If a substitution muddies the pull, revert it. Function first, color second.\n\nThe dashed suggestion chips after your last chord speak this language — they offer function-appropriate next moves, not random ones.",
+                demoChords: ["Am", "Dm7", "G7", "Cmaj7"]
+            ),
+            LessonPage(
+                title: "Save, Study, Ship",
+                body: "When it sounds right, keep it: save the progression with a name and tags, and it lives in your Library with automatic pattern and cadence badges. Transpose it to a singer-friendly key. Export it as MIDI and drop it into GarageBand or Logic to keep producing.\n\nThen build the habit that actually teaches songwriting: study one glossary entry a day. Play it, read why it works, add it to your timeline, and mutate exactly one chord.\n\nImitation, then mutation, then invention — that's the whole path. You know enough theory to be dangerous now. Go build something.",
+                demoChords: ["C", "G", "Am", "F"]
+            )
+        ],
+        quiz: [
+            PracticeQuestion(
+                prompt: "The strongest \"this is the end\" move is…",
+                options: ["V7 → I", "I → IV", "vi → ii", "IV → vi"],
+                correctIndex: 0
+            ),
+            PracticeQuestion(
+                prompt: "A \"color pass\" on a working progression means…",
+                options: ["doubling the tempo", "changing the key signature", "swapping family members and adding sevenths", "deleting every other chord"],
+                correctIndex: 2
+            ),
+            PracticeQuestion(
+                prompt: "Which dock feature appends a correctly spelled ending?",
+                options: ["the loop toggle", "the Resolve menu", "the BPM slider", "the metronome"],
+                correctIndex: 1
             )
         ]
     )

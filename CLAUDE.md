@@ -225,7 +225,10 @@ visualizedChord: Chord?      // For piano highlighting
 
 ## Lessons (Learn tab)
 ```swift
-LessonLibrary.all            // 10 lessons in curriculum order; ids are stable strings
+LessonLibrary.all            // 15 lessons: 10 theory + 5 "Workshop" track
+                             // (progression building: root motion, harmonic
+                             // rhythm, loops vs journeys, bass lines,
+                             // finishing); ids are stable strings
 LessonDetailView             // pages (demo piano + tappable chords) -> quiz -> completion
 UserData.completedLessons    // persisted ids; DataManager.markLessonCompleted is idempotent
 // theory_expert achievement target is synced to LessonLibrary.all.count on Learn appear

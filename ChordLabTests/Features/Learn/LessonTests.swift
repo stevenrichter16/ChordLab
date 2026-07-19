@@ -13,10 +13,31 @@ final class LessonTests: XCTestCase {
 
     // MARK: - Content integrity
 
-    func testCurriculumHasTenLessonsWithUniqueIDs() {
+    func testCurriculumHasFifteenLessonsWithUniqueIDs() {
         let lessons = LessonLibrary.all
-        XCTAssertGreaterThanOrEqual(lessons.count, 10)
+        XCTAssertGreaterThanOrEqual(lessons.count, 15)
         XCTAssertEqual(Set(lessons.map(\.id)).count, lessons.count, "Lesson IDs must be unique")
+    }
+
+    func testProgressionWorkshopTrackExists() {
+        // The applied progression-building track appended to the curriculum
+        let workshopIDs = [
+            "progression-foundations",
+            "harmonic-rhythm",
+            "loops-vs-journeys",
+            "bass-motion",
+            "finishing-progressions"
+        ]
+
+        for id in workshopIDs {
+            XCTAssertNotNil(LessonLibrary.lesson(withID: id), "Missing workshop lesson \(id)")
+        }
+
+        // Every lesson now teaches with at least three pages
+        for lesson in LessonLibrary.all {
+            XCTAssertGreaterThanOrEqual(lesson.pages.count, 3,
+                                        "\(lesson.id) should have at least 3 pages")
+        }
     }
 
     func testEveryLessonHasPagesAndAValidQuiz() {
